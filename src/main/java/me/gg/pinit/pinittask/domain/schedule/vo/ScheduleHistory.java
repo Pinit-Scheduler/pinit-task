@@ -52,6 +52,10 @@ public class ScheduleHistory {
         return new ScheduleHistory(null, this.elapsedTime.plus(sessionDuration));
     }
 
+    public ScheduleHistory rollback(){
+        return new ScheduleHistory(null, this.elapsedTime);
+    }
+
     public static ScheduleHistory zero(){
         return new ScheduleHistory(null, Duration.ZERO);
     }
