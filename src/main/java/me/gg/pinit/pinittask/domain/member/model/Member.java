@@ -5,6 +5,8 @@ import lombok.Getter;
 import me.gg.pinit.pinittask.domain.converter.service.DurationConverter;
 import me.gg.pinit.pinittask.domain.converter.service.LocalTimeConverter;
 import me.gg.pinit.pinittask.domain.converter.service.ZoneIdConverter;
+import me.gg.pinit.pinittask.domain.member.exception.ObjectiveNotNullException;
+import me.gg.pinit.pinittask.domain.member.exception.ObjectiveNotPositiveException;
 
 import java.time.*;
 
@@ -37,6 +39,7 @@ public class Member {
     @Convert(converter = ZoneIdConverter.class)
     private ZoneId zoneId;
 
+    @Getter
     @Convert(converter = DurationConverter.class)
     private Duration dailyObjectiveWork;
 
@@ -66,10 +69,10 @@ public class Member {
 
     private void validateDuration(Duration dailyObjectiveWork) {
         if (dailyObjectiveWork == null) {
-            throw new IllegalStateException("Daily objective work has already been set.");
+            throw new ObjectiveNotNullException("일일 목표 작업 시간이 비어 있을 수 없습니다.");
         }
         if(dailyObjectiveWork.isNegative() || dailyObjectiveWork.isZero()) {
-            throw new IllegalArgumentException("Daily objective work must be positive.");
+            throw new ObjectiveNotPositiveException("일일 목표 작업 시간은 0분을 넘어야 합니다.");
         }
     }
 }
