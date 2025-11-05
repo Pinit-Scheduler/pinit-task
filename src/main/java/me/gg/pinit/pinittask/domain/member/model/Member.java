@@ -1,0 +1,75 @@
+package me.gg.pinit.pinittask.domain.member.model;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import me.gg.pinit.pinittask.domain.converter.service.DurationConverter;
+import me.gg.pinit.pinittask.domain.converter.service.LocalTimeConverter;
+import me.gg.pinit.pinittask.domain.converter.service.ZoneIdConverter;
+
+import java.time.*;
+
+/**
+ * 사용자의 목표와 루틴에 대한 정보를 기록하는 도메인
+ * 시용자 정보에 위치 정보가 있음
+ * 위치 정보를 이용해, 외부에서 시간 정보를 만드는 서비스가 필요하다.
+ */
+@Entity
+public class Member {
+    @Id
+    @Column(name = "member_id")
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+
+    private String userId;
+
+    private String nickname;
+
+    @Convert(converter = LocalTimeConverter.class)
+    private LocalTime startOfDay;
+
+    @Convert(converter = LocalTimeConverter.class)
+    private LocalTime sleepTime;
+
+    @Convert(converter = LocalTimeConverter.class)
+    private LocalTime wakeUpTime;
+
+    @Getter
+    @Convert(converter = ZoneIdConverter.class)
+    private ZoneId zoneId;
+
+    @Convert(converter = DurationConverter.class)
+    private Duration dailyObjectiveWork;
+
+    protected Member() {
+    }
+
+    public Member(String userId, String nickname, Duration dailyObjectiveWork, ZoneId zoneId) {
+        this.userId = userId;
+        this.nickname = nickname;
+        this.zoneId = zoneId;
+        this.dailyObjectiveWork = dailyObjectiveWork != null ? dailyObjectiveWork : Duration.ofHours(4);
+
+        sleepTime = LocalTime.of(23, 0, 0, 0);
+        wakeUpTime = LocalTime.of(7, 0, 0, 0);
+        startOfDay = LocalTime.of(7, 0, 0, 0);
+    }
+
+    public ZonedDateTime getStartOfDay(Clock clock) {
+        LocalDate today = LocalDate.now(clock);
+        return ZonedDateTime.of(today, startOfDay, zoneId);
+    }
+
+    public void setDailyObjectiveWork(Duration dailyObjectiveWork) {
+        validateDuration(dailyObjectiveWork);
+        this.dailyObjectiveWork = dailyObjectiveWork;
+    }
+
+    private void validateDuration(Duration dailyObjectiveWork) {
+        if (dailyObjectiveWork == null) {
+            throw new IllegalStateException("Daily objective work has already been set.");
+        }
+        if(dailyObjectiveWork.isNegative() || dailyObjectiveWork.isZero()) {
+            throw new IllegalArgumentException("Daily objective work must be positive.");
+        }
+    }
+}
