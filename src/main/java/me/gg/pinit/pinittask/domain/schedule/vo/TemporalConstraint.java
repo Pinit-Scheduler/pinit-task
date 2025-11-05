@@ -5,7 +5,7 @@ import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import me.gg.pinit.pinittask.domain.schedule.model.AllocateType;
-import me.gg.pinit.pinittask.domain.schedule.service.DurationConverter;
+import me.gg.pinit.pinittask.domain.converter.service.DurationConverter;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
