@@ -4,11 +4,14 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import me.gg.pinit.pinittask.domain.converter.service.ScheduleStateConverter;
 import me.gg.pinit.pinittask.domain.dependency.model.Dependency;
+import me.gg.pinit.pinittask.domain.schedule.exception.IllegalDescriptionException;
+import me.gg.pinit.pinittask.domain.schedule.exception.IllegalTitleException;
+import me.gg.pinit.pinittask.domain.schedule.exception.TimeOrderReversedException;
 import me.gg.pinit.pinittask.domain.schedule.vo.ImportanceConstraint;
 import me.gg.pinit.pinittask.domain.schedule.vo.ScheduleHistory;
 import me.gg.pinit.pinittask.domain.schedule.vo.TemporalConstraint;
 
-import java.time.Duration;
+import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -23,6 +26,8 @@ public class Schedule {
 
     private String title;
     private String description;
+
+    private ZonedDateTime date;
 
     @Embedded
     private TemporalConstraint temporalConstraint;
@@ -40,12 +45,28 @@ public class Schedule {
 
     protected Schedule() {}
 
-    public Schedule(Long ownerId, String title, String description, TemporalConstraint tc, ImportanceConstraint ic) {
+    public Schedule(Long ownerId, String title, String description, ZonedDateTime zdt, TemporalConstraint tc, ImportanceConstraint ic) {
         this.ownerId = ownerId;
-        this.title = title;
-        this.description = description;
+        setTitle(title);
+        setDescription(description);
         this.temporalConstraint = tc;
         this.importanceConstraint = ic;
+        setDate(zdt);
+    }
+
+    public void setTitle(String title) {
+        validateTitle(title);
+        this.title = title;
+    }
+
+    public void setDescription(String description) {
+        validateDescrption(description);
+        this.description = description;
+    }
+
+    public void setDate(ZonedDateTime zdt) {
+        validateDate(zdt);
+        this.date = zdt;
     }
 
     public void addDependency(Schedule from) {
@@ -79,6 +100,28 @@ public class Schedule {
      */
     void setState(ScheduleState state) {
         this.state = state;
+    }
+
+    private void validateTitle(String title) {
+        if (title == null || title.isBlank()) {
+            throw new IllegalTitleException("제목의 길이는 1자 이상 20자 이하여야 합니다.");
+        } else if (title.length() > 20) {
+            throw new IllegalTitleException("제목의 길이는 1자 이상 20자 이하여야 합니다.");
+        }
+    }
+
+    private void validateDescrption(String description) {
+        if (description == null || description.isBlank()) {
+            throw new IllegalDescriptionException("설명의 길이는 1자 이상 100자 이하여야 합니다.");
+        }else if (description.length() > 100) {
+            throw new IllegalDescriptionException("설명의 길이는 1자 이상 100자 이하여야 합니다.");
+        }
+    }
+
+    private void validateDate(ZonedDateTime zdt) {
+        if(zdt.isAfter(this.temporalConstraint.getDeadline())) {
+            throw new TimeOrderReversedException("일정의 시작 시간은 마감 시간 이후일 수 없습니다.");
+        }
     }
 }
 

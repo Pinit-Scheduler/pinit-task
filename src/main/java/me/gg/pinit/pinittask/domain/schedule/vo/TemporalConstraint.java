@@ -1,6 +1,7 @@
 package me.gg.pinit.pinittask.domain.schedule.vo;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 import me.gg.pinit.pinittask.domain.schedule.model.TaskType;
 import me.gg.pinit.pinittask.domain.converter.service.DurationConverter;
 
@@ -11,6 +12,7 @@ import java.util.Objects;
 @Embeddable
 public class TemporalConstraint {
     @Column(name = "deadline_time")
+    @Getter
     private ZonedDateTime deadline;
     @Convert(converter = DurationConverter.class)
     @Column(name = "expected_duration")
