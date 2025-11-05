@@ -1,4 +1,4 @@
-package me.gg.pinit.pinittask.domain.member.service;
+package me.gg.pinit.pinittask.domain.converter.service;
 
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
