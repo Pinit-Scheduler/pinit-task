@@ -84,20 +84,20 @@ public class Schedule {
         dependencies.removeIf(dependency -> dependency.getTo().equals(from));
     }
 
-    public void start(){
-        state.start(this);
+    public void start(ZonedDateTime startTime) {
+        state.start(this, startTime);
     }
 
-    public void suspend() {
-        state.suspend(this);
+    public void suspend(ZonedDateTime suspendTime) {
+        state.suspend(this, suspendTime);
     }
 
     public void cancel() {
         state.cancel(this);
     }
 
-    public void finish(){
-        state.finish(this);
+    public void finish(ZonedDateTime finishTime) {
+        state.finish(this, finishTime);
     }
 
     /**
