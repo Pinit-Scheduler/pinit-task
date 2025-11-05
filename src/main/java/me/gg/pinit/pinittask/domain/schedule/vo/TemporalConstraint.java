@@ -1,9 +1,6 @@
 package me.gg.pinit.pinittask.domain.schedule.vo;
 
-import jakarta.persistence.Convert;
-import jakarta.persistence.Embeddable;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import jakarta.persistence.*;
 import me.gg.pinit.pinittask.domain.schedule.model.AllocateType;
 import me.gg.pinit.pinittask.domain.converter.service.DurationConverter;
 
@@ -13,8 +10,10 @@ import java.util.Objects;
 
 @Embeddable
 public class TemporalConstraint {
+    @Column(name = "deadline_time")
     private ZonedDateTime deadline;
     @Convert(converter = DurationConverter.class)
+    @Column(name = "expected_duration")
     private Duration duration;
     @Enumerated(EnumType.STRING)
     private AllocateType allocateType;

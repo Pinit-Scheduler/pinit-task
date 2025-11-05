@@ -1,12 +1,18 @@
 package me.gg.pinit.pinittask.domain.schedule.vo;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import lombok.Getter;
 
 import java.util.Objects;
 
+@Getter
 @Embeddable
 public class ImportanceConstraint {
+    @Column(name = "importance_level")
     private int importance;
+
+    @Column(name = "urgency_level")
     private int urgency;
 
     protected ImportanceConstraint() {}
