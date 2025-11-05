@@ -41,7 +41,7 @@ public class ScheduleHistory {
     }
     
     public ScheduleHistory recordStart(ZonedDateTime startTime) {
-        Objects.requireNonNull(startTime, "시작 시간은 null일 수 없습니다..");
+        Objects.requireNonNull(startTime, "시작 시간은 null일 수 없습니다.");
         return new ScheduleHistory(startTime, this.elapsedTime);
     }
 
