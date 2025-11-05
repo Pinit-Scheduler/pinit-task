@@ -32,8 +32,7 @@ public class SuspendedState implements ScheduleState {
 
     @Override
     public void finish(Schedule ctx, ZonedDateTime finishTime) {
-        DomainEvents.raise(new ScheduleCompletedEvent(ownerFor(ctx), taskTypeFor(ctx), elapsedTimeFor(ctx)));
-        ctx.setState(new CompletedState());
+        throw new IllegalTransitionException("일시정지된 일정을 즉시 완료할 수 없습니다.");
     }
 
     @Override
