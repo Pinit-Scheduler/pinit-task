@@ -1,5 +1,6 @@
 package me.gg.pinit.pinittask.domain.schedule.model;
 
+import me.gg.pinit.pinittask.domain.schedule.exception.IllegalTransitionException;
 import me.gg.pinit.pinittask.domain.schedule.vo.ScheduleHistory;
 
 import java.time.ZonedDateTime;
@@ -15,23 +16,17 @@ public class NotStartedState implements ScheduleState{
 
     @Override
     public void suspend(Schedule ctx, ZonedDateTime suspendTime) {
-        ScheduleHistory history = ctx.getHistory();
-        ctx.updateHistoryTo(history.recordStop(suspendTime));
-        ctx.setState(new NotStartedState());
+        throw new IllegalStateException("시작되지 않은 일정을 일시정지할 수 없습니다.");
     }
 
     @Override
     public void cancel(Schedule ctx) {
-        ScheduleHistory history = ctx.getHistory();
-        ctx.updateHistoryTo(history.rollback());
-        ctx.setState(new NotStartedState());
+        throw new IllegalTransitionException("시작되지 않은 일정을 취소할 수 없습니다.");
     }
 
     @Override
     public void finish(Schedule ctx, ZonedDateTime finishTime) {
-        ScheduleHistory history = ctx.getHistory();
-        ctx.updateHistoryTo(history.recordStop(finishTime));
-        ctx.setState(new CompletedState());
+        throw new IllegalTransitionException("일정을 즉시 완료할 수 없습니다.");
     }
 
     @Override
