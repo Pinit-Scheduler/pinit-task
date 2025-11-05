@@ -1,7 +1,7 @@
 package me.gg.pinit.pinittask.domain.schedule.vo;
 
 import jakarta.persistence.*;
-import me.gg.pinit.pinittask.domain.schedule.model.AllocateType;
+import me.gg.pinit.pinittask.domain.schedule.model.TaskType;
 import me.gg.pinit.pinittask.domain.converter.service.DurationConverter;
 
 import java.time.Duration;
@@ -16,26 +16,26 @@ public class TemporalConstraint {
     @Column(name = "expected_duration")
     private Duration duration;
     @Enumerated(EnumType.STRING)
-    private AllocateType allocateType;
+    private TaskType taskType;
 
     protected TemporalConstraint() {
     }
 
-    public TemporalConstraint(ZonedDateTime deadline, Duration duration, AllocateType allocateType) {
+    public TemporalConstraint(ZonedDateTime deadline, Duration duration, TaskType taskType) {
         this.deadline = deadline;
         this.duration = duration;
-        this.allocateType = allocateType;
+        this.taskType = taskType;
     }
 
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         TemporalConstraint that = (TemporalConstraint) o;
-        return Objects.equals(deadline, that.deadline) && Objects.equals(duration, that.duration) && allocateType == that.allocateType;
+        return Objects.equals(deadline, that.deadline) && Objects.equals(duration, that.duration) && taskType == that.taskType;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(deadline, duration, allocateType);
+        return Objects.hash(deadline, duration, taskType);
     }
 }
