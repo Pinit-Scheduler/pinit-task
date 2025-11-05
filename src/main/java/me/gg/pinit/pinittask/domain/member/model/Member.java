@@ -22,12 +22,11 @@ public class Member {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @Getter
     private String userId;
 
+    @Getter
     private String nickname;
-
-    @Convert(converter = LocalTimeConverter.class)
-    private LocalTime startOfDay;
 
     @Convert(converter = LocalTimeConverter.class)
     private LocalTime sleepTime;
@@ -54,12 +53,6 @@ public class Member {
 
         sleepTime = LocalTime.of(23, 0, 0, 0);
         wakeUpTime = LocalTime.of(7, 0, 0, 0);
-        startOfDay = LocalTime.of(7, 0, 0, 0);
-    }
-
-    public ZonedDateTime getStartOfDay(Clock clock) {
-        LocalDate today = LocalDate.now(clock);
-        return ZonedDateTime.of(today, startOfDay, zoneId);
     }
 
     public void setDailyObjectiveWork(Duration dailyObjectiveWork) {
