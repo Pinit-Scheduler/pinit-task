@@ -108,6 +108,10 @@ public class Schedule {
         this.state = state;
     }
 
+    void updateHistory(ScheduleHistory history) {
+        this.history = history;
+    }
+
     private void validateTitle(String title) {
         if (title == null || title.isBlank()) {
             throw new IllegalTitleException("제목의 길이는 1자 이상 20자 이하여야 합니다.");
