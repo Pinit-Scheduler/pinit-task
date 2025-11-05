@@ -17,6 +17,7 @@ public class TemporalConstraint {
     @Convert(converter = DurationConverter.class)
     @Column(name = "expected_duration")
     private Duration duration;
+    @Getter
     @Enumerated(EnumType.STRING)
     private TaskType taskType;
 

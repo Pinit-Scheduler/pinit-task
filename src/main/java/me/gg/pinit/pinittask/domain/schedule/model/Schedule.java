@@ -22,6 +22,7 @@ public class Schedule {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @Getter
     private Long ownerId;
 
     @Getter
@@ -32,8 +33,10 @@ public class Schedule {
     @Getter
     private ZonedDateTime date;
 
+    @Getter
     @Embedded
     private TemporalConstraint temporalConstraint;
+    @Getter
     @Embedded
     private ImportanceConstraint importanceConstraint;
     @Getter

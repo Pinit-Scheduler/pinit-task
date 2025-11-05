@@ -4,7 +4,6 @@ public class NotStartedState implements ScheduleState{
     public static final String NOT_STARTED = "NOT_STARTED";
     @Override
     public void start(Schedule ctx) {
-
     }
 
     @Override
