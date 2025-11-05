@@ -46,7 +46,7 @@ public class ScheduleHistory {
     }
 
     public ScheduleHistory recordStop(ZonedDateTime stopTime) {
-        Objects.requireNonNull(this.startTime, "시작 시간이 기록되지 않았습니다.");
+        validateStartTime(this.startTime);
         validateTimeOrder(stopTime);
         Duration sessionDuration = Duration.between(this.startTime,  stopTime);
         return new ScheduleHistory(null, this.elapsedTime.plus(sessionDuration));
@@ -59,6 +59,12 @@ public class ScheduleHistory {
     private void validateTimeOrder(ZonedDateTime stopTime) {
         if(stopTime.isBefore(startTime)) {
             throw new TimeOrderReversedException("종료 시간은 시작 시간 이후여야 합니다.");
+        }
+    }
+
+    private void validateStartTime(ZonedDateTime startTime) {
+        if(startTime == null) {
+            throw new StartNotRecordedException("시작 시간이 기록되지 않았습니다.");
         }
     }
 }

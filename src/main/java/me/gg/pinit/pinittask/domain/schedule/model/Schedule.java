@@ -24,9 +24,12 @@ public class Schedule {
 
     private Long ownerId;
 
+    @Getter
     private String title;
+    @Getter
     private String description;
 
+    @Getter
     private ZonedDateTime date;
 
     @Embedded
@@ -120,7 +123,7 @@ public class Schedule {
 
     private void validateDate(ZonedDateTime zdt) {
         if(zdt.isAfter(this.temporalConstraint.getDeadline())) {
-            throw new TimeOrderReversedException("일정의 시작 시간은 마감 시간 이후일 수 없습니다.");
+            throw new TimeOrderReversedException("일정의 날짜는 데드라인을 초과할 수 없습니다.");
         }
     }
 }
