@@ -108,7 +108,7 @@ public class Schedule {
         this.state = state;
     }
 
-    void updateHistory(ScheduleHistory history) {
+    void updateHistoryTo(ScheduleHistory history) {
         this.history = history;
     }
 

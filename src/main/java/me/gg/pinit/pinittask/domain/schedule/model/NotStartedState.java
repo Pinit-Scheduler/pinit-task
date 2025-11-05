@@ -9,28 +9,28 @@ public class NotStartedState implements ScheduleState{
     @Override
     public void start(Schedule ctx, ZonedDateTime startTime) {
         ScheduleHistory history = ctx.getHistory();
-        ctx.updateHistory(history.recordStart(startTime));
+        ctx.updateHistoryTo(history.recordStart(startTime));
         ctx.setState(new InProgressState());
     }
 
     @Override
     public void suspend(Schedule ctx, ZonedDateTime suspendTime) {
         ScheduleHistory history = ctx.getHistory();
-        ctx.updateHistory(history.recordStop(suspendTime));
+        ctx.updateHistoryTo(history.recordStop(suspendTime));
         ctx.setState(new NotStartedState());
     }
 
     @Override
     public void cancel(Schedule ctx) {
         ScheduleHistory history = ctx.getHistory();
-        ctx.updateHistory(history.rollback());
+        ctx.updateHistoryTo(history.rollback());
         ctx.setState(new NotStartedState());
     }
 
     @Override
     public void finish(Schedule ctx, ZonedDateTime finishTime) {
         ScheduleHistory history = ctx.getHistory();
-        ctx.updateHistory(history.recordStop(finishTime));
+        ctx.updateHistoryTo(history.recordStop(finishTime));
         ctx.setState(new CompletedState());
     }
 
