@@ -1,8 +1,11 @@
 package me.gg.pinit.pinittask.domain.schedule.model;
 
+import me.gg.pinit.pinittask.domain.events.DomainEvents;
+import me.gg.pinit.pinittask.domain.schedule.event.ScheduleCompletedEvent;
 import me.gg.pinit.pinittask.domain.schedule.exception.IllegalTransitionException;
 import me.gg.pinit.pinittask.domain.schedule.vo.ScheduleHistory;
 
+import java.time.Duration;
 import java.time.ZonedDateTime;
 
 public class InProgressState implements ScheduleState{
@@ -31,11 +34,24 @@ public class InProgressState implements ScheduleState{
     public void finish(Schedule ctx, ZonedDateTime finishTime) {
         ScheduleHistory history = ctx.getHistory();
         ctx.updateHistoryTo(history.recordStop(finishTime));
+        DomainEvents.raise(new ScheduleCompletedEvent(ownerFor(ctx), taskTypeFor(ctx), elapsedTimeFor(ctx)));
         ctx.setState(new CompletedState());
     }
 
     @Override
     public String toString() {
         return IN_PROGRESS;
+    }
+
+    private Long ownerFor(Schedule ctx) {
+        return ctx.getOwnerId();
+    }
+
+    private Duration elapsedTimeFor(Schedule ctx) {
+        return ctx.getHistory().getElapsedTime();
+    }
+
+    private TaskType taskTypeFor(Schedule ctx) {
+        return ctx.getTemporalConstraint().getTaskType();
     }
 }
