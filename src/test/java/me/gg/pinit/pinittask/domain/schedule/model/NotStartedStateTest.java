@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Deque;
 
-import static me.gg.pinit.pinittask.domain.schedule.model.ScheduleUtils.START_TIME;
+import static me.gg.pinit.pinittask.domain.schedule.model.ScheduleUtils.ENROLLED_TIME;
 import static me.gg.pinit.pinittask.domain.schedule.model.ScheduleUtils.getNotStartedSchedule;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -26,11 +26,11 @@ class NotStartedStateTest {
         Schedule schedule = getNotStartedSchedule();
 
         //when
-        schedule.start(START_TIME.plusHours(1));
+        schedule.start(ENROLLED_TIME.plusHours(1));
 
         //then
         assertThat(schedule.isInProgress()).isTrue();
-        assertThat(schedule.getHistory().getStartTime()).isEqualTo(START_TIME.plusHours(1));
+        assertThat(schedule.getHistory().getStartTime()).isEqualTo(ENROLLED_TIME.plusHours(1));
     }
 
     @Test
@@ -39,7 +39,7 @@ class NotStartedStateTest {
         Schedule schedule = getNotStartedSchedule();
 
         //when, then
-        assertThatThrownBy(() -> schedule.suspend(START_TIME.plusHours(1)))
+        assertThatThrownBy(() -> schedule.suspend(ENROLLED_TIME.plusHours(1)))
                 .isInstanceOf(IllegalTransitionException.class)
                 .hasMessage("시작되지 않은 일정을 일시정지할 수 없습니다.");
     }
@@ -62,7 +62,7 @@ class NotStartedStateTest {
         Schedule schedule = getNotStartedSchedule();
 
         //when
-        schedule.finish(START_TIME.plusHours(1));
+        schedule.finish(ENROLLED_TIME.plusHours(1));
 
         //then
         Deque<DomainEvent> eventsAndClear = DomainEvents.getEventsAndClear();
