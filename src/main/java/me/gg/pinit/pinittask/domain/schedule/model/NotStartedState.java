@@ -19,7 +19,7 @@ public class NotStartedState implements ScheduleState{
 
     @Override
     public void suspend(Schedule ctx, ZonedDateTime suspendTime) {
-        throw new IllegalStateException("시작되지 않은 일정을 일시정지할 수 없습니다.");
+        throw new IllegalTransitionException("시작되지 않은 일정을 일시정지할 수 없습니다.");
     }
 
     @Override
