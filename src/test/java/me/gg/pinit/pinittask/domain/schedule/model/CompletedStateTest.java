@@ -27,7 +27,7 @@ class CompletedStateTest {
 
         //when, then
         Assertions.assertThatThrownBy(() -> schedule.start(FINISH_TIME.plusHours(3)))
-                .isInstanceOf(IllegalStateException.class)
+                .isInstanceOf(IllegalTransitionException.class)
                 .hasMessage("완료된 일정을 다시 시작할 수 없습니다.");
     }
 
