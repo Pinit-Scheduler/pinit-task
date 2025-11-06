@@ -58,6 +58,7 @@ public class Schedule {
         this.temporalConstraint = tc;
         this.importanceConstraint = ic;
         setDate(zdt);
+        this.state = new NotStartedState();
     }
 
     public void setTitle(String title) {
@@ -98,6 +99,22 @@ public class Schedule {
 
     public void finish(ZonedDateTime finishTime) {
         state.finish(this, finishTime);
+    }
+
+    public boolean isCompleted() {
+        return state instanceof CompletedState;
+    }
+
+    public boolean isNotStarted() {
+        return state instanceof NotStartedState;
+    }
+
+    public boolean isInProgress() {
+        return state instanceof InProgressState;
+    }
+
+    public boolean isSuspended() {
+        return state instanceof SuspendedState;
     }
 
     /**
