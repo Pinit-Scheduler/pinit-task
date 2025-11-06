@@ -20,7 +20,7 @@ public class InProgressState implements ScheduleState{
     public void suspend(Schedule ctx, ZonedDateTime suspendTime) {
         ScheduleHistory history = ctx.getHistory();
         ctx.updateHistoryTo(history.recordStop(suspendTime));
-        ctx.setState(new NotStartedState());
+        ctx.setState(new SuspendedState());
     }
 
     @Override
