@@ -1,5 +1,6 @@
 package me.gg.pinit.pinittask.domain.schedule.model;
 
+import me.gg.pinit.pinittask.domain.events.DomainEvents;
 import me.gg.pinit.pinittask.domain.schedule.vo.ImportanceConstraint;
 import me.gg.pinit.pinittask.domain.schedule.vo.TemporalConstraint;
 
@@ -89,6 +90,20 @@ public class ScheduleUtils {
                 getImportanceConstraintSample());
         schedule.start(START_TIME);
         schedule.suspend(SUSPEND_TIME);
+        return schedule;
+    }
+
+    public static Schedule getCompletedSchedule() {
+        Schedule schedule = new Schedule(
+                1L,
+                "Sample Schedule",
+                "sample description",
+                ENROLLED_TIME,
+                getTemporalConstraintSample(),
+                getImportanceConstraintSample());
+        schedule.start(START_TIME);
+        schedule.finish(FINISH_TIME);
+        DomainEvents.getEventsAndClear();
         return schedule;
     }
 
