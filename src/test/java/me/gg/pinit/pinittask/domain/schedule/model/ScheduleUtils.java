@@ -8,33 +8,36 @@ import java.time.Duration;
 import java.time.ZonedDateTime;
 
 public class ScheduleUtils {
-    public static Schedule getScheduleSample(){
+    public static ZonedDateTime START_TIME = ZonedDateTime.of(2025,
+            10,
+            1,
+            10,
+            0,
+            0,
+            0,
+            Clock.systemDefaultZone().getZone());
+    public static ZonedDateTime DEADLINE_TIME = ZonedDateTime.of(2025,
+            10,
+            10,
+            0,
+            0,
+            0,
+            0,
+            Clock.systemDefaultZone().getZone());
+
+    public static Schedule getNotStartedSchedule() {
         return new Schedule(
                 1L,
                 "Sample Schedule",
                 "sample description",
-                ZonedDateTime.of(2025,
-                        10,
-                        1,
-                        10,
-                        0,
-                        0,
-                        0,
-                        Clock.systemDefaultZone().getZone()),
+                START_TIME,
                 getTemporalConstraintSample(),
                 getImportanceConstraintSample());
     }
 
     public static TemporalConstraint getTemporalConstraintSample(){
         return new TemporalConstraint(
-                ZonedDateTime.of(2025,
-                        10,
-                        10,
-                        0,
-                        0,
-                        0,
-                        0,
-                        Clock.systemDefaultZone().getZone()),
+                DEADLINE_TIME,
                 Duration.ZERO,
                 TaskType.DEEP_WORK);
     }

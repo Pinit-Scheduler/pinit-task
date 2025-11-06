@@ -8,16 +8,15 @@ import org.junit.jupiter.api.Test;
 
 import java.time.ZonedDateTime;
 
-import static me.gg.pinit.pinittask.domain.schedule.model.ScheduleUtils.getScheduleSample;
+import static me.gg.pinit.pinittask.domain.schedule.model.ScheduleUtils.getNotStartedSchedule;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
 
 class ScheduleTest {
 
     @Test
     void setTitle() {
         //given
-        Schedule schedule = getScheduleSample();
+        Schedule schedule = getNotStartedSchedule();
 
         //when
         String newTitle = "New Title";
@@ -30,7 +29,7 @@ class ScheduleTest {
     @Test
     void setTitle_길이_0자(){
         //given
-        Schedule schedule = getScheduleSample();
+        Schedule schedule = getNotStartedSchedule();
 
         //when, then
         assertThatThrownBy(() -> schedule.setTitle(""))
@@ -41,7 +40,7 @@ class ScheduleTest {
     @Test
     void setTitle_null_입력(){
         //given
-        Schedule schedule = getScheduleSample();
+        Schedule schedule = getNotStartedSchedule();
         //when, then
         assertThatThrownBy(() -> schedule.setTitle(null))
                 .isInstanceOf(IllegalTitleException.class)
@@ -50,7 +49,7 @@ class ScheduleTest {
     @Test
     void setTitle_20자_초과(){
         //given
-        Schedule schedule = getScheduleSample();
+        Schedule schedule = getNotStartedSchedule();
         //when
         String longTitle = "This title is definitely more than twenty characters long";
 
@@ -63,7 +62,7 @@ class ScheduleTest {
     @Test
     void setDescription() {
         //given
-        Schedule schedule = getScheduleSample();
+        Schedule schedule = getNotStartedSchedule();
         //when
         String newDescription = "New Description";
         schedule.setDescription(newDescription);
@@ -73,7 +72,7 @@ class ScheduleTest {
     @Test
     void setDescription_길이_0자(){
         //given
-        Schedule schedule = getScheduleSample();
+        Schedule schedule = getNotStartedSchedule();
 
         //when
         String shortDescription = "";
@@ -87,7 +86,7 @@ class ScheduleTest {
     @Test
     void setDescription_null_입력(){
         //given
-        Schedule schedule = getScheduleSample();
+        Schedule schedule = getNotStartedSchedule();
 
         //when
         String nullDescription = null;
@@ -101,7 +100,7 @@ class ScheduleTest {
     @Test
     void setDescription_길이_100자_초과(){
         //given
-        Schedule schedule = getScheduleSample();
+        Schedule schedule = getNotStartedSchedule();
 
         //when
         String longDescription = "This description is intentionally made very long to exceed the maximum allowed length of one hundred characters. It should trigger an exception.";
@@ -115,7 +114,7 @@ class ScheduleTest {
     @Test
     void setDate() {
         //given
-        Schedule schedule = getScheduleSample();
+        Schedule schedule = getNotStartedSchedule();
         ZonedDateTime newDate = ZonedDateTime.of(2025, 10, 2, 10, 0, 0, 0, ZonedDateTime.now().getZone());
         //when
         schedule.setDate(newDate);
@@ -127,7 +126,7 @@ class ScheduleTest {
     @Test
     void setDate_데드라인_초과(){
         //given
-        Schedule schedule = getScheduleSample();
+        Schedule schedule = getNotStartedSchedule();
         ZonedDateTime invalidDate = ZonedDateTime.of(2100, 1, 1, 0, 0, 0, 0, ZonedDateTime.now().getZone());
 
         //when, then
