@@ -2,6 +2,7 @@ package me.gg.pinit.pinittask.domain.dependency.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import me.gg.pinit.pinittask.domain.dependency.exception.ScheduleAlreadyRemovedException;
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
 
 @Entity
@@ -10,6 +11,9 @@ public class Dependency {
     @Column(name = "dependency_id")
     @GeneratedValue
     private Long id;
+
+    @Getter
+    private Long ownerId;
 
     @Getter
     @ManyToOne
@@ -27,6 +31,17 @@ public class Dependency {
     public Dependency(Schedule from, Schedule to) {
         this.from = from;
         this.to = to;
+    }
+
+    public boolean PrecedenceIsCompleted() {
+        validatePrecedence(from);
+        return from.isCompleted();
+    }
+
+    private void validatePrecedence(Schedule from) {
+        if (from == null) {
+            throw new ScheduleAlreadyRemovedException("선행 일정이 존재하지 않습니다.");
+        }
     }
 }
 
