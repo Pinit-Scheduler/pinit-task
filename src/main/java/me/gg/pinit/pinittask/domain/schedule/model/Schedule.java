@@ -20,6 +20,7 @@ public class Schedule {
     @Id
     @Column(name = "schedule_id")
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Getter
     private Long id;
 
     @Getter
@@ -115,6 +116,12 @@ public class Schedule {
 
     public boolean isSuspended() {
         return state instanceof SuspendedState;
+    }
+
+    public boolean isBeforeCompleted() {
+        return dependencies.stream()
+                .map(Dependency::precedenceIsCompleted)
+                .allMatch(Schedule::isCompleted);
     }
 
     /**
