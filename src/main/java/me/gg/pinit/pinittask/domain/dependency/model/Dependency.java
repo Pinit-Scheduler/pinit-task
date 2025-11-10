@@ -33,7 +33,7 @@ public class Dependency {
         this.to = to;
     }
 
-    public boolean PrecedenceIsCompleted() {
+    public boolean precedenceIsCompleted() {
         validatePrecedence(from);
         return from.isCompleted();
     }
