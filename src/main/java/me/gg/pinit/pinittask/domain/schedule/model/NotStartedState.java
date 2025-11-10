@@ -12,8 +12,7 @@ public class NotStartedState implements ScheduleState{
     public static final String NOT_STARTED = "NOT_STARTED";
     @Override
     public void start(Schedule ctx, ZonedDateTime startTime) {
-        ScheduleHistory history = ctx.getHistory();
-        ctx.updateHistoryTo(history.recordStart(startTime));
+        recordStart(ctx, startTime);
         ctx.setState(new InProgressState());
     }
 
@@ -30,10 +29,19 @@ public class NotStartedState implements ScheduleState{
     @Override
     public void finish(Schedule ctx, ZonedDateTime finishTime) {
         DomainEvents.raise(new ScheduleCompletedEvent(ownerFor(ctx), taskTypeFor(ctx), elapsedTimeFor(ctx)));
+        recordStart(ctx, finishTime);
+        recordFinish(ctx, finishTime);
+        ctx.setState(new CompletedState());
+    }
+
+    private void recordFinish(Schedule ctx, ZonedDateTime finishTime) {
+        ScheduleHistory history = ctx.getHistory();
+        ctx.updateHistoryTo(history.recordStop(finishTime));
+    }
+
+    private void recordStart(Schedule ctx, ZonedDateTime finishTime) {
         ScheduleHistory history = ctx.getHistory();
         ctx.updateHistoryTo(history.recordStart(finishTime));
-        ctx.updateHistoryTo(history.recordStop(finishTime));
-        ctx.setState(new CompletedState());
     }
 
     @Override
