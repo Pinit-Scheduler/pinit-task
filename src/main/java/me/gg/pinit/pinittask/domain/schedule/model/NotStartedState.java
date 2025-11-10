@@ -30,6 +30,9 @@ public class NotStartedState implements ScheduleState{
     @Override
     public void finish(Schedule ctx, ZonedDateTime finishTime) {
         DomainEvents.raise(new ScheduleCompletedEvent(ownerFor(ctx), taskTypeFor(ctx), elapsedTimeFor(ctx)));
+        ScheduleHistory history = ctx.getHistory();
+        ctx.updateHistoryTo(history.recordStart(finishTime));
+        ctx.updateHistoryTo(history.recordStop(finishTime));
         ctx.setState(new CompletedState());
     }
 
