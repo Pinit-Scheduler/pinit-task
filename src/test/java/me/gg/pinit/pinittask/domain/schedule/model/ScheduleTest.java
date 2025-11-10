@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.ZonedDateTime;
 
-import static me.gg.pinit.pinittask.domain.schedule.model.ScheduleUtils.getNotStartedSchedule;
+import static me.gg.pinit.pinittask.domain.schedule.model.ScheduleUtils.*;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ScheduleTest {
@@ -133,5 +133,33 @@ class ScheduleTest {
         assertThatThrownBy(() -> schedule.setDate(invalidDate))
                 .isInstanceOf(TimeOrderReversedException.class)
                 .hasMessage("일정의 날짜는 데드라인을 초과할 수 없습니다.");
+    }
+
+    @Test
+    void isBeforeCompleted_전부_완료됨() {
+        //given
+        Schedule sample = getNotStartedSchedule();
+        Schedule before = getCompletedSchedule();
+        sample.addDependency(before);
+
+        //when
+        boolean result = sample.isBeforeCompleted();
+
+        //then
+        Assertions.assertThat(result).isTrue();
+    }
+
+    @Test
+    void isBeforeCompleted_완료되지_않음() {
+        //given
+        Schedule sample = getNotStartedSchedule();
+        Schedule before = getInProgressSchedule();
+        sample.addDependency(before);
+
+        //when
+        boolean result = sample.isBeforeCompleted();
+
+        //then
+        Assertions.assertThat(result).isFalse();
     }
 }
