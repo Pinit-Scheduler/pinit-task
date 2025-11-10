@@ -2,10 +2,7 @@ package me.gg.pinit.pinittask.domain.dependency.model;
 
 import me.gg.pinit.pinittask.domain.dependency.exception.ScheduleNotFoundException;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Graph {
     private Map<Long, Integer> internalId = new HashMap<>();
@@ -45,6 +42,37 @@ public class Graph {
                 .toList();
     }
 
+    public boolean isCycleContained() {
+        int[] indeg = getIndegree();
+        Queue<Integer> q = initializeQueueForCycleCheck(indeg);
+        return checkCycle(q, indeg);
+    }
+
+    private boolean checkCycle(Queue<Integer> q, int[] indeg) {
+        int removed = 0;
+        while (!q.isEmpty()) {
+            int u = q.poll();
+            removed++;
+            for (int v : adjList[u]) {
+                if (--indeg[v] == 0) q.add(v);
+            }
+        }
+        return removed != size;
+    }
+
+    private Queue<Integer> initializeQueueForCycleCheck(int[] indeg) {
+        Queue<Integer> q = new ArrayDeque<>();
+        for (int i = 0; i < size; i++) if (indeg[i] == 0) q.add(i);
+        return q;
+    }
+
+    private int[] getIndegree() {
+        int[] indeg = new int[size];
+        for (int u = 0; u < size; u++)
+            for (int v : adjList[u]) indeg[v]++;
+        return indeg;
+    }
+
     private void setCompressedMap(List<Dependency> dependencies) {
         for (Dependency dependency : dependencies) {
             Long fromId = dependency.getFrom().getId();
@@ -62,7 +90,6 @@ public class Graph {
     }
 
     private void connectEdges(List<Dependency> dependencies) {
-        indegree = new int[size];
         for (Dependency dependency : dependencies) {
             Long fromId = dependency.getFrom().getId();
             Long toId = dependency.getTo().getId();
@@ -74,7 +101,6 @@ public class Graph {
         Integer fromInternalId = internalScheduleIdFor(fromScheduleId);
         Integer toInternalId = internalScheduleIdFor(toScheduleId);
         adjList[fromInternalId].add(toInternalId);
-        indegree[toInternalId]++;
     }
 
     private void insertToMap(Long scheduleId) {
