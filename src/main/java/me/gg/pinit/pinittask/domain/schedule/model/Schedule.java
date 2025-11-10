@@ -120,8 +120,7 @@ public class Schedule {
 
     public boolean isBeforeCompleted() {
         return dependencies.stream()
-                .map(Dependency::precedenceIsCompleted)
-                .allMatch(Schedule::isCompleted);
+                .allMatch(Dependency::precedenceIsCompleted);
     }
 
     /**
