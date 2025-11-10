@@ -46,4 +46,41 @@ class GraphTest {
         //then
         assertNotNull(graph);
     }
+
+    @Test
+    void isCycleContained_NoCycle() {
+        //given
+        List<Dependency> dependenciesSample = getDependenciesSample();
+        Graph graph = Graph.of(dependenciesSample);
+
+        //when
+        boolean hasCycle = graph.isCycleContained();
+
+        //then
+        assertFalse(hasCycle);
+    }
+
+    @Test
+    void isCycleContained_Cycle() {
+        //given
+        Schedule scheduleA = getNotStartedSchedule(1L);
+        Schedule scheduleB = getNotStartedSchedule(2L);
+        Schedule scheduleC = getNotStartedSchedule(3L);
+
+        scheduleB.addDependency(scheduleA);
+        scheduleC.addDependency(scheduleB);
+        scheduleA.addDependency(scheduleC); // 사이클 생성
+
+        List<Dependency> dependencies = getDependenciesFromSchedule(scheduleA);
+        dependencies.addAll(getDependenciesFromSchedule(scheduleB));
+        dependencies.addAll(getDependenciesFromSchedule(scheduleC));
+
+        Graph graph = Graph.of(dependencies);
+
+        //when
+        boolean hasCycle = graph.isCycleContained();
+
+        //then
+        assertTrue(hasCycle);
+    }
 }
