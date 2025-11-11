@@ -3,6 +3,8 @@ package me.gg.pinit.pinittask.domain.schedule.model;
 import me.gg.pinit.pinittask.domain.schedule.exception.IllegalDescriptionException;
 import me.gg.pinit.pinittask.domain.schedule.exception.IllegalTitleException;
 import me.gg.pinit.pinittask.domain.schedule.exception.TimeOrderReversedException;
+import me.gg.pinit.pinittask.domain.schedule.patch.SchedulePatch;
+import me.gg.pinit.pinittask.domain.schedule.vo.ImportanceConstraint;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -191,5 +193,24 @@ class ScheduleTest {
         notStartedSchedule.changeTaskType(TaskType.QUICK_TASK);
         //then
         Assertions.assertThat(notStartedSchedule.getTemporalConstraint().getTaskType()).isEqualTo(TaskType.QUICK_TASK);
+    }
+
+    public void Patch_수정() {
+        //given
+        Schedule schedule = getNotStartedSchedule();
+        ImportanceConstraint importanceConstraint = schedule.getImportanceConstraint();
+        String title = schedule.getTitle();
+        String description = schedule.getDescription();
+
+        //when
+        SchedulePatch schedulePatch = new SchedulePatch().setDate(ENROLLED_TIME.plusDays(1)).setTaskType(TaskType.QUICK_TASK);
+        schedule.patch(schedulePatch);
+
+        //then
+        Assertions.assertThat(schedule.getDate()).isEqualTo(ENROLLED_TIME.plusDays(1));
+        Assertions.assertThat(schedule.getTemporalConstraint().getTaskType()).isEqualTo(TaskType.QUICK_TASK);
+        Assertions.assertThat(schedule.getImportanceConstraint()).isEqualTo(importanceConstraint);
+        Assertions.assertThat(schedule.getTitle()).isEqualTo(title);
+        Assertions.assertThat(schedule.getDescription()).isEqualTo(description);
     }
 }

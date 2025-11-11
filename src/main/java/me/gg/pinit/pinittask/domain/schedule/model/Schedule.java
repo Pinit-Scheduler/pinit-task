@@ -7,6 +7,7 @@ import me.gg.pinit.pinittask.domain.dependency.model.Dependency;
 import me.gg.pinit.pinittask.domain.schedule.exception.IllegalDescriptionException;
 import me.gg.pinit.pinittask.domain.schedule.exception.IllegalTitleException;
 import me.gg.pinit.pinittask.domain.schedule.exception.TimeOrderReversedException;
+import me.gg.pinit.pinittask.domain.schedule.patch.SchedulePatch;
 import me.gg.pinit.pinittask.domain.schedule.vo.ImportanceConstraint;
 import me.gg.pinit.pinittask.domain.schedule.vo.ScheduleHistory;
 import me.gg.pinit.pinittask.domain.schedule.vo.TemporalConstraint;
@@ -139,6 +140,17 @@ public class Schedule {
         return dependencies.stream()
                 .allMatch(Dependency::precedenceIsCompleted);
     }
+
+    public void patch(SchedulePatch patch) {
+        patch.importance().ifPresent(this::changeImportance);
+        patch.urgency().ifPresent(this::changeUrgency);
+        patch.title().ifPresent(this::setTitle);
+        patch.description().ifPresent(this::setDescription);
+        patch.deadline().ifPresent(this::changeDeadline);
+        patch.date().ifPresent(this::setDate);
+        patch.taskType().ifPresent(this::changeTaskType);
+    }
+
 
     /**
      * Schedule 패키지 밖에서 사용하지 말 것
