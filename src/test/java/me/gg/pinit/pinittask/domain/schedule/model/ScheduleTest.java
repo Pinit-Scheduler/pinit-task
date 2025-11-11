@@ -162,4 +162,34 @@ class ScheduleTest {
         //then
         Assertions.assertThat(result).isFalse();
     }
+
+    @Test
+    void changeDeadline_일정보다_늦은_데드라인() {
+        //given
+        Schedule schedule = getNotStartedSchedule();
+        //when
+        schedule.changeDeadline(DEADLINE_TIME.plusDays(3));
+        //then
+        Assertions.assertThat(schedule.getTemporalConstraint().getDeadline()).isEqualTo(DEADLINE_TIME.plusDays(3));
+    }
+
+    @Test
+    void changeDeadline_일정보다_빠른_데드라인() {
+        //given
+        Schedule schedule = getNotStartedSchedule();
+        //when, then
+        Assertions.assertThatThrownBy(() -> schedule.changeDeadline(ENROLLED_TIME.minusDays(1)))
+                .isInstanceOf(TimeOrderReversedException.class)
+                .hasMessage("데드라인은 일정 등록 날짜보다 앞설 수 없습니다.");
+    }
+
+    @Test
+    void 작업_타입_변경() {
+        //given
+        Schedule notStartedSchedule = getNotStartedSchedule();
+        //when
+        notStartedSchedule.changeTaskType(TaskType.QUICK_TASK);
+        //then
+        Assertions.assertThat(notStartedSchedule.getTemporalConstraint().getTaskType()).isEqualTo(TaskType.QUICK_TASK);
+    }
 }
