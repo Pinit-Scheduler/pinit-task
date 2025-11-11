@@ -2,8 +2,8 @@ package me.gg.pinit.pinittask.domain.schedule.vo;
 
 import jakarta.persistence.*;
 import lombok.Getter;
-import me.gg.pinit.pinittask.domain.schedule.model.TaskType;
 import me.gg.pinit.pinittask.domain.converter.service.DurationConverter;
+import me.gg.pinit.pinittask.domain.schedule.model.TaskType;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
@@ -28,6 +28,14 @@ public class TemporalConstraint {
         this.deadline = deadline;
         this.duration = duration;
         this.taskType = taskType;
+    }
+
+    public TemporalConstraint changeDeadline(ZonedDateTime newDeadline) {
+        return new TemporalConstraint(newDeadline, this.duration, this.taskType);
+    }
+
+    public TemporalConstraint changeTaskType(TaskType newTaskType) {
+        return new TemporalConstraint(this.deadline, this.duration, newTaskType);
     }
 
     @Override
