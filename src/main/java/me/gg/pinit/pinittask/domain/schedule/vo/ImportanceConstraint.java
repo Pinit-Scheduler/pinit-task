@@ -22,6 +22,16 @@ public class ImportanceConstraint {
         this.urgency = urgency;
     }
 
+    public ImportanceConstraint changeImportance(int importance) {
+        validateLevel(importance);
+        return new ImportanceConstraint(importance, this.urgency);
+    }
+
+    public ImportanceConstraint changeUrgency(int urgency) {
+        validateLevel(urgency);
+        return new ImportanceConstraint(this.importance, urgency);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
@@ -32,5 +42,11 @@ public class ImportanceConstraint {
     @Override
     public int hashCode() {
         return Objects.hash(importance, urgency);
+    }
+
+    private void validateLevel(int level) {
+        if (level < 1 || level > 9) {
+            throw new IllegalArgumentException("중요도와 긴급도 레벨은 1에서 9 사이여야 합니다.");
+        }
     }
 }
