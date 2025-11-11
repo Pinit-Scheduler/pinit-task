@@ -86,6 +86,15 @@ public class Schedule {
         dependencies.removeIf(dependency -> dependency.getTo().equals(from));
     }
 
+    public void changeDeadline(ZonedDateTime newDeadline) {
+        validateDeadline(newDeadline);
+        this.temporalConstraint = this.temporalConstraint.changeDeadline(newDeadline);
+    }
+
+    public void changeTaskType(TaskType newTaskType) {
+        this.temporalConstraint = this.temporalConstraint.changeTaskType(newTaskType);
+    }
+
     public void start(ZonedDateTime startTime) {
         state.start(this, startTime);
     }
@@ -154,6 +163,12 @@ public class Schedule {
     private void validateDate(ZonedDateTime zdt) {
         if(zdt.isAfter(this.temporalConstraint.getDeadline())) {
             throw new TimeOrderReversedException("일정의 날짜는 데드라인을 초과할 수 없습니다.");
+        }
+    }
+
+    private void validateDeadline(ZonedDateTime newDeadline) {
+        if (newDeadline.isBefore(this.date)) {
+            throw new TimeOrderReversedException("데드라인은 일정 등록 날짜보다 앞설 수 없습니다.");
         }
     }
 }
