@@ -95,6 +95,14 @@ public class Schedule {
         this.temporalConstraint = this.temporalConstraint.changeTaskType(newTaskType);
     }
 
+    public void changeImportance(int newImportance) {
+        this.importanceConstraint = this.importanceConstraint.changeImportance(newImportance);
+    }
+
+    public void changeUrgency(int newUrgency) {
+        this.importanceConstraint = this.importanceConstraint.changeUrgency(newUrgency);
+    }
+
     public void start(ZonedDateTime startTime) {
         state.start(this, startTime);
     }
