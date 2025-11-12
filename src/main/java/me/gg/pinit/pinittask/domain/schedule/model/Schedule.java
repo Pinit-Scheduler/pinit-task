@@ -26,6 +26,9 @@ public class Schedule {
     @Getter
     private Long id;
 
+    @Version
+    private Long version;
+
     @Getter
     private Long ownerId;
 
