@@ -40,6 +40,15 @@ public class ScheduleService {
         return findSchedule;
     }
 
+    @Transactional
+    public void deleteSchedule(Long memberId, Long scheduleId) {
+        Schedule findSchedule = scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new ScheduleNotFoundException("해당 일정을 찾을 수 없습니다."));
+        validateOwner(memberId, findSchedule);
+
+        scheduleRepository.delete(findSchedule);
+    }
+
     private void validateOwner(Long memberId, Schedule schedule) {
         if (!schedule.getOwnerId().equals(memberId)) {
             throw new IllegalArgumentException("Member does not own the schedule");
