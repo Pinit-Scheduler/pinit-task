@@ -17,6 +17,15 @@ public class ScheduleService {
         this.scheduleRepository = scheduleRepository;
     }
 
+    @Transactional(readOnly = true)
+    public Schedule getSchedule(Long memberId, Long scheduleId) {
+        Schedule findSchedule = scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new ScheduleNotFoundException("해당 일정을 찾을 수 없습니다."));
+        validateOwner(memberId, findSchedule);
+
+        return findSchedule;
+    }
+
     @Transactional
     public Schedule addSchedule(Schedule schedule) {
         return scheduleRepository.save(schedule);
