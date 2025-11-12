@@ -69,6 +69,14 @@ public class ScheduleService {
         findSchedule.finish(now);
     }
 
+    @Transactional
+    public void suspendSchedule(Long memberId, Long scheduleId, ZonedDateTime now) {
+        Schedule findSchedule = scheduleRepository.findByIdForUpdate(scheduleId)
+                .orElseThrow(() -> new ScheduleNotFoundException("해당 일정을 찾을 수 없습니다."));
+        validateOwner(memberId, findSchedule);
+        findSchedule.suspend(now);
+    }
+
     private void validateOwner(Long memberId, Schedule schedule) {
         if (!schedule.getOwnerId().equals(memberId)) {
             throw new IllegalArgumentException("Member does not own the schedule");
