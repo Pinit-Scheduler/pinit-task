@@ -1,6 +1,11 @@
 package me.gg.pinit.pinittask.application.schedule.service;
 
+import lombok.RequiredArgsConstructor;
+import me.gg.pinit.pinittask.application.events.EventPublisher;
+import me.gg.pinit.pinittask.application.member.service.MemberService;
 import me.gg.pinit.pinittask.domain.dependency.exception.ScheduleNotFoundException;
+import me.gg.pinit.pinittask.domain.events.DomainEvent;
+import me.gg.pinit.pinittask.domain.events.DomainEvents;
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
 import me.gg.pinit.pinittask.domain.schedule.patch.SchedulePatch;
 import me.gg.pinit.pinittask.domain.schedule.repository.ScheduleRepository;
@@ -8,14 +13,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
+import java.util.Deque;
 
 @Service
+@RequiredArgsConstructor
 public class ScheduleService {
     private final ScheduleRepository scheduleRepository;
+    private final MemberService memberService;
+    private final EventPublisher eventPublisher;
 
-    public ScheduleService(ScheduleRepository scheduleRepository) {
-        this.scheduleRepository = scheduleRepository;
-    }
 
     @Transactional(readOnly = true)
     public Schedule getSchedule(Long memberId, Long scheduleId) {
@@ -59,6 +65,7 @@ public class ScheduleService {
 
         findSchedule.deleteSchedule();
         scheduleRepository.delete(findSchedule);
+        publishEvent();
     }
 
     @Transactional
@@ -68,6 +75,7 @@ public class ScheduleService {
         validateOwner(memberId, findSchedule);
 
         findSchedule.start(now);
+        publishEvent();
     }
 
     @Transactional
@@ -76,6 +84,7 @@ public class ScheduleService {
                 .orElseThrow(() -> new ScheduleNotFoundException("해당 일정을 찾을 수 없습니다."));
         validateOwner(memberId, findSchedule);
         findSchedule.finish(now);
+        publishEvent();
     }
 
     @Transactional
@@ -84,6 +93,7 @@ public class ScheduleService {
                 .orElseThrow(() -> new ScheduleNotFoundException("해당 일정을 찾을 수 없습니다."));
         validateOwner(memberId, findSchedule);
         findSchedule.suspend(now);
+        publishEvent();
     }
 
     @Transactional
@@ -92,11 +102,17 @@ public class ScheduleService {
                 .orElseThrow(() -> new ScheduleNotFoundException("해당 일정을 찾을 수 없습니다."));
         validateOwner(memberId, findSchedule);
         findSchedule.cancel();
+        publishEvent();
     }
 
     private void validateOwner(Long memberId, Schedule schedule) {
         if (!schedule.getOwnerId().equals(memberId)) {
             throw new IllegalArgumentException("Member does not own the schedule");
         }
+    }
+
+    private void publishEvent() {
+        Deque<DomainEvent> queue = DomainEvents.getEventsAndClear();
+        queue.forEach(eventPublisher::publish);
     }
 }
