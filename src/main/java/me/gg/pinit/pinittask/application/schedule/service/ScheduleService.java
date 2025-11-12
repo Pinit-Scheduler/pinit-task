@@ -7,6 +7,8 @@ import me.gg.pinit.pinittask.domain.schedule.repository.ScheduleRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.ZonedDateTime;
+
 @Service
 public class ScheduleService {
     private final ScheduleRepository scheduleRepository;
@@ -46,7 +48,17 @@ public class ScheduleService {
                 .orElseThrow(() -> new ScheduleNotFoundException("해당 일정을 찾을 수 없습니다."));
         validateOwner(memberId, findSchedule);
 
+        findSchedule.deleteSchedule();
         scheduleRepository.delete(findSchedule);
+    }
+
+    @Transactional
+    public void startSchedule(Long memberId, Long scheduleId, ZonedDateTime now) {
+        Schedule findSchedule = scheduleRepository.findByIdForUpdate(scheduleId)
+                .orElseThrow(() -> new ScheduleNotFoundException("해당 일정을 찾을 수 없습니다."));
+        validateOwner(memberId, findSchedule);
+
+        findSchedule.start(now);
     }
 
     private void validateOwner(Long memberId, Schedule schedule) {
