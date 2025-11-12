@@ -12,8 +12,11 @@ import me.gg.pinit.pinittask.domain.schedule.repository.ScheduleRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Deque;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +33,15 @@ public class ScheduleService {
         validateOwner(memberId, findSchedule);
 
         return findSchedule;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Schedule> getScheduleList(Long memberId, LocalDate date) {
+        ZoneId memberZoneById = memberService.findMemberZoneById(memberId);
+        ZonedDateTime startOfDay = date.atStartOfDay(memberZoneById);
+        ZonedDateTime endExclusive = date.plusDays(1).atStartOfDay(memberZoneById);
+
+        return scheduleRepository.findAllByOwnerIdAndDateBetween(memberId, startOfDay, endExclusive);
     }
 
     @Transactional
