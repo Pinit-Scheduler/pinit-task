@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import me.gg.pinit.pinittask.domain.converter.service.ScheduleStateConverter;
 import me.gg.pinit.pinittask.domain.dependency.model.Dependency;
+import me.gg.pinit.pinittask.domain.events.DomainEvents;
+import me.gg.pinit.pinittask.domain.schedule.event.ScheduleDeletedEvent;
 import me.gg.pinit.pinittask.domain.schedule.exception.IllegalDescriptionException;
 import me.gg.pinit.pinittask.domain.schedule.exception.IllegalTitleException;
 import me.gg.pinit.pinittask.domain.schedule.exception.TimeOrderReversedException;
@@ -151,6 +153,9 @@ public class Schedule {
         patch.taskType().ifPresent(this::changeTaskType);
     }
 
+    public void deleteSchedule() {
+        DomainEvents.raise(new ScheduleDeletedEvent(this.id, this.ownerId));
+    }
 
     /**
      * Schedule 패키지 밖에서 사용하지 말 것
