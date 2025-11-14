@@ -3,7 +3,6 @@ package me.gg.pinit.pinittask.domain.schedule.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import me.gg.pinit.pinittask.domain.converter.service.ScheduleStateConverter;
-import me.gg.pinit.pinittask.domain.dependency.model.Dependency;
 import me.gg.pinit.pinittask.domain.events.DomainEvents;
 import me.gg.pinit.pinittask.domain.schedule.event.ScheduleDeletedEvent;
 import me.gg.pinit.pinittask.domain.schedule.exception.IllegalDescriptionException;
@@ -15,8 +14,6 @@ import me.gg.pinit.pinittask.domain.schedule.vo.ScheduleHistory;
 import me.gg.pinit.pinittask.domain.schedule.vo.TemporalConstraint;
 
 import java.time.ZonedDateTime;
-import java.util.HashSet;
-import java.util.Set;
 
 @Entity
 public class Schedule {
@@ -53,9 +50,6 @@ public class Schedule {
     @Convert(converter = ScheduleStateConverter.class)
     private ScheduleState state;
 
-    @OneToMany(mappedBy = "to")
-    private final Set<Dependency> dependencies = new HashSet<>();
-
     protected Schedule() {}
 
     public Schedule(Long ownerId, String title, String description, ZonedDateTime zdt, TemporalConstraint tc, ImportanceConstraint ic) {
@@ -81,15 +75,6 @@ public class Schedule {
     public void setDate(ZonedDateTime zdt) {
         validateDate(zdt);
         this.date = zdt;
-    }
-
-    public void addDependency(Schedule from) {
-        Dependency dependency = new Dependency(from, this);
-        dependencies.add(dependency);
-    }
-
-    public void removeDependency(Schedule from) {
-        dependencies.removeIf(dependency -> dependency.getTo().equals(from));
     }
 
     public void changeDeadline(ZonedDateTime newDeadline) {
@@ -139,11 +124,6 @@ public class Schedule {
 
     public boolean isSuspended() {
         return state instanceof SuspendedState;
-    }
-
-    public boolean isBeforeCompleted() {
-        return dependencies.stream()
-                .allMatch(Dependency::precedenceIsCompleted);
     }
 
     public void patch(SchedulePatch patch) {
