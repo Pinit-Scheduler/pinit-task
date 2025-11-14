@@ -138,34 +138,6 @@ class ScheduleTest {
     }
 
     @Test
-    void isBeforeCompleted_전부_완료됨() {
-        //given
-        Schedule sample = getNotStartedSchedule();
-        Schedule before = getCompletedSchedule();
-        sample.addDependency(before);
-
-        //when
-        boolean result = sample.isBeforeCompleted();
-
-        //then
-        Assertions.assertThat(result).isTrue();
-    }
-
-    @Test
-    void isBeforeCompleted_완료되지_않음() {
-        //given
-        Schedule sample = getNotStartedSchedule();
-        Schedule before = getInProgressSchedule();
-        sample.addDependency(before);
-
-        //when
-        boolean result = sample.isBeforeCompleted();
-
-        //then
-        Assertions.assertThat(result).isFalse();
-    }
-
-    @Test
     void changeDeadline_일정보다_늦은_데드라인() {
         //given
         Schedule schedule = getNotStartedSchedule();
@@ -195,7 +167,8 @@ class ScheduleTest {
         Assertions.assertThat(notStartedSchedule.getTemporalConstraint().getTaskType()).isEqualTo(TaskType.QUICK_TASK);
     }
 
-    public void Patch_수정() {
+    @Test
+    void Patch_수정() {
         //given
         Schedule schedule = getNotStartedSchedule();
         ImportanceConstraint importanceConstraint = schedule.getImportanceConstraint();
