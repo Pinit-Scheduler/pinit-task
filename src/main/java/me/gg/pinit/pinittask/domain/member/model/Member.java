@@ -8,7 +8,9 @@ import me.gg.pinit.pinittask.domain.converter.service.ZoneIdConverter;
 import me.gg.pinit.pinittask.domain.member.exception.ObjectiveNotNullException;
 import me.gg.pinit.pinittask.domain.member.exception.ObjectiveNotPositiveException;
 
-import java.time.*;
+import java.time.Duration;
+import java.time.LocalTime;
+import java.time.ZoneId;
 
 /**
  * 사용자의 목표와 루틴에 대한 정보를 기록하는 도메인
@@ -18,6 +20,7 @@ import java.time.*;
 @Entity
 public class Member {
     @Id
+    @Getter
     @Column(name = "member_id")
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
