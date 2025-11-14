@@ -1,13 +1,14 @@
 package me.gg.pinit.pinittask.domain.dependency.model;
 
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import static me.gg.pinit.pinittask.domain.dependency.model.GraphUtils.getDependenciesFromSchedule;
 import static me.gg.pinit.pinittask.domain.dependency.model.GraphUtils.getDependenciesSample;
-import static me.gg.pinit.pinittask.domain.schedule.model.ScheduleUtils.getNotStartedSchedule;
+import static me.gg.pinit.pinittask.domain.schedule.model.ScheduleUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class GraphTest {
@@ -18,12 +19,10 @@ class GraphTest {
         Schedule now = getNotStartedSchedule(1L);
         Schedule after1 = getNotStartedSchedule(2L);
         Schedule after2 = getNotStartedSchedule(3L);
-        after1.addDependency(now);
-        after2.addDependency(now);
 
-        List<Dependency> dependencies = getDependenciesFromSchedule(after1);
-        dependencies.addAll(getDependenciesFromSchedule(after2));
-
+        List<Dependency> dependencies = new ArrayList<>();
+        dependencies.add(new Dependency(now, after1));
+        dependencies.add(new Dependency(now, after2));
 
         Graph graph = Graph.of(dependencies);
 
@@ -48,39 +47,30 @@ class GraphTest {
     }
 
     @Test
-    void isCycleContained_NoCycle() {
+    void isBeforeCompleted_전부_완료됨() {
         //given
-        List<Dependency> dependenciesSample = getDependenciesSample();
-        Graph graph = Graph.of(dependenciesSample);
+        Schedule sample = getNotStartedSchedule();
+        Schedule before = getCompletedSchedule();
+        Graph graph = Graph.of(List.of(new Dependency(before, sample)));
 
         //when
-        boolean hasCycle = graph.isCycleContained();
+        boolean result = graph.isBeforeCompleted(sample.getId());
 
         //then
-        assertFalse(hasCycle);
+        Assertions.assertThat(result).isTrue();
     }
 
     @Test
-    void isCycleContained_Cycle() {
+    void isBeforeCompleted_완료되지_않음() {
         //given
-        Schedule scheduleA = getNotStartedSchedule(1L);
-        Schedule scheduleB = getNotStartedSchedule(2L);
-        Schedule scheduleC = getNotStartedSchedule(3L);
-
-        scheduleB.addDependency(scheduleA);
-        scheduleC.addDependency(scheduleB);
-        scheduleA.addDependency(scheduleC); // 사이클 생성
-
-        List<Dependency> dependencies = getDependenciesFromSchedule(scheduleA);
-        dependencies.addAll(getDependenciesFromSchedule(scheduleB));
-        dependencies.addAll(getDependenciesFromSchedule(scheduleC));
-
-        Graph graph = Graph.of(dependencies);
+        Schedule sample = getNotStartedSchedule();
+        Schedule before = getInProgressSchedule();
+        Graph graph = Graph.of(List.of(new Dependency(before, sample)));
 
         //when
-        boolean hasCycle = graph.isCycleContained();
+        boolean result = graph.isBeforeCompleted(sample.getId());
 
         //then
-        assertTrue(hasCycle);
+        Assertions.assertThat(result).isFalse();
     }
 }

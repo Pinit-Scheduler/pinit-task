@@ -5,13 +5,11 @@ import me.gg.pinit.pinittask.domain.schedule.model.TaskType;
 import me.gg.pinit.pinittask.domain.schedule.vo.ImportanceConstraint;
 import me.gg.pinit.pinittask.domain.schedule.vo.TemporalConstraint;
 
-import java.lang.reflect.Field;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import static me.gg.pinit.pinittask.domain.schedule.model.ScheduleUtils.getNotStartedSchedule;
 
@@ -42,25 +40,10 @@ public class GraphUtils {
         Schedule after1 = getNotStartedSchedule(4L, 1L, "D", "D", TIME_3, tc3, importanceConstraint);
         Schedule after2 = getNotStartedSchedule(5L, 1L, "E", "E", TIME_3, tc3, importanceConstraint);
         List<Dependency> dependencies = new ArrayList<>();
-        now.addDependency(before1);
-        now.addDependency(before2);
-        after1.addDependency(now);
-        after2.addDependency(now);
-        dependencies.addAll(getDependenciesFromSchedule(now));
-        dependencies.addAll(getDependenciesFromSchedule(after1));
-        dependencies.addAll(getDependenciesFromSchedule(after2));
+        dependencies.add(new Dependency(before1, now));
+        dependencies.add(new Dependency(before2, now));
+        dependencies.add(new Dependency(now, after1));
+        dependencies.add(new Dependency(now, after2));
         return dependencies;
-    }
-
-    public static List<Dependency> getDependenciesFromSchedule(Schedule schedule) {
-        Class<Schedule> cls = Schedule.class;
-        try {
-            Field dependenciesField = cls.getDeclaredField("dependencies");
-            dependenciesField.setAccessible(true);
-            Set<Dependency> nowDependencies = (Set<Dependency>) dependenciesField.get(schedule);
-            return new ArrayList<>(nowDependencies);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
     }
 }
