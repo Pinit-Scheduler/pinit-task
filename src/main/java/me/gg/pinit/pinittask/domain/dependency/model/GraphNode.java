@@ -1,0 +1,51 @@
+package me.gg.pinit.pinittask.domain.dependency.model;
+
+import lombok.Getter;
+
+import java.util.*;
+
+public class GraphNode {
+    @Getter
+    private Long scheduleId;
+    private boolean done;
+    private Set<GraphNode> next = new HashSet<>();
+    private Set<GraphNode> previous = new HashSet<>();
+
+    public GraphNode(Long scheduleId, boolean done) {
+        this.scheduleId = scheduleId;
+        this.done = done;
+    }
+
+    public void addNext(GraphNode next) {
+        this.next.add(next);
+    }
+
+    public void addPrevious(GraphNode previous) {
+        this.previous.add(previous);
+    }
+
+    public List<Long> getNextSchedules() {
+        List<Long> result = new ArrayList<>();
+        for (GraphNode node : next) {
+            result.add(node.getScheduleId());
+        }
+        return result;
+    }
+
+    public boolean isBeforeCompleted() {
+        return previous.stream().allMatch(node -> node.done);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        GraphNode node = (GraphNode) o;
+        return Objects.equals(scheduleId, node.scheduleId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(scheduleId);
+    }
+
+}

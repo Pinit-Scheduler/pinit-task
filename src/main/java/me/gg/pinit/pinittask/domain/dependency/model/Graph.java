@@ -1,13 +1,12 @@
 package me.gg.pinit.pinittask.domain.dependency.model;
 
-import me.gg.pinit.pinittask.domain.dependency.exception.ScheduleNotFoundException;
-
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Graph {
-    private Map<Long, Integer> internalId = new HashMap<>();
-    private Map<Integer, Long> externalId = new HashMap<>();
-    private List<Integer>[] adjList;
+    private Map<Long, GraphNode> nodeMap = new HashMap<>();
+    private CycleChecker cycleChecker;
     private int size;
 
     private Graph() {
@@ -25,116 +24,52 @@ public class Graph {
      */
     public static Graph of(List<Dependency> dependencies) {
         Graph graph = new Graph();
-        graph.setCompressedMap(dependencies);
-        graph.initializeAdjList();
-        graph.connectEdges(dependencies);
+        for (Dependency dependency : dependencies) {
+            Long fromId = dependency.getFrom().getId();
+            Long toId = dependency.getTo().getId();
+            boolean fromDone = dependency.getFrom().isCompleted();
+            boolean toDone = dependency.getTo().isCompleted();
+
+            graph.nodeMap.putIfAbsent(fromId, new GraphNode(fromId, fromDone));
+            graph.nodeMap.putIfAbsent(toId, new GraphNode(toId, toDone));
+
+            GraphNode fromNode = graph.nodeMap.get(fromId);
+            GraphNode toNode = graph.nodeMap.get(toId);
+
+            fromNode.addNext(toNode);
+            toNode.addPrevious(fromNode);
+        }
+        graph.cycleChecker = new CycleChecker(graph.nodeMap);
         return graph;
     }
 
     public List<Long> getNextScheduleIds(Long fromScheduleId) {
-        return adjList[internalScheduleIdFor(fromScheduleId)].stream()
-                .map(this::externalScheduleIdFor)
-                .toList();
+        return nodeMap.get(fromScheduleId).getNextSchedules();
     }
 
-    public boolean isCycleContained() {
-        int[] indeg = getIndegree();
-        Queue<Integer> q = initializeQueueForCycleCheck(indeg);
-        return checkCycle(q, indeg);
+    public boolean isBeforeCompleted(Long scheduleId) {
+        return nodeMap.get(scheduleId).isBeforeCompleted();
     }
 
-    private boolean checkCycle(Queue<Integer> q, int[] indeg) {
-        int removed = 0;
-        while (!q.isEmpty()) {
-            int u = q.poll();
-            removed++;
-            for (int v : adjList[u]) {
-                if (--indeg[v] == 0) q.add(v);
-            }
-        }
-        return removed != size;
-    }
+    public boolean hasCycle(List<Dependency> removedDependencies, List<Dependency> addedDependencies) {
+        return cycleChecker.hasCycleAfterChanges(removedDependencies, addedDependencies);
 
-    private Queue<Integer> initializeQueueForCycleCheck(int[] indeg) {
-        Queue<Integer> q = new ArrayDeque<>();
-        for (int i = 0; i < size; i++) if (indeg[i] == 0) q.add(i);
-        return q;
-    }
-
-    private int[] getIndegree() {
-        int[] indeg = new int[size];
-        for (int u = 0; u < size; u++)
-            for (int v : adjList[u]) indeg[v]++;
-        return indeg;
-    }
-
-    private void setCompressedMap(List<Dependency> dependencies) {
-        for (Dependency dependency : dependencies) {
-            Long fromId = dependency.getFrom().getId();
-            Long toId = dependency.getTo().getId();
-            insertToMap(fromId);
-            insertToMap(toId);
-        }
-    }
-
-    private void initializeAdjList() {
-        adjList = new ArrayList[size];
-        for (int i = 0; i < size; i++) {
-            adjList[i] = new ArrayList<>();
-        }
-    }
-
-    private void connectEdges(List<Dependency> dependencies) {
-        for (Dependency dependency : dependencies) {
-            Long fromId = dependency.getFrom().getId();
-            Long toId = dependency.getTo().getId();
-            insertEdge(fromId, toId);
-        }
-    }
-
-    private void insertEdge(Long fromScheduleId, Long toScheduleId) {
-        Integer fromInternalId = internalScheduleIdFor(fromScheduleId);
-        Integer toInternalId = internalScheduleIdFor(toScheduleId);
-        adjList[fromInternalId].add(toInternalId);
-    }
-
-    private void insertToMap(Long scheduleId) {
-        if (!internalId.containsKey(scheduleId)) {
-            int id = size++;
-            internalId.put(scheduleId, id);
-            externalId.put(id, scheduleId);
-        }
-    }
-
-    private Integer internalScheduleIdFor(Long scheduleId) {
-        return internalId.computeIfAbsent(scheduleId, k -> {
-            throw new ScheduleNotFoundException("일정을 찾을 수 없습니다.");
-        });
-    }
-
-    private Long externalScheduleIdFor(Integer internalId) {
-        return externalId.computeIfAbsent(internalId, k -> {
-            throw new ScheduleNotFoundException("일정을 찾을 수 없습니다.");
-        });
     }
 }
-/**
- * 1. 입력의 형식을 우선 파악한다.
- * 2. 사이클을 검사한다.
- * <p>
- * 필요한 정보
- * 이전 일정이 모두 완료되었는지 -> 바로 이전 일정만 봐도 충분함
- * <p>
- * 현재 정점의 이전 일정과 다음 일정 가장 가까운 시작시간, 가장 가까운 종료 시간 확인
- * <p>
- * 그래프
- */
 
 /**
- * 스케줄 삭제 시, 의존은 나중에 삭제되도록
- * 이벤트로 분리한다? 트랜잭션 경계 끊기?
- * - 의존이 삭제되지 않았다고 스케줄을 삭제하는 것을 롤백하는 것은 문제가 있다.
- * - 확실히 의존과 스케줄은 별도의 도메인으로 분리되어야 한다.
- * <p>
- * 따라서, 스케줄 참조하는 동안 NPE가 발생하는 문제는 스케줄 쪽에서 잘 처리하는 방식으로 가야 한다.
+ * 1. 의존관계 추가/제거 대비
+ * 2. 사이클 체크 - 의존관계 변화 반영 - 사이클 체커
+ * 3. 이전 일정 완료 여부 체크 -
+ * 전체 맵이 필요한가?
+ * - 사이클 체크 -> 전체 맵이 필요함
+ * - 이전/이후 일정 완료 여부 체크 -> 해당 노드와 그 옆 노드만 알면 됨
+ * 조회/수정 단위는 반드시 해당 스케줄과 이전/이후 스케줄로 한정된다.
+ * 전체 노드를 알 필요가 없다.
+ *
+ * 사이클 체크의 경우
+ * 전체 맵이 필요하다.
+ * 맵이 바뀔 경우를 대비할 수 있어야 한다.
+ *
+ * 일단 사이클 체크하고 함께 만들어두자.
  */
