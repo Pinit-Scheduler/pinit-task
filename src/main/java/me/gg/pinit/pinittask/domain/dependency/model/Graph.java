@@ -8,7 +8,6 @@ public class Graph {
     private Map<Long, Integer> internalId = new HashMap<>();
     private Map<Integer, Long> externalId = new HashMap<>();
     private List<Integer>[] adjList;
-    private int[] indegree;
     private int size;
 
     private Graph() {
@@ -30,10 +29,6 @@ public class Graph {
         graph.initializeAdjList();
         graph.connectEdges(dependencies);
         return graph;
-    }
-
-    public boolean hasCycle() {
-        return false;
     }
 
     public List<Long> getNextScheduleIds(Long fromScheduleId) {
