@@ -40,6 +40,14 @@ public class GraphNode {
         return result;
     }
 
+    public List<Long> getPreviousSchedules() {
+        List<Long> result = new ArrayList<>();
+        for (GraphNode node : previous) {
+            result.add(node.getScheduleId());
+        }
+        return result;
+    }
+
     public boolean isBeforeCompleted() {
         return previous.stream().allMatch(node -> node.done);
     }
