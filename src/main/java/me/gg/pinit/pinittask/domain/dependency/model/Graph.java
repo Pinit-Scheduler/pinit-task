@@ -47,6 +47,10 @@ public class Graph {
         return nodeMap.get(fromScheduleId).getNextSchedules();
     }
 
+    public List<Long> getPreviousScheduleIds(Long toScheduleId) {
+        return nodeMap.get(toScheduleId).getPreviousSchedules();
+    }
+
     public boolean isBeforeCompleted(Long scheduleId) {
         return nodeMap.get(scheduleId).isBeforeCompleted();
     }
