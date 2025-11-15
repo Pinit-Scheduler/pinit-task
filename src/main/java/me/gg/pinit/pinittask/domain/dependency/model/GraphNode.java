@@ -24,6 +24,14 @@ public class GraphNode {
         this.previous.add(previous);
     }
 
+    public void removeNext(GraphNode next) {
+        this.next.remove(next);
+    }
+
+    public void removePrevious(GraphNode previous) {
+        this.previous.remove(previous);
+    }
+
     public List<Long> getNextSchedules() {
         List<Long> result = new ArrayList<>();
         for (GraphNode node : next) {
@@ -34,6 +42,10 @@ public class GraphNode {
 
     public boolean isBeforeCompleted() {
         return previous.stream().allMatch(node -> node.done);
+    }
+
+    public int getIndegree() {
+        return previous.size();
     }
 
     @Override
