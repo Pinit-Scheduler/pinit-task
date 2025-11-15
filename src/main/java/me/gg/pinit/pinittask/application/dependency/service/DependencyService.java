@@ -42,4 +42,15 @@ public class DependencyService {
     public void saveAll(List<Dependency> dependencies) {
         dependencyRepository.saveAll(dependencies);
     }
+
+    public void deleteAll(List<Dependency> dependencies) {
+        dependencyRepository.deleteAll(dependencies);
+    }
+
+    public void deleteWithScheduleId(Long memberId, Long scheduleId) {
+        List<Dependency> dependenciesToDelete = dependencyRepository.findAllByOwnerId(memberId).stream()
+                .filter(dependency -> dependency.getFrom().getId().equals(scheduleId) || dependency.getTo().getId().equals(scheduleId))
+                .toList();
+        dependencyRepository.deleteAll(dependenciesToDelete);
+    }
 }
