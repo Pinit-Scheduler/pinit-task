@@ -16,7 +16,7 @@ public class MemberService {
     }
 
     @Transactional(readOnly = true)
-    public ZoneId findMemberZoneById(Long memberId) {
+    public ZoneId findZoneIdOfMember(Long memberId) {
         return memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberNotFoundException("Member not found")).getZoneId();
     }

@@ -37,7 +37,7 @@ public class ScheduleService {
 
     @Transactional(readOnly = true)
     public List<Schedule> getScheduleList(Long memberId, LocalDate date) {
-        ZoneId memberZoneById = memberService.findMemberZoneById(memberId);
+        ZoneId memberZoneById = memberService.findZoneIdOfMember(memberId);
         ZonedDateTime startOfDay = date.atStartOfDay(memberZoneById);
         ZonedDateTime endExclusive = date.plusDays(1).atStartOfDay(memberZoneById);
 
