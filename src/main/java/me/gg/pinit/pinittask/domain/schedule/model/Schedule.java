@@ -36,7 +36,7 @@ public class Schedule {
     private String description;
 
     @Getter
-    private ZonedDateTime date;
+    private ZonedDateTime startTime;
 
     @Getter
     @Embedded
@@ -59,7 +59,7 @@ public class Schedule {
         setDescription(description);
         this.temporalConstraint = tc;
         this.importanceConstraint = ic;
-        setDate(zdt);
+        setStartTime(zdt);
         this.state = new NotStartedState();
     }
 
@@ -102,7 +102,7 @@ public class Schedule {
         patch.title().ifPresent(this::setTitle);
         patch.description().ifPresent(this::setDescription);
         patch.deadline().ifPresent(this::changeDeadline);
-        patch.date().ifPresent(this::setDate);
+        patch.date().ifPresent(this::setStartTime);
         patch.taskType().ifPresent(this::changeTaskType);
     }
 
@@ -120,9 +120,9 @@ public class Schedule {
         this.description = description;
     }
 
-    public void setDate(ZonedDateTime zdt) {
-        validateDate(zdt);
-        this.date = zdt;
+    public void setStartTime(ZonedDateTime zdt) {
+        validateStartTime(zdt);
+        this.startTime = zdt;
     }
 
     public void changeDeadline(ZonedDateTime newDeadline) {
@@ -176,14 +176,14 @@ public class Schedule {
         }
     }
 
-    private void validateDate(ZonedDateTime zdt) {
+    private void validateStartTime(ZonedDateTime zdt) {
         if(zdt.isAfter(this.temporalConstraint.getDeadline())) {
             throw new TimeOrderReversedException("일정의 날짜는 데드라인을 초과할 수 없습니다.");
         }
     }
 
     private void validateDeadline(ZonedDateTime newDeadline) {
-        if (newDeadline.isBefore(this.date)) {
+        if (newDeadline.isBefore(this.startTime)) {
             throw new TimeOrderReversedException("데드라인은 일정 등록 날짜보다 앞설 수 없습니다.");
         }
     }
