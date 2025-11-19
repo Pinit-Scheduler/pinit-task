@@ -34,7 +34,7 @@ public class InProgressState implements ScheduleState{
     public void finish(Schedule ctx, ZonedDateTime finishTime) {
         ScheduleHistory history = ctx.getHistory();
         ctx.updateHistoryTo(history.recordStop(finishTime));
-        DomainEvents.raise(new ScheduleCompletedEvent(ownerFor(ctx), taskTypeFor(ctx), elapsedTimeFor(ctx)));
+        DomainEvents.raise(new ScheduleCompletedEvent(ownerFor(ctx), taskTypeFor(ctx), elapsedTimeFor(ctx), startTimeFor(ctx)));
         ctx.setState(new CompletedState());
     }
 
@@ -53,5 +53,9 @@ public class InProgressState implements ScheduleState{
 
     private TaskType taskTypeFor(Schedule ctx) {
         return ctx.getTemporalConstraint().getTaskType();
+    }
+
+    private ZonedDateTime startTimeFor(Schedule ctx) {
+        return ctx.getDesignatedStartTime();
     }
 }

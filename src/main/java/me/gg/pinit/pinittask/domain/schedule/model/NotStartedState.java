@@ -28,7 +28,7 @@ public class NotStartedState implements ScheduleState{
 
     @Override
     public void finish(Schedule ctx, ZonedDateTime finishTime) {
-        DomainEvents.raise(new ScheduleCompletedEvent(ownerFor(ctx), taskTypeFor(ctx), elapsedTimeFor(ctx)));
+        DomainEvents.raise(new ScheduleCompletedEvent(ownerFor(ctx), taskTypeFor(ctx), elapsedTimeFor(ctx), startTimeFor(ctx)));
         recordStart(ctx, finishTime);
         recordFinish(ctx, finishTime);
         ctx.setState(new CompletedState());
@@ -60,4 +60,9 @@ public class NotStartedState implements ScheduleState{
     private TaskType taskTypeFor(Schedule ctx) {
         return ctx.getTemporalConstraint().getTaskType();
     }
+
+    private ZonedDateTime startTimeFor(Schedule ctx) {
+        return ctx.getDesignatedStartTime();
+    }
+
 }

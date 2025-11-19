@@ -21,7 +21,7 @@ public class CompletedState implements ScheduleState{
 
     @Override
     public void cancel(Schedule ctx) {
-        DomainEvents.raise(new ScheduleCanceledEvent(ownerFor(ctx), taskTypeFor(ctx), elapsedTimeFor(ctx)));
+        DomainEvents.raise(new ScheduleCanceledEvent(ownerFor(ctx), taskTypeFor(ctx), elapsedTimeFor(ctx), startTimeFor(ctx)));
         ctx.setState(new NotStartedState());
     }
 
@@ -45,5 +45,9 @@ public class CompletedState implements ScheduleState{
 
     private TaskType taskTypeFor(Schedule ctx) {
         return ctx.getTemporalConstraint().getTaskType();
+    }
+
+    private ZonedDateTime startTimeFor(Schedule ctx) {
+        return ctx.getDesignatedStartTime();
     }
 }

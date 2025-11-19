@@ -7,39 +7,36 @@ import java.time.Duration;
 public enum TaskType implements Recorder{
     DEEP_WORK {
         @Override
-        public void record(Schedule ctx, Statistics statistics) {
-            statistics.addDeepWorkDuration(durationFor(ctx));
+        public void record(Statistics statistics, Duration duration) {
+            statistics.addDeepWorkDuration(duration);
         }
 
         @Override
-        public void rollback(Schedule ctx, Statistics statistics) {
-            statistics.removeDeepWorkDuration(durationFor(ctx));
+        public void rollback(Statistics statistics, Duration duration) {
+            statistics.removeDeepWorkDuration(duration);
         }
     },
     QUICK_TASK {
         @Override
-        public void record(Schedule ctx, Statistics statistics) {
-            statistics.addQuickWorkDuration(durationFor(ctx));
+        public void record(Statistics statistics, Duration duration) {
+            statistics.addQuickWorkDuration(duration);
         }
 
         @Override
-        public void rollback(Schedule ctx, Statistics statistics) {
-            statistics.removeQuickWorkDuration(durationFor(ctx));
+        public void rollback(Statistics statistics, Duration duration) {
+            statistics.removeQuickWorkDuration(duration);
         }
     },
     ADMIN_TASK {
         @Override
-        public void record(Schedule ctx, Statistics statistics) {
-            statistics.addAdminWorkDuration(durationFor(ctx));
+        public void record(Statistics statistics, Duration duration) {
+            statistics.addAdminWorkDuration(duration);
         }
 
         @Override
-        public void rollback(Schedule ctx, Statistics statistics) {
-            statistics.removeAdminWorkDuration(durationFor(ctx));
+        public void rollback(Statistics statistics, Duration duration) {
+            statistics.removeAdminWorkDuration(duration);
         }
     };
 
-    private static Duration durationFor(Schedule ctx) {
-        return ctx.getHistory().getElapsedTime();
-    }
 }
