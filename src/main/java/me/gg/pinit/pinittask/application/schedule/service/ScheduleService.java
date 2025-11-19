@@ -41,7 +41,7 @@ public class ScheduleService {
         ZonedDateTime startOfDay = date.atStartOfDay(memberZoneById);
         ZonedDateTime endExclusive = date.plusDays(1).atStartOfDay(memberZoneById);
 
-        return scheduleRepository.findAllByOwnerIdAndDateBetween(memberId, startOfDay, endExclusive);
+        return scheduleRepository.findAllByOwnerIdAndDesignatedStartTimeBetween(memberId, startOfDay, endExclusive);
     }
 
     @Transactional

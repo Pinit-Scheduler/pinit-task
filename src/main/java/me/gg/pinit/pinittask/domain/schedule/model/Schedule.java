@@ -36,7 +36,7 @@ public class Schedule {
     private String description;
 
     @Getter
-    private ZonedDateTime startTime;
+    private ZonedDateTime designatedStartTime;
 
     @Getter
     @Embedded
@@ -59,7 +59,7 @@ public class Schedule {
         setDescription(description);
         this.temporalConstraint = tc;
         this.importanceConstraint = ic;
-        setStartTime(zdt);
+        setDesignatedStartTime(zdt);
         this.state = new NotStartedState();
     }
 
@@ -102,7 +102,7 @@ public class Schedule {
         patch.title().ifPresent(this::setTitle);
         patch.description().ifPresent(this::setDescription);
         patch.deadline().ifPresent(this::changeDeadline);
-        patch.date().ifPresent(this::setStartTime);
+        patch.date().ifPresent(this::setDesignatedStartTime);
         patch.taskType().ifPresent(this::changeTaskType);
     }
 
@@ -120,9 +120,9 @@ public class Schedule {
         this.description = description;
     }
 
-    public void setStartTime(ZonedDateTime zdt) {
+    public void setDesignatedStartTime(ZonedDateTime zdt) {
         validateStartTime(zdt);
-        this.startTime = zdt;
+        this.designatedStartTime = zdt;
     }
 
     public void changeDeadline(ZonedDateTime newDeadline) {
@@ -183,7 +183,7 @@ public class Schedule {
     }
 
     private void validateDeadline(ZonedDateTime newDeadline) {
-        if (newDeadline.isBefore(this.startTime)) {
+        if (newDeadline.isBefore(this.designatedStartTime)) {
             throw new TimeOrderReversedException("데드라인은 일정 등록 날짜보다 앞설 수 없습니다.");
         }
     }

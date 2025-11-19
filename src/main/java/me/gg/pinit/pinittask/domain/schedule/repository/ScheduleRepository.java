@@ -15,5 +15,5 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
     @Query("SELECT s FROM Schedule s WHERE s.id = :scheduleId")
     Optional<Schedule> findByIdForUpdate(Long scheduleId);
 
-    List<Schedule> findAllByOwnerIdAndDateBetween(Long ownerId, ZonedDateTime start, ZonedDateTime end);
+    List<Schedule> findAllByOwnerIdAndDesignatedStartTimeBetween(Long ownerId, ZonedDateTime start, ZonedDateTime end);
 }

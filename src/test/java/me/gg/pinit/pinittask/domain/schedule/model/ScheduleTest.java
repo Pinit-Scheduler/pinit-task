@@ -119,10 +119,10 @@ class ScheduleTest {
         Schedule schedule = getNotStartedSchedule();
         ZonedDateTime newDate = ZonedDateTime.of(2025, 10, 2, 10, 0, 0, 0, ZonedDateTime.now().getZone());
         //when
-        schedule.setStartTime(newDate);
+        schedule.setDesignatedStartTime(newDate);
 
         //then
-        Assertions.assertThat(schedule.getStartTime()).isEqualTo(newDate);
+        Assertions.assertThat(schedule.getDesignatedStartTime()).isEqualTo(newDate);
     }
     
     @Test
@@ -132,7 +132,7 @@ class ScheduleTest {
         ZonedDateTime invalidDate = ZonedDateTime.of(2100, 1, 1, 0, 0, 0, 0, ZonedDateTime.now().getZone());
 
         //when, then
-        assertThatThrownBy(() -> schedule.setStartTime(invalidDate))
+        assertThatThrownBy(() -> schedule.setDesignatedStartTime(invalidDate))
                 .isInstanceOf(TimeOrderReversedException.class)
                 .hasMessage("일정의 날짜는 데드라인을 초과할 수 없습니다.");
     }
@@ -180,7 +180,7 @@ class ScheduleTest {
         schedule.patch(schedulePatch);
 
         //then
-        Assertions.assertThat(schedule.getStartTime()).isEqualTo(ENROLLED_TIME.plusDays(1));
+        Assertions.assertThat(schedule.getDesignatedStartTime()).isEqualTo(ENROLLED_TIME.plusDays(1));
         Assertions.assertThat(schedule.getTemporalConstraint().getTaskType()).isEqualTo(TaskType.QUICK_TASK);
         Assertions.assertThat(schedule.getImportanceConstraint()).isEqualTo(importanceConstraint);
         Assertions.assertThat(schedule.getTitle()).isEqualTo(title);
