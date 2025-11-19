@@ -5,6 +5,7 @@ import lombok.Getter;
 import me.gg.pinit.pinittask.domain.converter.service.ScheduleStateConverter;
 import me.gg.pinit.pinittask.domain.events.DomainEvents;
 import me.gg.pinit.pinittask.domain.schedule.event.ScheduleDeletedEvent;
+import me.gg.pinit.pinittask.domain.schedule.exception.IllegalChangeException;
 import me.gg.pinit.pinittask.domain.schedule.exception.IllegalDescriptionException;
 import me.gg.pinit.pinittask.domain.schedule.exception.IllegalTitleException;
 import me.gg.pinit.pinittask.domain.schedule.exception.TimeOrderReversedException;
@@ -62,38 +63,6 @@ public class Schedule {
         this.state = new NotStartedState();
     }
 
-    public void setTitle(String title) {
-        validateTitle(title);
-        this.title = title;
-    }
-
-    public void setDescription(String description) {
-        validateDescrption(description);
-        this.description = description;
-    }
-
-    public void setDate(ZonedDateTime zdt) {
-        validateDate(zdt);
-        this.date = zdt;
-    }
-
-    public void changeDeadline(ZonedDateTime newDeadline) {
-        validateDeadline(newDeadline);
-        this.temporalConstraint = this.temporalConstraint.changeDeadline(newDeadline);
-    }
-
-    public void changeTaskType(TaskType newTaskType) {
-        this.temporalConstraint = this.temporalConstraint.changeTaskType(newTaskType);
-    }
-
-    public void changeImportance(int newImportance) {
-        this.importanceConstraint = this.importanceConstraint.changeImportance(newImportance);
-    }
-
-    public void changeUrgency(int newUrgency) {
-        this.importanceConstraint = this.importanceConstraint.changeUrgency(newUrgency);
-    }
-
     public void start(ZonedDateTime startTime) {
         state.start(this, startTime);
     }
@@ -127,6 +96,7 @@ public class Schedule {
     }
 
     public void patch(SchedulePatch patch) {
+        checkStateIsNotCompleted();
         patch.importance().ifPresent(this::changeImportance);
         patch.urgency().ifPresent(this::changeUrgency);
         patch.title().ifPresent(this::setTitle);
@@ -140,6 +110,38 @@ public class Schedule {
         DomainEvents.raise(new ScheduleDeletedEvent(this.id, this.ownerId));
     }
 
+    public void setTitle(String title) {
+        validateTitle(title);
+        this.title = title;
+    }
+
+    public void setDescription(String description) {
+        validateDescrption(description);
+        this.description = description;
+    }
+
+    public void setDate(ZonedDateTime zdt) {
+        validateDate(zdt);
+        this.date = zdt;
+    }
+
+    public void changeDeadline(ZonedDateTime newDeadline) {
+        validateDeadline(newDeadline);
+        this.temporalConstraint = this.temporalConstraint.changeDeadline(newDeadline);
+    }
+
+    public void changeTaskType(TaskType newTaskType) {
+        this.temporalConstraint = this.temporalConstraint.changeTaskType(newTaskType);
+    }
+
+    public void changeImportance(int newImportance) {
+        this.importanceConstraint = this.importanceConstraint.changeImportance(newImportance);
+    }
+
+    public void changeUrgency(int newUrgency) {
+        this.importanceConstraint = this.importanceConstraint.changeUrgency(newUrgency);
+    }
+
     /**
      * Schedule 패키지 밖에서 사용하지 말 것
      * @param state
@@ -150,6 +152,12 @@ public class Schedule {
 
     void updateHistoryTo(ScheduleHistory history) {
         this.history = history;
+    }
+
+    private void checkStateIsNotCompleted() {
+        if (!isNotStarted()) {
+            throw new IllegalChangeException("시작되지 않은 일정만 수정할 수 있습니다.");
+        }
     }
 
     private void validateTitle(String title) {
