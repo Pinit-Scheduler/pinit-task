@@ -13,16 +13,19 @@ public class Statistics {
     @GeneratedValue
     private Long id;
 
+    @Version
+    private Long version;
+
     private Long memberId;
 
     private ZonedDateTime startOfWeek;
 
     @Convert(converter = DurationConverter.class)
-    private Duration deepWorkDuration;
+    private Duration deepWorkElapsedTime;
     @Convert(converter = DurationConverter.class)
-    private Duration adminWorkDuration;
+    private Duration adminWorkElapsedTime;
     @Convert(converter = DurationConverter.class)
-    private Duration totalWorkDuration;
+    private Duration totalWorkElapsedTime;
 
     private int completedTaskCount;
     private int archivedDailyObjectiveCount;
@@ -33,36 +36,36 @@ public class Statistics {
     public Statistics(Long memberId, ZonedDateTime startOfWeek) {
         this.memberId = memberId;
         this.startOfWeek = startOfWeek;
-        this.deepWorkDuration = Duration.ZERO;
-        this.adminWorkDuration = Duration.ZERO;
+        this.deepWorkElapsedTime = Duration.ZERO;
+        this.adminWorkElapsedTime = Duration.ZERO;
     }
 
     public void addDeepWorkDuration(Duration duration) {
-        this.deepWorkDuration = this.deepWorkDuration.plus(duration);
-        this.totalWorkDuration = this.totalWorkDuration.plus(duration);
+        this.deepWorkElapsedTime = this.deepWorkElapsedTime.plus(duration);
+        this.totalWorkElapsedTime = this.totalWorkElapsedTime.plus(duration);
     }
 
     public void removeDeepWorkDuration(Duration duration) {
-        this.deepWorkDuration = this.deepWorkDuration.minus(duration);
-        this.totalWorkDuration = this.totalWorkDuration.minus(duration);
+        this.deepWorkElapsedTime = this.deepWorkElapsedTime.minus(duration);
+        this.totalWorkElapsedTime = this.totalWorkElapsedTime.minus(duration);
     }
 
     public void addAdminWorkDuration(Duration duration) {
-        this.adminWorkDuration = this.adminWorkDuration.plus(duration);
-        this.totalWorkDuration = this.totalWorkDuration.plus(duration);
+        this.adminWorkElapsedTime = this.adminWorkElapsedTime.plus(duration);
+        this.totalWorkElapsedTime = this.totalWorkElapsedTime.plus(duration);
     }
 
     public void removeAdminWorkDuration(Duration duration) {
-        this.adminWorkDuration = this.adminWorkDuration.minus(duration);
-        this.totalWorkDuration = this.totalWorkDuration.minus(duration);
+        this.adminWorkElapsedTime = this.adminWorkElapsedTime.minus(duration);
+        this.totalWorkElapsedTime = this.totalWorkElapsedTime.minus(duration);
     }
 
     public void addQuickWorkDuration(Duration duration) {
-        this.totalWorkDuration = this.totalWorkDuration.plus(duration);
+        this.totalWorkElapsedTime = this.totalWorkElapsedTime.plus(duration);
     }
 
     public void removeQuickWorkDuration(Duration duration) {
-        this.totalWorkDuration = this.totalWorkDuration.minus(duration);
+        this.totalWorkElapsedTime = this.totalWorkElapsedTime.minus(duration);
     }
 }
 
