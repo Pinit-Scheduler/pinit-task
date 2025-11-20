@@ -14,8 +14,8 @@ public class CycleChecker {
         for (Dependency dep : removedDependencies) {
             long from = dep.getFrom().getId();
             long to = dep.getTo().getId();
-            GraphNode fromNode = nodeMap.computeIfAbsent(from, k -> new GraphNode(k, dep.getFrom().isCompleted()));
-            GraphNode toNode = nodeMap.computeIfAbsent(to, k -> new GraphNode(k, dep.getTo().isCompleted()));
+            GraphNode fromNode = nodeMap.computeIfAbsent(from, k -> new GraphNode(k));
+            GraphNode toNode = nodeMap.computeIfAbsent(to, k -> new GraphNode(k));
             fromNode.removeNext(toNode);
             toNode.removePrevious(fromNode);
         }
@@ -23,8 +23,8 @@ public class CycleChecker {
         for (Dependency dep : addedDependencies) {
             long from = dep.getFrom().getId();
             long to = dep.getTo().getId();
-            GraphNode fromNode = nodeMap.computeIfAbsent(from, k -> new GraphNode(k, dep.getFrom().isCompleted()));
-            GraphNode toNode = nodeMap.computeIfAbsent(to, k -> new GraphNode(k, dep.getTo().isCompleted()));
+            GraphNode fromNode = nodeMap.computeIfAbsent(from, k -> new GraphNode(k));
+            GraphNode toNode = nodeMap.computeIfAbsent(to, k -> new GraphNode(k));
             fromNode.addNext(toNode);
             toNode.addPrevious(fromNode);
         }

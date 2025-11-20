@@ -30,8 +30,8 @@ public class Graph {
             boolean fromDone = dependency.getFrom().isCompleted();
             boolean toDone = dependency.getTo().isCompleted();
 
-            graph.nodeMap.putIfAbsent(fromId, new GraphNode(fromId, fromDone));
-            graph.nodeMap.putIfAbsent(toId, new GraphNode(toId, toDone));
+            graph.nodeMap.putIfAbsent(fromId, new GraphNode(fromId));
+            graph.nodeMap.putIfAbsent(toId, new GraphNode(toId));
 
             GraphNode fromNode = graph.nodeMap.get(fromId);
             GraphNode toNode = graph.nodeMap.get(toId);
@@ -49,10 +49,6 @@ public class Graph {
 
     public List<Long> getPreviousScheduleIds(Long toScheduleId) {
         return nodeMap.get(toScheduleId).getPreviousSchedules();
-    }
-
-    public boolean isBeforeCompleted(Long scheduleId) {
-        return nodeMap.get(scheduleId).isBeforeCompleted();
     }
 
     public boolean hasCycle(List<Dependency> removedDependencies, List<Dependency> addedDependencies) {

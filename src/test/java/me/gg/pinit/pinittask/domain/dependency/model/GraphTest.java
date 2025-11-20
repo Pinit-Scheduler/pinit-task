@@ -1,14 +1,13 @@
 package me.gg.pinit.pinittask.domain.dependency.model;
 
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static me.gg.pinit.pinittask.domain.dependency.model.GraphUtils.getDependenciesSample;
-import static me.gg.pinit.pinittask.domain.schedule.model.ScheduleUtils.*;
+import static me.gg.pinit.pinittask.domain.schedule.model.ScheduleUtils.getNotStartedSchedule;
 import static org.junit.jupiter.api.Assertions.*;
 
 class GraphTest {
@@ -44,33 +43,5 @@ class GraphTest {
 
         //then
         assertNotNull(graph);
-    }
-
-    @Test
-    void isBeforeCompleted_전부_완료됨() {
-        //given
-        Schedule sample = getNotStartedSchedule();
-        Schedule before = getCompletedSchedule();
-        Graph graph = Graph.of(List.of(new Dependency(before, sample)));
-
-        //when
-        boolean result = graph.isBeforeCompleted(sample.getId());
-
-        //then
-        Assertions.assertThat(result).isTrue();
-    }
-
-    @Test
-    void isBeforeCompleted_완료되지_않음() {
-        //given
-        Schedule sample = getNotStartedSchedule();
-        Schedule before = getInProgressSchedule();
-        Graph graph = Graph.of(List.of(new Dependency(before, sample)));
-
-        //when
-        boolean result = graph.isBeforeCompleted(sample.getId());
-
-        //then
-        Assertions.assertThat(result).isFalse();
     }
 }

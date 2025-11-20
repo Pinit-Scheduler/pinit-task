@@ -7,13 +7,11 @@ import java.util.*;
 public class GraphNode {
     @Getter
     private Long scheduleId;
-    private boolean done;
     private Set<GraphNode> next = new HashSet<>();
     private Set<GraphNode> previous = new HashSet<>();
 
-    public GraphNode(Long scheduleId, boolean done) {
+    public GraphNode(Long scheduleId) {
         this.scheduleId = scheduleId;
-        this.done = done;
     }
 
     public void addNext(GraphNode next) {
@@ -48,9 +46,6 @@ public class GraphNode {
         return result;
     }
 
-    public boolean isBeforeCompleted() {
-        return previous.stream().allMatch(node -> node.done);
-    }
 
     public int getIndegree() {
         return previous.size();
