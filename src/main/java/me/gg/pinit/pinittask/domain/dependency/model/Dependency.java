@@ -6,6 +6,15 @@ import me.gg.pinit.pinittask.domain.dependency.exception.ScheduleAlreadyRemovedE
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
 
 @Entity
+@Table(
+        name = "dependencies",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_dependency_from_to_schedule",
+                        columnNames = {"from_schedule_id", "to_schedule_id"}
+                )
+        }
+)
 public class Dependency {
     @Id
     @Column(name = "dependency_id")
