@@ -3,6 +3,7 @@ package me.gg.pinit.pinittask.application.dependency.service;
 import me.gg.pinit.pinittask.domain.dependency.model.Dependency;
 import me.gg.pinit.pinittask.domain.dependency.model.Graph;
 import me.gg.pinit.pinittask.domain.dependency.repository.DependencyRepository;
+import me.gg.pinit.pinittask.domain.dependency.repository.FromToPair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,12 +24,6 @@ public class DependencyService {
         return graph.hasCycle(removedDependencies, addedDependencies);
     }
 
-    @Transactional(readOnly = true)
-    public boolean isBeforeCompleted(Long memberId, Long scheduleId) {
-        List<Dependency> allByOwnerId = dependencyRepository.findAllByOwnerId(memberId);
-        Graph graph = Graph.of(allByOwnerId);
-        return graph.isBeforeCompleted(scheduleId);
-    }
 
     @Transactional(readOnly = true)
     public List<Long> getNextScheduleIds(Long memberId, Long scheduleId) {
@@ -47,6 +42,14 @@ public class DependencyService {
     @Transactional
     public void saveAll(List<Dependency> dependencies) {
         dependencyRepository.saveAll(dependencies);
+    }
+
+    @Transactional
+    public void deleteAll(List<Dependency> dependencies) {
+        List<FromToPair> fromToPairs = dependencies.stream()
+                .map(dependency -> new FromToPair(dependency.getFromId(), dependency.getToId()))
+                .toList();
+        dependencyRepository.deleteByFromToPairs(fromToPairs);
     }
 
     @Transactional
