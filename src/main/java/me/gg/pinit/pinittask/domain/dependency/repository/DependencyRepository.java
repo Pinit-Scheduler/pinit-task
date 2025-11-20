@@ -12,6 +12,6 @@ public interface DependencyRepository extends JpaRepository<Dependency, Long> {
     List<Dependency> findAllByOwnerId(Long ownerId);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("DELETE FROM Dependency d WHERE d.from.id = :scheduleId OR d.to.id = :scheduleId")
+    @Query("DELETE FROM Dependency d WHERE d.fromId = :scheduleId OR d.toId = :scheduleId")
     int deleteAllRelatedToSchedule(@Param("scheduleId") Long scheduleId);
 }

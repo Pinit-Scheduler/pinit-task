@@ -12,19 +12,19 @@ public class CycleChecker {
     public boolean hasCycleAfterChanges(List<Dependency> removedDependencies,
                                         List<Dependency> addedDependencies) {
         for (Dependency dep : removedDependencies) {
-            long from = dep.getFrom().getId();
-            long to = dep.getTo().getId();
-            GraphNode fromNode = nodeMap.computeIfAbsent(from, k -> new GraphNode(k));
-            GraphNode toNode = nodeMap.computeIfAbsent(to, k -> new GraphNode(k));
+            long from = dep.getFromId();
+            long to = dep.getToId();
+            GraphNode fromNode = nodeMap.computeIfAbsent(from, GraphNode::new);
+            GraphNode toNode = nodeMap.computeIfAbsent(to, GraphNode::new);
             fromNode.removeNext(toNode);
             toNode.removePrevious(fromNode);
         }
 
         for (Dependency dep : addedDependencies) {
-            long from = dep.getFrom().getId();
-            long to = dep.getTo().getId();
-            GraphNode fromNode = nodeMap.computeIfAbsent(from, k -> new GraphNode(k));
-            GraphNode toNode = nodeMap.computeIfAbsent(to, k -> new GraphNode(k));
+            long from = dep.getFromId();
+            long to = dep.getToId();
+            GraphNode fromNode = nodeMap.computeIfAbsent(from, GraphNode::new);
+            GraphNode toNode = nodeMap.computeIfAbsent(to, GraphNode::new);
             fromNode.addNext(toNode);
             toNode.addPrevious(fromNode);
         }

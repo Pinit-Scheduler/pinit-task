@@ -40,10 +40,10 @@ public class GraphUtils {
         Schedule after1 = getNotStartedSchedule(4L, 1L, "D", "D", TIME_3, tc3, importanceConstraint);
         Schedule after2 = getNotStartedSchedule(5L, 1L, "E", "E", TIME_3, tc3, importanceConstraint);
         List<Dependency> dependencies = new ArrayList<>();
-        dependencies.add(new Dependency(before1, now));
-        dependencies.add(new Dependency(before2, now));
-        dependencies.add(new Dependency(now, after1));
-        dependencies.add(new Dependency(now, after2));
+        dependencies.add(new Dependency(before1.getId(), now.getId()));
+        dependencies.add(new Dependency(before2.getId(), now.getId()));
+        dependencies.add(new Dependency(now.getId(), after1.getId()));
+        dependencies.add(new Dependency(now.getId(), after2.getId()));
         return dependencies;
     }
 }

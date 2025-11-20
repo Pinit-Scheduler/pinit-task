@@ -33,13 +33,13 @@ class CycleCheckerTest {
         Schedule scheduleC = getNotStartedSchedule(3L);
 
         List<Dependency> dependencies = new ArrayList<>();
-        dependencies.add(new Dependency(scheduleA, scheduleB));
-        dependencies.add(new Dependency(scheduleB, scheduleC));
+        dependencies.add(new Dependency(scheduleA.getId(), scheduleB.getId()));
+        dependencies.add(new Dependency(scheduleB.getId(), scheduleC.getId()));
 
         Graph graph = Graph.of(dependencies);
 
         //when
-        boolean hasCycle = graph.hasCycle(List.of(), List.of(new Dependency(scheduleC, scheduleA)));
+        boolean hasCycle = graph.hasCycle(List.of(), List.of(new Dependency(scheduleC.getId(), scheduleA.getId())));
 
         //then
         assertTrue(hasCycle);

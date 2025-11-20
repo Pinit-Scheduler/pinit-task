@@ -25,10 +25,8 @@ public class Graph {
     public static Graph of(List<Dependency> dependencies) {
         Graph graph = new Graph();
         for (Dependency dependency : dependencies) {
-            Long fromId = dependency.getFrom().getId();
-            Long toId = dependency.getTo().getId();
-            boolean fromDone = dependency.getFrom().isCompleted();
-            boolean toDone = dependency.getTo().isCompleted();
+            Long fromId = dependency.getFromId();
+            Long toId = dependency.getToId();
 
             graph.nodeMap.putIfAbsent(fromId, new GraphNode(fromId));
             graph.nodeMap.putIfAbsent(toId, new GraphNode(toId));

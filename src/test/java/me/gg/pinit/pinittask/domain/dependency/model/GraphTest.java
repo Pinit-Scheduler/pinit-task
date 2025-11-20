@@ -20,8 +20,8 @@ class GraphTest {
         Schedule after2 = getNotStartedSchedule(3L);
 
         List<Dependency> dependencies = new ArrayList<>();
-        dependencies.add(new Dependency(now, after1));
-        dependencies.add(new Dependency(now, after2));
+        dependencies.add(new Dependency(now.getId(), after1.getId()));
+        dependencies.add(new Dependency(now.getId(), after2.getId()));
 
         Graph graph = Graph.of(dependencies);
 

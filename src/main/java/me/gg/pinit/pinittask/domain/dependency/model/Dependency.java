@@ -25,27 +25,19 @@ public class Dependency {
     private Long ownerId;
 
     @Getter
-    @ManyToOne
-    @JoinColumn(name = "from_schedule_id")
-    private Schedule from;
+    private Long fromId;
 
     @Getter
-    @ManyToOne
-    @JoinColumn(name = "to_schedule_id")
-    private Schedule to;
+    private Long toId;
 
     protected Dependency() {
     }
 
-    public Dependency(Schedule from, Schedule to) {
-        this.from = from;
-        this.to = to;
+    public Dependency(Long fromId, Long toId) {
+        this.fromId = fromId;
+        this.toId = toId;
     }
 
-    public boolean precedenceIsCompleted() {
-        validatePrecedence(from);
-        return from.isCompleted();
-    }
 
     private void validatePrecedence(Schedule from) {
         if (from == null) {
