@@ -57,7 +57,6 @@ public class Graph {
 
     public boolean hasCycle(List<Dependency> removedDependencies, List<Dependency> addedDependencies) {
         return cycleChecker.hasCycleAfterChanges(removedDependencies, addedDependencies);
-
     }
 }
 
