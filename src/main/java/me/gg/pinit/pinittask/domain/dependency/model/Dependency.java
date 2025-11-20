@@ -7,11 +7,11 @@ import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
 
 @Entity
 @Table(
-        name = "dependencies",
+        name = "dependency",
         uniqueConstraints = {
                 @UniqueConstraint(
                         name = "uk_dependency_from_to_schedule",
-                        columnNames = {"from_schedule_id", "to_schedule_id"}
+                        columnNames = {"from_id", "to_id"}
                 )
         }
 )
