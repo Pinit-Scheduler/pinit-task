@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface DependencyRepository extends JpaRepository<Dependency, Long> {
+public interface DependencyRepository extends JpaRepository<Dependency, Long>, DependencyRepositoryCustom {
     List<Dependency> findAllByOwnerId(Long ownerId);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
