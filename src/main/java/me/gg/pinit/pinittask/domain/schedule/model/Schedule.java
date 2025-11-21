@@ -107,6 +107,7 @@ public class Schedule {
     }
 
     public void deleteSchedule() {
+        checkCanDelete();
         DomainEvents.raise(new ScheduleDeletedEvent(this.id, this.ownerId));
     }
 
@@ -157,6 +158,12 @@ public class Schedule {
     private void checkStateIsNotCompleted() {
         if (!isNotStarted()) {
             throw new IllegalChangeException("시작되지 않은 일정만 수정할 수 있습니다.");
+        }
+    }
+
+    private void checkCanDelete() {
+        if (!(isNotStarted() || isCompleted())) {
+            throw new IllegalChangeException("시작되지 않았거나 완료된 일정만 삭제할 수 있습니다.");
         }
     }
 
