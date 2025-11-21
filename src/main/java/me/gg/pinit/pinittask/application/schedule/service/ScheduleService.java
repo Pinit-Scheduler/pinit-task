@@ -85,7 +85,7 @@ public class ScheduleService {
         Schedule findSchedule = scheduleRepository.findByIdForUpdate(scheduleId)
                 .orElseThrow(() -> new ScheduleNotFoundException("해당 일정을 찾을 수 없습니다."));
         validateOwner(memberId, findSchedule);
-
+        memberService.setNowRunningSchedule(memberId, scheduleId);
         findSchedule.start(now);
         publishEvent();
     }
@@ -95,6 +95,7 @@ public class ScheduleService {
         Schedule findSchedule = scheduleRepository.findByIdForUpdate(scheduleId)
                 .orElseThrow(() -> new ScheduleNotFoundException("해당 일정을 찾을 수 없습니다."));
         validateOwner(memberId, findSchedule);
+        memberService.clearNowRunningSchedule(memberId);
         findSchedule.finish(now);
         publishEvent();
     }
@@ -113,6 +114,7 @@ public class ScheduleService {
         Schedule findSchedule = scheduleRepository.findByIdForUpdate(scheduleId)
                 .orElseThrow(() -> new ScheduleNotFoundException("해당 일정을 찾을 수 없습니다."));
         validateOwner(memberId, findSchedule);
+        memberService.clearNowRunningSchedule(memberId);
         findSchedule.cancel();
         publishEvent();
     }

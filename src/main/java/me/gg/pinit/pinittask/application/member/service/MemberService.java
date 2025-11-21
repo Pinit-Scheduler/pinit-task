@@ -20,4 +20,18 @@ public class MemberService {
         return memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberNotFoundException("Member not found")).getZoneId();
     }
+
+    @Transactional
+    public void setNowRunningSchedule(Long memberId, Long scheduleId) {
+        memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberNotFoundException("Member not found"))
+                .setNowRunningSchedule(scheduleId);
+    }
+
+    @Transactional
+    public void clearNowRunningSchedule(Long memberId) {
+        memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberNotFoundException("Member not found"))
+                .clearNowRunningSchedule();
+    }
 }
