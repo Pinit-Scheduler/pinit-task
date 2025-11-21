@@ -38,6 +38,7 @@ public class Statistics {
         this.startOfWeek = startOfWeek;
         this.deepWorkElapsedTime = Duration.ZERO;
         this.adminWorkElapsedTime = Duration.ZERO;
+        this.totalWorkElapsedTime = Duration.ZERO;
     }
 
     public void addDeepWorkDuration(Duration duration) {
@@ -67,5 +68,24 @@ public class Statistics {
     public void removeQuickWorkDuration(Duration duration) {
         this.totalWorkElapsedTime = this.totalWorkElapsedTime.minus(duration);
     }
-}
 
+    public Duration getDeepWorkElapsedTime() {
+        return deepWorkElapsedTime;
+    }
+
+    public Duration getAdminWorkElapsedTime() {
+        return adminWorkElapsedTime;
+    }
+
+    public Duration getTotalWorkElapsedTime() {
+        return totalWorkElapsedTime;
+    }
+
+    public Long getMemberId() {
+        return memberId;
+    }
+
+    public ZonedDateTime getStartOfWeek() {
+        return startOfWeek;
+    }
+}
