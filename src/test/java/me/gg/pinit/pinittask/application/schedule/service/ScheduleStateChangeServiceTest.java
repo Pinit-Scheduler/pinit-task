@@ -1,85 +1,122 @@
 package me.gg.pinit.pinittask.application.schedule.service;
 
-import me.gg.pinit.pinittask.domain.member.model.Member;
-import me.gg.pinit.pinittask.domain.member.repository.MemberRepository;
+import me.gg.pinit.pinittask.application.dependency.service.DependencyService;
+import me.gg.pinit.pinittask.application.events.EventPublisher;
+import me.gg.pinit.pinittask.application.member.service.MemberService;
+import me.gg.pinit.pinittask.domain.events.DomainEvents;
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
 import me.gg.pinit.pinittask.domain.schedule.repository.ScheduleRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Duration;
-import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import static me.gg.pinit.pinittask.domain.schedule.model.ScheduleUtils.*;
+import static org.mockito.Mockito.*;
 
-@SpringBootTest
-@Transactional
-public class ScheduleStateChangeServiceTest {
-    @Autowired
-    ScheduleStateChangeService scheduleStateChangeService;
-
-    @Autowired
+@ExtendWith(MockitoExtension.class)
+class ScheduleStateChangeServiceTest {
+    @Mock
     ScheduleRepository scheduleRepository;
-
-    @Autowired
+    @Mock
+    MemberService memberService;
+    @Mock
+    EventPublisher eventPublisher;
+    @Mock
+    DependencyService dependencyService;
+    @Mock
     ScheduleService scheduleService;
 
-    @Autowired
-    MemberRepository memberRepository;
+    @InjectMocks
+    ScheduleStateChangeService scheduleStateChangeService;
 
-    Member member;
-
+    Long memberId;
+    Long scheduleId;
     Schedule scheduleSample;
+    ZonedDateTime now;
 
     @BeforeEach
     void setUp() {
-        member = new Member("haha", "hoho", Duration.ofDays(2), ZoneId.of("Asia/Seoul"));
-        memberRepository.save(member);
-        scheduleSample = new Schedule(member.getId(), "title", "description", ENROLLED_TIME, getTemporalConstraintSample(), getImportanceConstraintSample());
-        scheduleRepository.save(scheduleSample);
+        memberId = 1L;
+        scheduleId = 10L;
+        scheduleSample = getNotStartedSchedule(scheduleId); // ownerId=1L
+        now = ENROLLED_TIME.plusHours(1);
+        DomainEvents.getEventsAndClear();
+    }
+
+    private void stubFind() {
+        when(scheduleRepository.findByIdForUpdate(scheduleId)).thenReturn(Optional.of(scheduleSample));
+    }
+
+    private void stubNoDeps() {
+        when(dependencyService.getPreviousScheduleIds(memberId, scheduleId)).thenReturn(Collections.emptyList());
+        when(scheduleService.findSchedulesByIds(memberId, Collections.emptyList())).thenReturn(Collections.emptyList());
     }
 
     @Test
-    void startSchedule() {
-        scheduleStateChangeService.startSchedule(member.getId(), scheduleSample.getId(), ENROLLED_TIME.plusHours(1));
-        Schedule startedSchedule = scheduleService.getSchedule(member.getId(), scheduleSample.getId());
-        Assertions.assertThat(startedSchedule.isInProgress()).isTrue();
+    void startSchedule_inProgress() {
+        stubFind();
+        stubNoDeps();
+        scheduleStateChangeService.startSchedule(memberId, scheduleId, now);
+        Assertions.assertThat(scheduleSample.isInProgress()).isTrue();
+        verify(memberService).setNowRunningSchedule(memberId, scheduleId);
+        verify(dependencyService).getPreviousScheduleIds(memberId, scheduleId);
+        verify(scheduleService).findSchedulesByIds(memberId, Collections.emptyList());
     }
 
     @Test
-    void completeSchedule() {
-        scheduleStateChangeService.completeSchedule(member.getId(), scheduleSample.getId(), ENROLLED_TIME.plusHours(1));
-        Schedule completedSchedule = scheduleService.getSchedule(member.getId(), scheduleSample.getId());
-        Assertions.assertThat(completedSchedule.isCompleted()).isTrue();
+    void completeSchedule_completed() {
+        stubFind();
+        scheduleStateChangeService.completeSchedule(memberId, scheduleId, now);
+        Assertions.assertThat(scheduleSample.isCompleted()).isTrue();
+        verify(memberService).clearNowRunningSchedule(memberId);
     }
 
     @Test
-    void suspendSchedule() {
-        //given
-        scheduleStateChangeService.startSchedule(member.getId(), scheduleSample.getId(), ENROLLED_TIME.plusHours(1));
-
-        //when
-        scheduleStateChangeService.suspendSchedule(member.getId(), scheduleSample.getId(), ENROLLED_TIME.plusHours(2));
-        Schedule suspendedSchedule = scheduleService.getSchedule(member.getId(), scheduleSample.getId());
-
-        //then
-        Assertions.assertThat(suspendedSchedule.isSuspended()).isTrue();
+    void suspendSchedule_suspended() {
+        stubFind();
+        stubNoDeps();
+        scheduleStateChangeService.startSchedule(memberId, scheduleId, now);
+        scheduleStateChangeService.suspendSchedule(memberId, scheduleId, now.plusHours(1));
+        Assertions.assertThat(scheduleSample.isSuspended()).isTrue();
     }
 
     @Test
-    void cancelSchedule() {
-        //given
-        scheduleStateChangeService.startSchedule(member.getId(), scheduleSample.getId(), ENROLLED_TIME.plusHours(1));
+    void cancelSchedule_backToNotStarted() {
+        stubFind();
+        stubNoDeps();
+        scheduleStateChangeService.startSchedule(memberId, scheduleId, now);
+        scheduleStateChangeService.cancelSchedule(memberId, scheduleId);
+        Assertions.assertThat(scheduleSample.isNotStarted()).isTrue();
+        verify(memberService).clearNowRunningSchedule(memberId);
+    }
 
-        //when
-        scheduleStateChangeService.cancelSchedule(member.getId(), scheduleSample.getId());
-        Schedule canceledSchedule = scheduleService.getSchedule(member.getId(), scheduleSample.getId());
+    @Test
+    void startSchedule_previousNotCompleted_throws() {
+        stubFind();
+        Long prevId = 99L;
+        when(dependencyService.getPreviousScheduleIds(memberId, scheduleId)).thenReturn(List.of(prevId));
+        Schedule prev = getInProgressSchedule(prevId); // not completed
+        when(scheduleService.findSchedulesByIds(memberId, List.of(prevId))).thenReturn(List.of(prev));
+        Assertions.assertThatThrownBy(() -> scheduleStateChangeService.startSchedule(memberId, scheduleId, now))
+                .isInstanceOf(IllegalStateException.class);
+        verify(memberService, never()).setNowRunningSchedule(anyLong(), anyLong());
+    }
 
-        //then
-        Assertions.assertThat(canceledSchedule.isNotStarted()).isTrue();
+    @Test
+    void startSchedule_ownerMismatch_throws() {
+        stubFind();
+        Assertions.assertThatThrownBy(() -> scheduleStateChangeService.startSchedule(2L, scheduleId, now))
+                .isInstanceOf(IllegalArgumentException.class);
+        verify(memberService, never()).setNowRunningSchedule(anyLong(), anyLong());
     }
 }
+
