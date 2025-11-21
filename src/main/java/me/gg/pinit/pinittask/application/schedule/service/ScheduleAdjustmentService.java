@@ -1,8 +1,7 @@
-package me.gg.pinit.pinittask.application.scheduleadjustment.service;
+package me.gg.pinit.pinittask.application.schedule.service;
 
 import me.gg.pinit.pinittask.application.dependency.service.DependencyService;
-import me.gg.pinit.pinittask.application.schedule.service.ScheduleService;
-import me.gg.pinit.pinittask.application.scheduleadjustment.dto.ScheduleDependencyAdjustCommand;
+import me.gg.pinit.pinittask.application.schedule.dto.ScheduleDependencyAdjustCommand;
 import me.gg.pinit.pinittask.domain.dependency.model.Dependency;
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
 import org.springframework.stereotype.Service;

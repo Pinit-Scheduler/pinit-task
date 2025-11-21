@@ -1,4 +1,4 @@
-package me.gg.pinit.pinittask.application.scheduleadjustment.dto;
+package me.gg.pinit.pinittask.application.schedule.dto;
 
 import lombok.Getter;
 
