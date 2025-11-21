@@ -81,6 +81,11 @@ public class ScheduleService {
     }
 
 
+    @Transactional(readOnly = true)
+    public List<Schedule> findSchedulesByIds(Long memberId, List<Long> previousScheduleIds) {
+        return scheduleRepository.findAllById(previousScheduleIds);
+    }
+
     private void validateOwner(Long memberId, Schedule schedule) {
         if (!schedule.getOwnerId().equals(memberId)) {
             throw new IllegalArgumentException("Member does not own the schedule");

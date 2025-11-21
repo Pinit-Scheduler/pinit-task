@@ -1,6 +1,7 @@
 package me.gg.pinit.pinittask.application.schedule.service;
 
 import lombok.RequiredArgsConstructor;
+import me.gg.pinit.pinittask.application.dependency.service.DependencyService;
 import me.gg.pinit.pinittask.application.events.EventPublisher;
 import me.gg.pinit.pinittask.application.member.service.MemberService;
 import me.gg.pinit.pinittask.domain.dependency.exception.ScheduleNotFoundException;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
 import java.util.Deque;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +22,8 @@ public class ScheduleStateChangeService {
     private final ScheduleRepository scheduleRepository;
     private final MemberService memberService;
     private final EventPublisher eventPublisher;
+    private final DependencyService dependencyService;
+    private final ScheduleService scheduleService;
 
     @Transactional
     public void startSchedule(Long memberId, Long scheduleId, ZonedDateTime now) {
@@ -27,6 +31,9 @@ public class ScheduleStateChangeService {
                 .orElseThrow(() -> new ScheduleNotFoundException("해당 일정을 찾을 수 없습니다."));
         validateOwner(memberId, findSchedule);
         memberService.setNowRunningSchedule(memberId, scheduleId);
+
+        checkBeforeScheduleIsCompleted(memberId, scheduleId);
+
         findSchedule.start(now);
         publishEvent();
     }
@@ -69,5 +76,14 @@ public class ScheduleStateChangeService {
     private void publishEvent() {
         Deque<DomainEvent> queue = DomainEvents.getEventsAndClear();
         queue.forEach(eventPublisher::publish);
+    }
+
+    private void checkBeforeScheduleIsCompleted(Long memberId, Long scheduleId) {
+        List<Long> previousScheduleIds = dependencyService.getPreviousScheduleIds(memberId, scheduleId);
+        scheduleService.findSchedulesByIds(memberId, previousScheduleIds).forEach(schedule -> {
+            if (!schedule.isCompleted()) {
+                throw new IllegalStateException("이전 일정이 완료되지 않아 해당 일정을 시작할 수 없습니다.");
+            }
+        });
     }
 }
