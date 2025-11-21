@@ -2,8 +2,6 @@ package me.gg.pinit.pinittask.domain.dependency.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
-import me.gg.pinit.pinittask.domain.dependency.exception.ScheduleAlreadyRemovedException;
-import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
 
 @Entity
 @Table(
@@ -34,14 +32,21 @@ public class Dependency {
     }
 
     public Dependency(Long fromId, Long toId) {
+        validateNotNull(fromId, toId);
+        validateFromAndTo(fromId, toId);
         this.fromId = fromId;
         this.toId = toId;
     }
 
+    private void validateNotNull(Long fromId, Long toId) {
+        if (fromId == null || toId == null) {
+            throw new IllegalArgumentException("fromId와 toId는 null일 수 없습니다.");
+        }
+    }
 
-    private void validatePrecedence(Schedule from) {
-        if (from == null) {
-            throw new ScheduleAlreadyRemovedException("선행 일정이 존재하지 않습니다.");
+    private void validateFromAndTo(Long fromId, Long toId) {
+        if (fromId.equals(toId)) {
+            throw new IllegalArgumentException("fromId와 toId는 동일할 수 없습니다.");
         }
     }
 }
