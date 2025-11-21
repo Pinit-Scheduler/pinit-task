@@ -5,6 +5,7 @@ import lombok.Getter;
 import me.gg.pinit.pinittask.domain.converter.service.DurationConverter;
 import me.gg.pinit.pinittask.domain.converter.service.LocalTimeConverter;
 import me.gg.pinit.pinittask.domain.converter.service.ZoneIdConverter;
+import me.gg.pinit.pinittask.domain.member.exception.DuplicatedScheduleRunningException;
 import me.gg.pinit.pinittask.domain.member.exception.ObjectiveNotNullException;
 import me.gg.pinit.pinittask.domain.member.exception.ObjectiveNotPositiveException;
 
@@ -24,6 +25,9 @@ public class Member {
     @Column(name = "member_id")
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
+    @Version
+    private Long version;
 
     @Getter
     private String userId;
@@ -45,6 +49,9 @@ public class Member {
     @Convert(converter = DurationConverter.class)
     private Duration dailyObjectiveWork;
 
+    @Getter
+    private Long nowRunningScheduleId;
+
     protected Member() {
     }
 
@@ -56,6 +63,17 @@ public class Member {
 
         sleepTime = LocalTime.of(23, 0, 0, 0);
         wakeUpTime = LocalTime.of(7, 0, 0, 0);
+    }
+
+    public void setNowRunningSchedule(Long nowRunningScheduleId) {
+        if (this.nowRunningScheduleId != null) {
+            throw new DuplicatedScheduleRunningException("이미 실행 중인 일정이 존재합니다.", this.nowRunningScheduleId);
+        }
+        this.nowRunningScheduleId = nowRunningScheduleId;
+    }
+
+    public void clearNowRunningSchedule() {
+        this.nowRunningScheduleId = null;
     }
 
     public void setDailyObjectiveWork(Duration dailyObjectiveWork) {
