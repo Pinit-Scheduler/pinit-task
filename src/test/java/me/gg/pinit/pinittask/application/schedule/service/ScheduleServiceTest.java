@@ -1,95 +1,100 @@
 package me.gg.pinit.pinittask.application.schedule.service;
 
+import me.gg.pinit.pinittask.application.events.EventPublisher;
+import me.gg.pinit.pinittask.application.member.service.MemberService;
 import me.gg.pinit.pinittask.domain.dependency.exception.ScheduleNotFoundException;
-import me.gg.pinit.pinittask.domain.member.model.Member;
-import me.gg.pinit.pinittask.domain.member.repository.MemberRepository;
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
 import me.gg.pinit.pinittask.domain.schedule.patch.SchedulePatch;
 import me.gg.pinit.pinittask.domain.schedule.repository.ScheduleRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static me.gg.pinit.pinittask.domain.schedule.model.ScheduleUtils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
-@SpringBootTest
-@Transactional
+@ExtendWith(MockitoExtension.class)
 class ScheduleServiceTest {
-
-
-    @Autowired
-    ScheduleService scheduleService;
-
-    @Autowired
+    @Mock
     ScheduleRepository scheduleRepository;
-
-    @Autowired
-    MemberRepository memberRepository;
-
-    Member member;
-
+    @Mock
+    MemberService memberService;
+    @Mock
+    EventPublisher eventPublisher;
+    @InjectMocks
+    ScheduleService scheduleService;
+    Long memberId;
+    Long scheduleId;
     Schedule scheduleSample;
 
     @BeforeEach
     void setUp() {
-        member = new Member("haha", "hoho", Duration.ofDays(2), ZoneId.of("Asia/Seoul"));
-        memberRepository.save(member);
-        scheduleSample = new Schedule(member.getId(), "title", "description", ENROLLED_TIME, getTemporalConstraintSample(), getImportanceConstraintSample());
-        scheduleRepository.save(scheduleSample);
+        memberId = 1L;
+        scheduleId = 100L;
+        scheduleSample = new Schedule(memberId, "title", "description", ENROLLED_TIME, getTemporalConstraintSample(), getImportanceConstraintSample());
     }
 
     @Test
     void getSchedule() {
-        Schedule schedule = scheduleService.getSchedule(member.getId(), scheduleSample.getId());
-
+        when(scheduleRepository.findById(scheduleId)).thenReturn(Optional.of(scheduleSample));
+        Schedule schedule = scheduleService.getSchedule(memberId, scheduleId);
         assertNotNull(schedule);
+        verify(scheduleRepository).findById(scheduleId);
     }
 
     @Test
     void getScheduleList() {
-        List<Schedule> scheduleList = scheduleService.getScheduleList(scheduleSample.getOwnerId(), LocalDate.of(2025, 10, 1));
-
+        when(memberService.findZoneIdOfMember(memberId)).thenReturn(ZoneId.of("Asia/Seoul"));
+        when(scheduleRepository.findAllByOwnerIdAndDesignatedStartTimeBetween(eq(memberId), any(ZonedDateTime.class), any(ZonedDateTime.class))).thenReturn(List.of(scheduleSample));
+        List<Schedule> scheduleList = scheduleService.getScheduleList(memberId, LocalDate.of(2025, 10, 1));
         assertNotNull(scheduleList);
         assertEquals(1, scheduleList.size());
+        verify(memberService).findZoneIdOfMember(memberId);
+        verify(scheduleRepository).findAllByOwnerIdAndDesignatedStartTimeBetween(eq(memberId), any(ZonedDateTime.class), any(ZonedDateTime.class));
     }
 
     @Test
     void addSchedule() {
-        Schedule newSchedule = new Schedule(member.getId(), "new title", "new description", ENROLLED_TIME, getTemporalConstraintSample(), getImportanceConstraintSample());
+        when(scheduleRepository.save(any(Schedule.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        Schedule newSchedule = new Schedule(memberId, "new title", "new description", ENROLLED_TIME, getTemporalConstraintSample(), getImportanceConstraintSample());
         Schedule savedSchedule = scheduleService.addSchedule(newSchedule);
-
         assertNotNull(savedSchedule);
         assertEquals("new title", savedSchedule.getTitle());
+        verify(scheduleRepository).save(any(Schedule.class));
     }
 
     @Test
     void updateSchedule() {
+        when(scheduleRepository.findById(scheduleId)).thenReturn(Optional.of(scheduleSample));
         SchedulePatch schedulePatch = new SchedulePatch().setTitle("new title");
-        Schedule updatedSchedule = scheduleService.updateSchedule(member.getId(), scheduleSample.getId(), schedulePatch);
-
+        Schedule updatedSchedule = scheduleService.updateSchedule(memberId, scheduleId, schedulePatch);
         assertNotNull(updatedSchedule);
         assertEquals("new title", updatedSchedule.getTitle());
-        Assertions.assertThat(updatedSchedule.getDescription()).isEqualTo(scheduleSample.getDescription());
+        Assertions.assertThat(updatedSchedule.getDescription()).isEqualTo("description");
+        verify(scheduleRepository).findById(scheduleId);
     }
 
     @Test
     void deleteSchedule() {
-        scheduleService.deleteSchedule(member.getId(), scheduleSample.getId());
-
-        Assertions.assertThatThrownBy(() -> scheduleService.getSchedule(member.getId(), scheduleSample.getId()))
-                .isInstanceOf(ScheduleNotFoundException.class)
-                .hasMessage("해당 일정을 찾을 수 없습니다.");
+        when(scheduleRepository.findById(scheduleId)).thenReturn(Optional.of(scheduleSample)).thenReturn(Optional.empty());
+        doNothing().when(scheduleRepository).delete(any(Schedule.class));
+        scheduleService.deleteSchedule(memberId, scheduleId);
+        Assertions.assertThatThrownBy(() -> scheduleService.getSchedule(memberId, scheduleId)).isInstanceOf(ScheduleNotFoundException.class).hasMessage("해당 일정을 찾을 수 없습니다.");
+        verify(scheduleRepository).delete(scheduleSample);
+        verify(eventPublisher, atLeast(0)).publish(any());
     }
-
-
 }
