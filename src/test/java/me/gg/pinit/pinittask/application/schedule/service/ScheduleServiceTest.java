@@ -91,43 +91,5 @@ class ScheduleServiceTest {
                 .hasMessage("해당 일정을 찾을 수 없습니다.");
     }
 
-    @Test
-    void startSchedule() {
-        scheduleService.startSchedule(member.getId(), scheduleSample.getId(), ENROLLED_TIME.plusHours(1));
-        Schedule startedSchedule = scheduleService.getSchedule(member.getId(), scheduleSample.getId());
-        Assertions.assertThat(startedSchedule.isInProgress()).isTrue();
-    }
 
-    @Test
-    void completeSchedule() {
-        scheduleService.completeSchedule(member.getId(), scheduleSample.getId(), ENROLLED_TIME.plusHours(1));
-        Schedule completedSchedule = scheduleService.getSchedule(member.getId(), scheduleSample.getId());
-        Assertions.assertThat(completedSchedule.isCompleted()).isTrue();
-    }
-
-    @Test
-    void suspendSchedule() {
-        //given
-        scheduleService.startSchedule(member.getId(), scheduleSample.getId(), ENROLLED_TIME.plusHours(1));
-
-        //when
-        scheduleService.suspendSchedule(member.getId(), scheduleSample.getId(), ENROLLED_TIME.plusHours(2));
-        Schedule suspendedSchedule = scheduleService.getSchedule(member.getId(), scheduleSample.getId());
-
-        //then
-        Assertions.assertThat(suspendedSchedule.isSuspended()).isTrue();
-    }
-
-    @Test
-    void cancelSchedule() {
-        //given
-        scheduleService.startSchedule(member.getId(), scheduleSample.getId(), ENROLLED_TIME.plusHours(1));
-
-        //when
-        scheduleService.cancelSchedule(member.getId(), scheduleSample.getId());
-        Schedule canceledSchedule = scheduleService.getSchedule(member.getId(), scheduleSample.getId());
-
-        //then
-        Assertions.assertThat(canceledSchedule.isNotStarted()).isTrue();
-    }
 }

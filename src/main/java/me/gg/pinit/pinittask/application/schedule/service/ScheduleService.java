@@ -80,44 +80,6 @@ public class ScheduleService {
         publishEvent();
     }
 
-    @Transactional
-    public void startSchedule(Long memberId, Long scheduleId, ZonedDateTime now) {
-        Schedule findSchedule = scheduleRepository.findByIdForUpdate(scheduleId)
-                .orElseThrow(() -> new ScheduleNotFoundException("해당 일정을 찾을 수 없습니다."));
-        validateOwner(memberId, findSchedule);
-        memberService.setNowRunningSchedule(memberId, scheduleId);
-        findSchedule.start(now);
-        publishEvent();
-    }
-
-    @Transactional
-    public void completeSchedule(Long memberId, Long scheduleId, ZonedDateTime now) {
-        Schedule findSchedule = scheduleRepository.findByIdForUpdate(scheduleId)
-                .orElseThrow(() -> new ScheduleNotFoundException("해당 일정을 찾을 수 없습니다."));
-        validateOwner(memberId, findSchedule);
-        memberService.clearNowRunningSchedule(memberId);
-        findSchedule.finish(now);
-        publishEvent();
-    }
-
-    @Transactional
-    public void suspendSchedule(Long memberId, Long scheduleId, ZonedDateTime now) {
-        Schedule findSchedule = scheduleRepository.findByIdForUpdate(scheduleId)
-                .orElseThrow(() -> new ScheduleNotFoundException("해당 일정을 찾을 수 없습니다."));
-        validateOwner(memberId, findSchedule);
-        findSchedule.suspend(now);
-        publishEvent();
-    }
-
-    @Transactional
-    public void cancelSchedule(Long memberId, Long scheduleId) {
-        Schedule findSchedule = scheduleRepository.findByIdForUpdate(scheduleId)
-                .orElseThrow(() -> new ScheduleNotFoundException("해당 일정을 찾을 수 없습니다."));
-        validateOwner(memberId, findSchedule);
-        memberService.clearNowRunningSchedule(memberId);
-        findSchedule.cancel();
-        publishEvent();
-    }
 
     private void validateOwner(Long memberId, Schedule schedule) {
         if (!schedule.getOwnerId().equals(memberId)) {
