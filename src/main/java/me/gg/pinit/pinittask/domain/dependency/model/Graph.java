@@ -42,11 +42,11 @@ public class Graph {
     }
 
     public List<Long> getNextScheduleIds(Long fromScheduleId) {
-        return nodeMap.get(fromScheduleId).getNextSchedules();
+        return nodeMap.getOrDefault(fromScheduleId, new GraphNode(fromScheduleId)).getNextSchedules();
     }
 
     public List<Long> getPreviousScheduleIds(Long toScheduleId) {
-        return nodeMap.get(toScheduleId).getPreviousSchedules();
+        return nodeMap.getOrDefault(toScheduleId, new GraphNode(toScheduleId)).getPreviousSchedules();
     }
 
     public boolean hasCycle(List<Dependency> removedDependencies, List<Dependency> addedDependencies) {
