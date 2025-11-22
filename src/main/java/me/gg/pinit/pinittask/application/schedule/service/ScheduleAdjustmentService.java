@@ -21,23 +21,25 @@ public class ScheduleAdjustmentService {
     }
 
     @Transactional
-    public void createSchedule(Long memberId, ScheduleDependencyAdjustCommand command) {
+    public Schedule createSchedule(Long memberId, ScheduleDependencyAdjustCommand command) {
         Schedule temporalSchedule = command.getTemporalSchedule();
         List<Dependency> addedDependencies = command.getAddDependencies();
         dependencyService.checkCycle(memberId, List.of(), addedDependencies);
 
-        scheduleService.addSchedule(temporalSchedule);
+        Schedule saved = scheduleService.addSchedule(temporalSchedule);
         dependencyService.saveAll(addedDependencies);
+        return saved;
     }
 
     @Transactional
-    public void adjustSchedule(Long memberId, ScheduleDependencyAdjustCommand command) {
+    public Schedule adjustSchedule(Long memberId, ScheduleDependencyAdjustCommand command) {
         List<Dependency> removedDependencies = command.getRemoveDependencies();
         List<Dependency> addedDependencies = command.getAddDependencies();
         dependencyService.checkCycle(memberId, removedDependencies, addedDependencies);
 
-        scheduleService.updateSchedule(memberId, command.getScheduleId(), command.getSchedulePatch());
+        Schedule updatedSchedule = scheduleService.updateSchedule(memberId, command.getScheduleId(), command.getSchedulePatch());
         dependencyService.deleteAll(removedDependencies);
         dependencyService.saveAll(addedDependencies);
+        return updatedSchedule;
     }
 }
