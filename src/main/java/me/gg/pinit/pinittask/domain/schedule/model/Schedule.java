@@ -143,6 +143,10 @@ public class Schedule {
         this.importanceConstraint = this.importanceConstraint.changeUrgency(newUrgency);
     }
 
+    public String getState() {
+        return this.state.toString();
+    }
+
     /**
      * Schedule 패키지 밖에서 사용하지 말 것
      * @param state
