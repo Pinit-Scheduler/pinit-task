@@ -1,4 +1,4 @@
-package me.gg.pinit.pinittask.infrastructure.web.dto;
+package me.gg.pinit.pinittask.interfaces.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
