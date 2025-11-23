@@ -66,7 +66,7 @@ public class Member {
     }
 
     public void setNowRunningSchedule(Long nowRunningScheduleId) {
-        if (this.nowRunningScheduleId != null) {
+        if (this.nowRunningScheduleId != null && !this.nowRunningScheduleId.equals(nowRunningScheduleId)) {
             throw new DuplicatedScheduleRunningException("이미 실행 중인 일정이 존재합니다.", this.nowRunningScheduleId);
         }
         if (nowRunningScheduleId == null) {
