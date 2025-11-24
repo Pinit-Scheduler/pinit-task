@@ -1,12 +1,14 @@
 package me.gg.pinit.pinittask.domain.statistics.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 import me.gg.pinit.pinittask.domain.converter.service.DurationConverter;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
 
 @Entity
+@Getter
 public class Statistics {
     @Id
     @Column(name = "statistics_id")
