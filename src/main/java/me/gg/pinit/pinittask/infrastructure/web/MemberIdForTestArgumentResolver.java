@@ -31,9 +31,4 @@ public class MemberIdForTestArgumentResolver implements HandlerMethodArgumentRes
     public Long resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
         return 1L;
     }
-
-    @PostConstruct
-    public void init() {
-        memberRepository.save(new Member("sample", "sample", Duration.ofHours(4), ZoneId.of("Asia/Seoul")));
-    }
 }
