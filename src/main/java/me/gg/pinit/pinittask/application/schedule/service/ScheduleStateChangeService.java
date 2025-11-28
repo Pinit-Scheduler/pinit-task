@@ -43,7 +43,7 @@ public class ScheduleStateChangeService {
         Schedule findSchedule = scheduleRepository.findByIdForUpdate(scheduleId)
                 .orElseThrow(() -> new ScheduleNotFoundException("해당 일정을 찾을 수 없습니다."));
         validateOwner(memberId, findSchedule);
-        memberService.clearNowRunningSchedule(memberId);
+        if(!findSchedule.isNotStarted())memberService.clearNowRunningSchedule(memberId);
         findSchedule.finish(now);
         publishEvent();
     }
