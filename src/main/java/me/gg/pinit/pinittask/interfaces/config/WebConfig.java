@@ -10,21 +10,21 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
 
-@EnableConfigurationProperties(CorsProperties.class)
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
     private final MemberIdForTestArgumentResolver memberIdForTestArgumentResolver;
 
-    private CorsProperties corsProperties;
+    private final CorsProperties corsProperties;
 
-    public WebConfig(MemberIdForTestArgumentResolver memberIdForTestArgumentResolver) {
+    public WebConfig(MemberIdForTestArgumentResolver memberIdForTestArgumentResolver, CorsProperties corsProperties) {
         this.memberIdForTestArgumentResolver = memberIdForTestArgumentResolver;
+        this.corsProperties = corsProperties;
     }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins(corsProperties.getAllowedOrigins().toArray(new String[0])) // 허용할 origin 목록
+                .allowedOrigins(corsProperties.getAllowedOrigins().toArray(new String[0]))
                 .allowedMethods(corsProperties.getAllowedMethods().toArray(new String[0]))
                 .allowedHeaders(corsProperties.getAllowedHeaders().toArray(new String[0]))
                 .allowCredentials(corsProperties.getAllowCredentials())
