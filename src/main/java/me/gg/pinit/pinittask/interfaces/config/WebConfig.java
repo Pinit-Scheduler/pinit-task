@@ -1,6 +1,8 @@
 package me.gg.pinit.pinittask.interfaces.config;
 
 import me.gg.pinit.pinittask.infrastructure.web.MemberIdForTestArgumentResolver;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -8,9 +10,12 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
 
+@EnableConfigurationProperties(CorsProperties.class)
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
     private final MemberIdForTestArgumentResolver memberIdForTestArgumentResolver;
+
+    private CorsProperties corsProperties;
 
     public WebConfig(MemberIdForTestArgumentResolver memberIdForTestArgumentResolver) {
         this.memberIdForTestArgumentResolver = memberIdForTestArgumentResolver;
@@ -19,11 +24,11 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:5173") // 허용할 origin 목록
-                .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-                .allowedHeaders("*")
-                .allowCredentials(true)
-                .maxAge(3600);
+                .allowedOrigins(corsProperties.getAllowedOrigins().toArray(new String[0])) // 허용할 origin 목록
+                .allowedMethods(corsProperties.getAllowedMethods().toArray(new String[0]))
+                .allowedHeaders(corsProperties.getAllowedHeaders().toArray(new String[0]))
+                .allowCredentials(corsProperties.getAllowCredentials())
+                .maxAge(corsProperties.getMaxAge());
     }
 
     @Override
