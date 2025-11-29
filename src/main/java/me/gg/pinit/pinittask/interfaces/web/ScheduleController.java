@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
+
 @RestController
 @RequestMapping("/schedules")
 @RequiredArgsConstructor
@@ -38,6 +39,7 @@ public class ScheduleController {
     private final ScheduleService scheduleService;
     private final ScheduleAdjustmentService scheduleAdjustmentService;
     private final ScheduleStateChangeService scheduleStateChangeService;
+
     @PostMapping
     @Operation(summary = "일정 생성", description = "새 일정과 의존 관계를 등록합니다.")
     @ApiResponses({
@@ -62,6 +64,7 @@ public class ScheduleController {
         Schedule updated = scheduleAdjustmentService.adjustSchedule(memberId, request.toCommand(scheduleId, memberId));
         return ResponseEntity.ok(ScheduleResponse.from(updated));
     }
+
     @GetMapping
     @Operation(summary = "일정 목록 조회", description = "지정한 날짜의 일정을 조회합니다.")
     @ApiResponses({
@@ -74,6 +77,7 @@ public class ScheduleController {
                 .map(ScheduleResponse::from)
                 .toList();
     }
+
     @GetMapping("/{scheduleId}")
     @Operation(summary = "일정 단건 조회", description = "특정 일정의 상세 정보를 조회합니다.")
     @ApiResponses({
@@ -84,6 +88,20 @@ public class ScheduleController {
         Schedule schedule = scheduleService.getSchedule(memberId, scheduleId);
         return ScheduleResponse.from(schedule);
     }
+
+    @GetMapping("/week")
+    @Operation(summary = "주간 일정 조회", description = "해당 주의 일정을 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "주간 일정 조회에 성공했습니다."),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    public List<ScheduleResponse> getWeeklySchedules(@MemberId Long memberId,
+                                                     @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssXXX'['VV']'") ZonedDateTime time) {
+        return scheduleService.getScheduleListForWeek(memberId, time).stream()
+                .map(ScheduleResponse::from)
+                .toList();
+    }
+
     @PostMapping("/{scheduleId}/start")
     @Operation(summary = "일정 시작", description = "일정을 진행 중 상태로 변경합니다.")
     @ApiResponses({
@@ -94,6 +112,7 @@ public class ScheduleController {
         scheduleStateChangeService.startSchedule(memberId, scheduleId, time);
         return ResponseEntity.noContent().build();
     }
+
     @PostMapping("/{scheduleId}/complete")
     @Operation(summary = "일정 완료", description = "진행 중인 일정을 완료 처리합니다.")
     @ApiResponses({
@@ -104,6 +123,7 @@ public class ScheduleController {
         scheduleStateChangeService.completeSchedule(memberId, scheduleId, time);
         return ResponseEntity.noContent().build();
     }
+
     @PostMapping("/{scheduleId}/suspend")
     @Operation(summary = "일정 일시중지", description = "진행 중인 일정을 일시중지합니다.")
     @ApiResponses({
@@ -114,6 +134,7 @@ public class ScheduleController {
         scheduleStateChangeService.suspendSchedule(memberId, scheduleId, time);
         return ResponseEntity.noContent().build();
     }
+
     @PostMapping("/{scheduleId}/cancel")
     @Operation(summary = "일정 취소", description = "예정되었거나 진행 중인 일정을 취소합니다.")
     @ApiResponses({
