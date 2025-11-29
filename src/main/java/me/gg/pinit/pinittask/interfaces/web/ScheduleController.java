@@ -90,8 +90,8 @@ public class ScheduleController {
             @ApiResponse(responseCode = "204", description = "일정이 시작되었습니다."),
             @ApiResponse(responseCode = "409", description = "잘못된 상태 전환입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<Void> startSchedule(@MemberId Long memberId, @PathVariable Long scheduleId) {
-        scheduleStateChangeService.startSchedule(memberId, scheduleId, ZonedDateTime.now());
+    public ResponseEntity<Void> startSchedule(@MemberId Long memberId, @PathVariable Long scheduleId, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssXXX'['VV']'") ZonedDateTime time) {
+        scheduleStateChangeService.startSchedule(memberId, scheduleId, time);
         return ResponseEntity.noContent().build();
     }
     @PostMapping("/{scheduleId}/complete")
@@ -100,8 +100,8 @@ public class ScheduleController {
             @ApiResponse(responseCode = "204", description = "일정이 완료되었습니다."),
             @ApiResponse(responseCode = "409", description = "잘못된 상태 전환입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<Void> completeSchedule(@MemberId Long memberId, @PathVariable Long scheduleId) {
-        scheduleStateChangeService.completeSchedule(memberId, scheduleId, ZonedDateTime.now());
+    public ResponseEntity<Void> completeSchedule(@MemberId Long memberId, @PathVariable Long scheduleId, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssXXX'['VV']'") ZonedDateTime time) {
+        scheduleStateChangeService.completeSchedule(memberId, scheduleId, time);
         return ResponseEntity.noContent().build();
     }
     @PostMapping("/{scheduleId}/suspend")
@@ -110,8 +110,8 @@ public class ScheduleController {
             @ApiResponse(responseCode = "204", description = "일정이 일시중지되었습니다."),
             @ApiResponse(responseCode = "409", description = "잘못된 상태 전환입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<Void> suspendSchedule(@MemberId Long memberId, @PathVariable Long scheduleId) {
-        scheduleStateChangeService.suspendSchedule(memberId, scheduleId, ZonedDateTime.now());
+    public ResponseEntity<Void> suspendSchedule(@MemberId Long memberId, @PathVariable Long scheduleId, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssXXX'['VV']'") ZonedDateTime time) {
+        scheduleStateChangeService.suspendSchedule(memberId, scheduleId, time);
         return ResponseEntity.noContent().build();
     }
     @PostMapping("/{scheduleId}/cancel")
