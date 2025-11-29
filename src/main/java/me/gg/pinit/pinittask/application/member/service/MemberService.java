@@ -21,6 +21,12 @@ public class MemberService {
                 .orElseThrow(() -> new MemberNotFoundException("Member not found")).getZoneId();
     }
 
+    public Long getNowInProgressScheduleId(Long memberId) {
+        return memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberNotFoundException("Member not found"))
+                .getNowRunningScheduleId();
+    }
+
     @Transactional
     public void setNowRunningSchedule(Long memberId, Long scheduleId) {
         memberRepository.findById(memberId)
