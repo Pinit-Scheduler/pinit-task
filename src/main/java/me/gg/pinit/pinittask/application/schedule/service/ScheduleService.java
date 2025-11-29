@@ -1,6 +1,7 @@
 package me.gg.pinit.pinittask.application.schedule.service;
 
 import lombok.RequiredArgsConstructor;
+import me.gg.pinit.pinittask.application.datetime.DateTimeUtils;
 import me.gg.pinit.pinittask.application.events.EventPublisher;
 import me.gg.pinit.pinittask.application.member.service.MemberService;
 import me.gg.pinit.pinittask.domain.dependency.exception.ScheduleNotFoundException;
@@ -24,6 +25,7 @@ public class ScheduleService {
     private final ScheduleRepository scheduleRepository;
     private final MemberService memberService;
     private final EventPublisher eventPublisher;
+    private final DateTimeUtils dateTimeUtils;
 
 
     @Transactional(readOnly = true)
@@ -42,6 +44,13 @@ public class ScheduleService {
         ZonedDateTime endExclusive = date.plusDays(1).atStartOfDay(memberZoneById);
 
         return scheduleRepository.findAllByOwnerIdAndDesignatedStartTimeBetween(memberId, startOfDay, endExclusive);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Schedule> getScheduleListForWeek(Long memberId, ZonedDateTime now) {
+        ZonedDateTime start = dateTimeUtils.lastMondayStart(now);
+        ZonedDateTime end = start.plusDays(7);
+        return scheduleRepository.findAllByOwnerIdAndDesignatedStartTimeBetween(memberId, start, end);
     }
 
     @Transactional
