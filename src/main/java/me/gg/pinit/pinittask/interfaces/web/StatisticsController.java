@@ -34,7 +34,7 @@ public class StatisticsController {
     @ApiResponse(responseCode = "404", description = "통계를 찾을 수 없습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     public StatisticsResponse getStatistics(
             @MemberId Long memberId,
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssXXX'['VV']'") ZonedDateTime time
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime time
     ) {
         return StatisticsResponse.from(statisticsService.getStatistics(memberId, time));
     }
