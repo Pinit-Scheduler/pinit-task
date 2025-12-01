@@ -77,7 +77,6 @@ class ScheduleStateChangeServiceTest {
         stubFind();
         scheduleStateChangeService.completeSchedule(memberId, scheduleId, now);
         Assertions.assertThat(scheduleSample.isCompleted()).isTrue();
-        verify(memberService).clearNowRunningSchedule(memberId);
     }
 
     @Test

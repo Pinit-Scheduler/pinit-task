@@ -3,6 +3,7 @@ package me.gg.pinit.pinittask.domain.schedule.vo;
 import jakarta.persistence.*;
 import lombok.Getter;
 import me.gg.pinit.pinittask.domain.converter.service.DurationConverter;
+import me.gg.pinit.pinittask.domain.datetime.ZonedDateTimeAttribute;
 import me.gg.pinit.pinittask.domain.schedule.model.TaskType;
 
 import java.time.Duration;
@@ -11,9 +12,12 @@ import java.util.Objects;
 
 @Embeddable
 public class TemporalConstraint {
-    @Column(name = "deadline_time")
-    @Getter
-    private ZonedDateTime deadline;
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "dateTime", column = @Column(name = "deadline_time")),
+            @AttributeOverride(name = "zoneId", column = @Column(name = "deadline_zone_id"))
+    })
+    private ZonedDateTimeAttribute deadline;
     @Convert(converter = DurationConverter.class)
     @Column(name = "expected_duration")
     private Duration duration;
@@ -25,7 +29,7 @@ public class TemporalConstraint {
     }
 
     public TemporalConstraint(ZonedDateTime deadline, Duration duration, TaskType taskType) {
-        this.deadline = deadline;
+        this.deadline = ZonedDateTimeAttribute.from(deadline);
         this.duration = duration;
         this.taskType = taskType;
     }
@@ -35,7 +39,11 @@ public class TemporalConstraint {
     }
 
     public TemporalConstraint changeTaskType(TaskType newTaskType) {
-        return new TemporalConstraint(this.deadline, this.duration, newTaskType);
+        return new TemporalConstraint(this.getDeadline(), this.duration, newTaskType);
+    }
+
+    public ZonedDateTime getDeadline() {
+        return deadline.toZonedDateTime();
     }
 
     @Override

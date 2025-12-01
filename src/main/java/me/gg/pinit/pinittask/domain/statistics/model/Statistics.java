@@ -3,6 +3,7 @@ package me.gg.pinit.pinittask.domain.statistics.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import me.gg.pinit.pinittask.domain.converter.service.DurationConverter;
+import me.gg.pinit.pinittask.domain.datetime.ZonedDateTimeAttribute;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
@@ -20,7 +21,12 @@ public class Statistics {
 
     private Long memberId;
 
-    private ZonedDateTime startOfWeek;
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "dateTime", column = @Column(name = "start_of_week_time")),
+            @AttributeOverride(name = "zoneId", column = @Column(name = "start_of_week_zone_id"))
+    })
+    private ZonedDateTimeAttribute startOfWeek;
 
     @Convert(converter = DurationConverter.class)
     private Duration deepWorkElapsedTime;
@@ -37,7 +43,7 @@ public class Statistics {
 
     public Statistics(Long memberId, ZonedDateTime startOfWeek) {
         this.memberId = memberId;
-        this.startOfWeek = startOfWeek;
+        this.startOfWeek = ZonedDateTimeAttribute.from(startOfWeek);
         this.deepWorkElapsedTime = Duration.ZERO;
         this.adminWorkElapsedTime = Duration.ZERO;
         this.totalWorkElapsedTime = Duration.ZERO;
@@ -88,6 +94,6 @@ public class Statistics {
     }
 
     public ZonedDateTime getStartOfWeek() {
-        return startOfWeek;
+        return startOfWeek.toZonedDateTime();
     }
 }

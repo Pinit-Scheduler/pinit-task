@@ -36,10 +36,10 @@ class StatisticsServiceTest {
         ZonedDateTime mondayStart = now.minusDays(2).withHour(0).withMinute(0).withSecond(0).withNano(0);
         Statistics existing = new Statistics(memberId, mondayStart);
         when(dateTimeUtils.lastMondayStart(now)).thenReturn(mondayStart);
-        when(statisticsRepository.findByMemberIdAndStartOfWeek(memberId, mondayStart)).thenReturn(Optional.of(existing));
+        when(statisticsRepository.findByMemberIdAndStartOfWeek(memberId, mondayStart.toLocalDateTime(), mondayStart.getZone().getId())).thenReturn(Optional.of(existing));
         Statistics result = statisticsService.getStatistics(memberId, now);
         assertThat(result).isSameAs(existing);
-        verify(statisticsRepository).findByMemberIdAndStartOfWeek(memberId, mondayStart);
+        verify(statisticsRepository).findByMemberIdAndStartOfWeek(memberId, mondayStart.toLocalDateTime(), mondayStart.getZone().getId());
     }
 
     @Test
@@ -50,7 +50,7 @@ class StatisticsServiceTest {
         stats.addDeepWorkDuration(Duration.ofMinutes(40));
         Duration rollback = Duration.ofMinutes(15);
         when(dateTimeUtils.lastMondayStart(startTime)).thenReturn(mondayStart);
-        when(statisticsRepository.findByMemberIdAndStartOfWeek(memberId, mondayStart)).thenReturn(Optional.of(stats));
+        when(statisticsRepository.findByMemberIdAndStartOfWeek(memberId, mondayStart.toLocalDateTime(), mondayStart.getZone().getId())).thenReturn(Optional.of(stats));
         statisticsService.removeElapsedTime(memberId, TaskType.DEEP_WORK, rollback, startTime);
         assertThat(stats.getDeepWorkElapsedTime()).isEqualTo(Duration.ofMinutes(25));
         assertThat(stats.getTotalWorkElapsedTime()).isEqualTo(Duration.ofMinutes(25));
@@ -63,7 +63,7 @@ class StatisticsServiceTest {
         ZonedDateTime mondayStart = startTime.minusDays(4).withHour(0).withMinute(0).withSecond(0).withNano(0);
         Duration duration = Duration.ofMinutes(45);
         when(dateTimeUtils.lastMondayStart(startTime)).thenReturn(mondayStart);
-        when(statisticsRepository.findByMemberIdAndStartOfWeek(memberId, mondayStart)).thenReturn(Optional.empty());
+        when(statisticsRepository.findByMemberIdAndStartOfWeek(memberId, mondayStart.toLocalDateTime(), mondayStart.getZone().getId())).thenReturn(Optional.empty());
         statisticsService.addElapsedTime(memberId, TaskType.ADMIN_TASK, duration, startTime);
         verify(statisticsRepository).save(argThat(saved -> {
             assertThat(saved.getAdminWorkElapsedTime()).isEqualTo(duration);

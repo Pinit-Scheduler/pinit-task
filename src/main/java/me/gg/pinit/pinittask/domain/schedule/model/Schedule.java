@@ -13,6 +13,7 @@ import me.gg.pinit.pinittask.domain.schedule.patch.SchedulePatch;
 import me.gg.pinit.pinittask.domain.schedule.vo.ImportanceConstraint;
 import me.gg.pinit.pinittask.domain.schedule.vo.ScheduleHistory;
 import me.gg.pinit.pinittask.domain.schedule.vo.TemporalConstraint;
+import me.gg.pinit.pinittask.domain.datetime.ZonedDateTimeAttribute;
 
 import java.time.ZonedDateTime;
 
@@ -35,8 +36,12 @@ public class Schedule {
     @Getter
     private String description;
 
-    @Getter
-    private ZonedDateTime designatedStartTime;
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "dateTime", column = @Column(name = "designated_start_time")),
+            @AttributeOverride(name = "zoneId", column = @Column(name = "designated_start_zone_id"))
+    })
+    private ZonedDateTimeAttribute designatedStartTime;
 
     @Getter
     @Embedded
@@ -61,6 +66,10 @@ public class Schedule {
         this.importanceConstraint = ic;
         setDesignatedStartTime(zdt);
         this.state = new NotStartedState();
+    }
+
+    public ZonedDateTime getDesignatedStartTime() {
+        return designatedStartTime.toZonedDateTime();
     }
 
     public void start(ZonedDateTime startTime) {
@@ -123,7 +132,7 @@ public class Schedule {
 
     public void setDesignatedStartTime(ZonedDateTime zdt) {
         validateStartTime(zdt);
-        this.designatedStartTime = zdt;
+        this.designatedStartTime = ZonedDateTimeAttribute.from(zdt);
     }
 
     public void changeDeadline(ZonedDateTime newDeadline) {
@@ -194,7 +203,7 @@ public class Schedule {
     }
 
     private void validateDeadline(ZonedDateTime newDeadline) {
-        if (newDeadline.isBefore(this.designatedStartTime)) {
+        if (newDeadline.isBefore(this.getDesignatedStartTime())) {
             throw new TimeOrderReversedException("데드라인은 일정 등록 날짜보다 앞설 수 없습니다.");
         }
     }

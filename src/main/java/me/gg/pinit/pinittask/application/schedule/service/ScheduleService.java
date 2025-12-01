@@ -43,14 +43,24 @@ public class ScheduleService {
         ZonedDateTime startOfDay = date.atStartOfDay(memberZoneById);
         ZonedDateTime endExclusive = date.plusDays(1).atStartOfDay(memberZoneById);
 
-        return scheduleRepository.findAllByOwnerIdAndDesignatedStartTimeBetween(memberId, startOfDay, endExclusive);
+        return scheduleRepository.findAllByOwnerIdAndDesignatedStartTimeBetween(
+                memberId,
+                startOfDay.toLocalDateTime(),
+                endExclusive.toLocalDateTime(),
+                memberZoneById.getId()
+        );
     }
 
     @Transactional(readOnly = true)
     public List<Schedule> getScheduleListForWeek(Long memberId, ZonedDateTime now) {
         ZonedDateTime start = dateTimeUtils.lastMondayStart(now);
         ZonedDateTime end = start.plusDays(7);
-        return scheduleRepository.findAllByOwnerIdAndDesignatedStartTimeBetween(memberId, start, end);
+        return scheduleRepository.findAllByOwnerIdAndDesignatedStartTimeBetween(
+                memberId,
+                start.toLocalDateTime(),
+                end.toLocalDateTime(),
+                start.getZone().getId()
+        );
     }
 
     @Transactional

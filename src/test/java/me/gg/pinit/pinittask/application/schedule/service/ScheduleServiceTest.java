@@ -23,8 +23,7 @@ import java.util.Optional;
 import static me.gg.pinit.pinittask.domain.schedule.model.ScheduleUtils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -59,12 +58,12 @@ class ScheduleServiceTest {
     @Test
     void getScheduleList() {
         when(memberService.findZoneIdOfMember(memberId)).thenReturn(ZoneId.of("Asia/Seoul"));
-        when(scheduleRepository.findAllByOwnerIdAndDesignatedStartTimeBetween(eq(memberId), any(ZonedDateTime.class), any(ZonedDateTime.class))).thenReturn(List.of(scheduleSample));
+        when(scheduleRepository.findAllByOwnerIdAndDesignatedStartTimeBetween(eq(memberId), any(), any(), anyString())).thenReturn(List.of(scheduleSample));
         List<Schedule> scheduleList = scheduleService.getScheduleList(memberId, LocalDate.of(2025, 10, 1));
         assertNotNull(scheduleList);
         assertEquals(1, scheduleList.size());
         verify(memberService).findZoneIdOfMember(memberId);
-        verify(scheduleRepository).findAllByOwnerIdAndDesignatedStartTimeBetween(eq(memberId), any(ZonedDateTime.class), any(ZonedDateTime.class));
+        verify(scheduleRepository).findAllByOwnerIdAndDesignatedStartTimeBetween(eq(memberId), any(), any(), anyString());
     }
 
     @Test
