@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import me.gg.pinit.pinittask.application.datetime.DateTimeUtils;
 import me.gg.pinit.pinittask.application.schedule.service.ScheduleAdjustmentService;
 import me.gg.pinit.pinittask.application.schedule.service.ScheduleService;
 import me.gg.pinit.pinittask.application.schedule.service.ScheduleStateChangeService;
@@ -22,7 +23,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @RestController
@@ -36,6 +38,7 @@ import java.util.List;
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
 })
 public class ScheduleController {
+    private final DateTimeUtils dateTimeUtils;
     private final ScheduleService scheduleService;
     private final ScheduleAdjustmentService scheduleAdjustmentService;
     private final ScheduleStateChangeService scheduleStateChangeService;
@@ -48,7 +51,7 @@ public class ScheduleController {
     })
     public ResponseEntity<ScheduleResponse> createSchedule(@MemberId Long memberId,
                                                            @Valid @RequestBody ScheduleRequest request) {
-        Schedule saved = scheduleAdjustmentService.createSchedule(memberId, request.toCommand(null, memberId));
+        Schedule saved = scheduleAdjustmentService.createSchedule(memberId, request.toCommand(null, memberId, dateTimeUtils));
         return ResponseEntity.status(HttpStatus.CREATED).body(ScheduleResponse.from(saved));
     }
 
@@ -61,7 +64,7 @@ public class ScheduleController {
     public ResponseEntity<ScheduleResponse> updateSchedule(@MemberId Long memberId,
                                                            @PathVariable Long scheduleId,
                                                            @Valid @RequestBody ScheduleRequest request) {
-        Schedule updated = scheduleAdjustmentService.adjustSchedule(memberId, request.toCommand(scheduleId, memberId));
+        Schedule updated = scheduleAdjustmentService.adjustSchedule(memberId, request.toCommand(scheduleId, memberId, dateTimeUtils));
         return ResponseEntity.ok(ScheduleResponse.from(updated));
     }
 
@@ -96,8 +99,9 @@ public class ScheduleController {
             @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public List<ScheduleResponse> getWeeklySchedules(@MemberId Long memberId,
-                                                     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime time) {
-        return scheduleService.getScheduleListForWeek(memberId, time).stream()
+                                                     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime time,
+                                                     @RequestParam ZoneId zoneId) {
+        return scheduleService.getScheduleListForWeek(memberId, dateTimeUtils.toZonedDateTime(time, zoneId)).stream()
                 .map(ScheduleResponse::from)
                 .toList();
     }
@@ -108,8 +112,10 @@ public class ScheduleController {
             @ApiResponse(responseCode = "204", description = "일정이 시작되었습니다."),
             @ApiResponse(responseCode = "409", description = "잘못된 상태 전환입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<Void> startSchedule(@MemberId Long memberId, @PathVariable Long scheduleId, @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime time) {
-        scheduleStateChangeService.startSchedule(memberId, scheduleId, time);
+    public ResponseEntity<Void> startSchedule(@MemberId Long memberId, @PathVariable Long scheduleId,
+                                              @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime time,
+                                              @RequestParam ZoneId zoneId) {
+        scheduleStateChangeService.startSchedule(memberId, scheduleId, dateTimeUtils.toZonedDateTime(time, zoneId));
         return ResponseEntity.noContent().build();
     }
 
@@ -119,8 +125,10 @@ public class ScheduleController {
             @ApiResponse(responseCode = "204", description = "일정이 완료되었습니다."),
             @ApiResponse(responseCode = "409", description = "잘못된 상태 전환입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<Void> completeSchedule(@MemberId Long memberId, @PathVariable Long scheduleId, @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime time) {
-        scheduleStateChangeService.completeSchedule(memberId, scheduleId, time);
+    public ResponseEntity<Void> completeSchedule(@MemberId Long memberId, @PathVariable Long scheduleId,
+                                                 @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime time,
+                                                 @RequestParam ZoneId zoneId) {
+        scheduleStateChangeService.completeSchedule(memberId, scheduleId, dateTimeUtils.toZonedDateTime(time, zoneId));
         return ResponseEntity.noContent().build();
     }
 
@@ -130,8 +138,10 @@ public class ScheduleController {
             @ApiResponse(responseCode = "204", description = "일정이 일시중지되었습니다."),
             @ApiResponse(responseCode = "409", description = "잘못된 상태 전환입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<Void> suspendSchedule(@MemberId Long memberId, @PathVariable Long scheduleId, @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime time) {
-        scheduleStateChangeService.suspendSchedule(memberId, scheduleId, time);
+    public ResponseEntity<Void> suspendSchedule(@MemberId Long memberId, @PathVariable Long scheduleId,
+                                                @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime time,
+                                                @RequestParam ZoneId zoneId) {
+        scheduleStateChangeService.suspendSchedule(memberId, scheduleId, dateTimeUtils.toZonedDateTime(time, zoneId));
         return ResponseEntity.noContent().build();
     }
 

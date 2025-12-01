@@ -5,7 +5,6 @@ import lombok.Getter;
 import me.gg.pinit.pinittask.domain.statistics.model.Statistics;
 
 import java.time.Duration;
-import java.time.ZonedDateTime;
 
 @Getter
 @Schema(description = "사용자 주간 통계 응답 DTO")
@@ -14,7 +13,7 @@ public class StatisticsResponse {
     private Long memberId;
 
     @Schema(description = "통계 기준 주간의 시작 시각")
-    private ZonedDateTime startOfWeek;
+    private DateTimeWithZone startOfWeek;
 
     @Schema(description = "딥 워크 누적 시간")
     private Duration deepWorkElapsedTime;
@@ -26,7 +25,7 @@ public class StatisticsResponse {
     public static StatisticsResponse from(Statistics statistics) {
         StatisticsResponse response = new StatisticsResponse();
         response.memberId = statistics.getMemberId();
-        response.startOfWeek = statistics.getStartOfWeek();
+        response.startOfWeek = DateTimeWithZone.from(statistics.getStartOfWeek());
         response.deepWorkElapsedTime = statistics.getDeepWorkElapsedTime();
         response.adminWorkElapsedTime = statistics.getAdminWorkElapsedTime();
         response.totalWorkElapsedTime = statistics.getTotalWorkElapsedTime();

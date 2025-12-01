@@ -5,8 +5,6 @@ import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
 import me.gg.pinit.pinittask.domain.schedule.vo.ImportanceConstraint;
 import me.gg.pinit.pinittask.domain.schedule.vo.TemporalConstraint;
 
-import java.time.ZonedDateTime;
-
 public record ScheduleResponse(
         @Schema(description = "일정 ID", example = "10")
         Long id,
@@ -17,9 +15,9 @@ public record ScheduleResponse(
         @Schema(description = "일정 설명")
         String description,
         @Schema(description = "일정 시작 예정 시각")
-        ZonedDateTime date,
+        DateTimeWithZone date,
         @Schema(description = "마감 기한")
-        ZonedDateTime deadline,
+        DateTimeWithZone deadline,
         @Schema(description = "중요도")
         int importance,
         @Schema(description = "긴급도")
@@ -35,8 +33,8 @@ public record ScheduleResponse(
                 schedule.getOwnerId(),
                 schedule.getTitle(),
                 schedule.getDescription(),
-                schedule.getDesignatedStartTime(),
-                temporal.getDeadline(),
+                DateTimeWithZone.from(schedule.getDesignatedStartTime()),
+                DateTimeWithZone.from(temporal.getDeadline()),
                 importanceConstraint.getImportance(),
                 importanceConstraint.getUrgency(),
                 schedule.getState()

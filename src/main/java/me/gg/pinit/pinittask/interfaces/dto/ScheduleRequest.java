@@ -7,10 +7,10 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import me.gg.pinit.pinittask.application.schedule.dto.DependencyDto;
+import me.gg.pinit.pinittask.application.datetime.DateTimeUtils;
 import me.gg.pinit.pinittask.application.schedule.dto.ScheduleDependencyAdjustCommand;
 import me.gg.pinit.pinittask.domain.schedule.model.TaskType;
 
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -23,8 +23,9 @@ public record ScheduleRequest(
         @Schema(description = "일정 설명", example = "다음 주 발표 자료 정리")
         String description,
         @NotNull
-        @Schema(description = "마감 기한", example = "2024-03-01T18:00:00+09:00[Asia/Seoul]")
-        ZonedDateTime deadline,
+        @Schema(description = "마감 기한", example = "{\"dateTime\":\"2024-03-01T18:00:00\",\"zoneId\":\"Asia/Seoul\"}")
+        @Valid
+        DateTimeWithZone deadline,
         @NotNull
         @Min(1)
         @Max(9)
@@ -39,14 +40,15 @@ public record ScheduleRequest(
         @Schema(description = "작업 유형", example = "TASK")
         TaskType taskType,
         @NotNull
-        @Schema(description = "일정 시작 예정 시각", example = "2024-02-28T09:00:00+09:00[Asia/Seoul]")
-        ZonedDateTime date,
+        @Schema(description = "일정 시작 예정 시각", example = "{\"dateTime\":\"2024-02-28T09:00:00\",\"zoneId\":\"Asia/Seoul\"}")
+        @Valid
+        DateTimeWithZone date,
         @Schema(description = "제거할 의존 관계 목록")
         List<@Valid DependencyRequest> removeDependencies,
         @Schema(description = "추가할 의존 관계 목록")
         List<@Valid DependencyRequest> addDependencies
 ) {
-    public ScheduleDependencyAdjustCommand toCommand(Long scheduleId, Long ownerId) {
+    public ScheduleDependencyAdjustCommand toCommand(Long scheduleId, Long ownerId, DateTimeUtils dateTimeUtils) {
         List<DependencyDto> remove = toDependencyDtos(removeDependencies);
         List<DependencyDto> add = toDependencyDtos(addDependencies);
         return new ScheduleDependencyAdjustCommand(
@@ -54,11 +56,11 @@ public record ScheduleRequest(
                 ownerId,
                 title,
                 description,
-                deadline,
+                dateTimeUtils.toZonedDateTime(deadline.dateTime(), deadline.zoneId()),
                 importance,
                 urgency,
                 taskType,
-                date,
+                dateTimeUtils.toZonedDateTime(date.dateTime(), date.zoneId()),
                 remove,
                 add
         );

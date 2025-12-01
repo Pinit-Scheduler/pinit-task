@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import me.gg.pinit.pinittask.application.datetime.DateTimeUtils;
 import me.gg.pinit.pinittask.application.statistics.service.StatisticsService;
 import me.gg.pinit.pinittask.interfaces.dto.StatisticsResponse;
 import me.gg.pinit.pinittask.interfaces.exception.ErrorResponse;
@@ -15,16 +16,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @RestController
 @RequestMapping("/statistics")
 @Tag(name = "Statistics", description = "통계 조회 API")
 public class StatisticsController {
     private final StatisticsService statisticsService;
+    private final DateTimeUtils dateTimeUtils;
 
-    public StatisticsController(StatisticsService statisticsService) {
+    public StatisticsController(StatisticsService statisticsService, DateTimeUtils dateTimeUtils) {
         this.statisticsService = statisticsService;
+        this.dateTimeUtils = dateTimeUtils;
     }
 
     @GetMapping
@@ -34,8 +38,9 @@ public class StatisticsController {
     @ApiResponse(responseCode = "404", description = "통계를 찾을 수 없습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     public StatisticsResponse getStatistics(
             @MemberId Long memberId,
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime time
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime time,
+            @RequestParam ZoneId zoneId
     ) {
-        return StatisticsResponse.from(statisticsService.getStatistics(memberId, time));
+        return StatisticsResponse.from(statisticsService.getStatistics(memberId, dateTimeUtils.toZonedDateTime(time, zoneId)));
     }
 }
