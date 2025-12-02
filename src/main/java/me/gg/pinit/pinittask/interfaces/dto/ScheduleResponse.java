@@ -25,7 +25,7 @@ public record ScheduleResponse(
         int importance,
         @Schema(description = "긴급도")
         int urgency,
-        @Schema(description = "")
+        @Schema(description = "누적 작업 시간")
         Duration duration,
         @Schema(description = "현재 상태")
         String state
