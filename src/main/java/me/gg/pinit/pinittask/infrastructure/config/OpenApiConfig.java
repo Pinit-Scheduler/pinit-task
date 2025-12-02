@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Configuration;
         ),
         servers = {
                 @Server(url = "http://localhost:8080", description = "Local"),
-                @Server(url = "https://api.pinit.local", description = "Production")
+                @Server(url = "https://api.pinit.go-gradually.me", description = "Production")
         }
 )
 public class OpenApiConfig {
