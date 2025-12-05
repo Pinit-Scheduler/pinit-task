@@ -30,7 +30,7 @@ public class Member {
     private Long version;
 
     @Getter
-    private String userId;
+    private String userStringId;
 
     @Getter
     private String nickname;
@@ -55,8 +55,8 @@ public class Member {
     protected Member() {
     }
 
-    public Member(String userId, String nickname, Duration dailyObjectiveWork, ZoneId zoneId) {
-        this.userId = userId;
+    public Member(String userStringId, String nickname, Duration dailyObjectiveWork, ZoneId zoneId) {
+        this.userStringId = userStringId;
         this.nickname = nickname;
         this.zoneId = zoneId;
         this.dailyObjectiveWork = dailyObjectiveWork != null ? dailyObjectiveWork : Duration.ofHours(4);
