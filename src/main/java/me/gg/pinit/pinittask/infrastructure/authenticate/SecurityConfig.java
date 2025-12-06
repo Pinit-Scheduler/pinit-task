@@ -1,5 +1,6 @@
 package me.gg.pinit.pinittask.infrastructure.authenticate;
 
+import jakarta.servlet.http.HttpServletResponse;
 import me.gg.pinit.pinittask.interfaces.config.CorsProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,6 +28,9 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(e -> e.authenticationEntryPoint(
+                        (request, response, ex) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or missing token")
+                ))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login", "/signup", "/refresh", "/login/**", "/v3/**", "/swagger-ui/**").permitAll()
                         .anyRequest().authenticated()
