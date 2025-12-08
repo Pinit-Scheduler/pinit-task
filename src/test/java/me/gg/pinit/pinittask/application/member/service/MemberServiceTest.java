@@ -3,6 +3,7 @@ package me.gg.pinit.pinittask.application.member.service;
 import me.gg.pinit.pinittask.domain.member.exception.DuplicatedScheduleRunningException;
 import me.gg.pinit.pinittask.domain.member.exception.MemberNotFoundException;
 import me.gg.pinit.pinittask.domain.member.model.Member;
+import me.gg.pinit.pinittask.domain.member.model.MemberUtils;
 import me.gg.pinit.pinittask.domain.member.repository.MemberRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,7 +32,7 @@ class MemberServiceTest {
     @DisplayName("회원의 ZoneId 조회 성공")
     void findZoneIdOfMember_success() {
         // given
-        Member member = new Member(1L, "nick", ZoneId.of("Asia/Seoul"));
+        Member member = MemberUtils.getMemberSample();
         Long memberId = 1L;
         when(memberRepository.findById(memberId)).thenReturn(Optional.of(member));
 
@@ -59,7 +60,7 @@ class MemberServiceTest {
     @DisplayName("실행 중 일정 설정 성공")
     void setNowRunningSchedule_success() {
         // given
-        Member member = new Member(2L, "nick", ZoneId.of("UTC"));
+        Member member = MemberUtils.getMemberSample();
         Long memberId = 2L;
         Long scheduleId = 10L;
         when(memberRepository.findById(memberId)).thenReturn(Optional.of(member));
@@ -88,7 +89,7 @@ class MemberServiceTest {
     @DisplayName("실행 중 일정 설정 실패 - 이미 실행 중 일정 존재")
     void setNowRunningSchedule_duplicated() {
         // given
-        Member member = new Member(4L, "nick", ZoneId.of("UTC"));
+        Member member = MemberUtils.getMemberSample();
         member.setNowRunningSchedule(20L); // 이미 설정됨
         Long memberId = 4L;
         when(memberRepository.findById(memberId)).thenReturn(Optional.of(member));
@@ -105,7 +106,7 @@ class MemberServiceTest {
     @DisplayName("실행 중 일정 초기화 성공")
     void clearNowRunningSchedule_success() {
         // given
-        Member member = new Member(5L, "nick", ZoneId.of("UTC"));
+        Member member = MemberUtils.getMemberSample();
         member.setNowRunningSchedule(100L);
         Long memberId = 5L;
         when(memberRepository.findById(memberId)).thenReturn(Optional.of(member));
