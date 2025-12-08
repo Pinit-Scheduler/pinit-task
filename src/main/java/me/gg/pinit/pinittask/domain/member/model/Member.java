@@ -30,9 +30,6 @@ public class Member {
     private Long version;
 
     @Getter
-    private String userStringId;
-
-    @Getter
     private String nickname;
 
     @Convert(converter = LocalTimeConverter.class)
@@ -55,11 +52,11 @@ public class Member {
     protected Member() {
     }
 
-    public Member(String userStringId, String nickname, Duration dailyObjectiveWork, ZoneId zoneId) {
-        this.userStringId = userStringId;
+    public Member(Long memberId, String nickname, ZoneId zoneId) {
+        this.id = memberId;
         this.nickname = nickname;
         this.zoneId = zoneId;
-        this.dailyObjectiveWork = dailyObjectiveWork != null ? dailyObjectiveWork : Duration.ofHours(4);
+        this.dailyObjectiveWork = Duration.ofHours(4);
 
         sleepTime = LocalTime.of(23, 0, 0, 0);
         wakeUpTime = LocalTime.of(7, 0, 0, 0);
