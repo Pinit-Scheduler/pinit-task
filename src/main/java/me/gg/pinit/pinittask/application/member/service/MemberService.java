@@ -1,6 +1,7 @@
 package me.gg.pinit.pinittask.application.member.service;
 
 import me.gg.pinit.pinittask.domain.member.exception.MemberNotFoundException;
+import me.gg.pinit.pinittask.domain.member.model.Member;
 import me.gg.pinit.pinittask.domain.member.repository.MemberRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,5 +40,10 @@ public class MemberService {
         memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberNotFoundException("Member not found"))
                 .clearNowRunningSchedule();
+    }
+
+    @Transactional
+    public void enrollMember(Long memberId, String nickname) {
+        memberRepository.save(new Member(memberId, nickname, ZoneId.of("Asia/Seoul")));
     }
 }
