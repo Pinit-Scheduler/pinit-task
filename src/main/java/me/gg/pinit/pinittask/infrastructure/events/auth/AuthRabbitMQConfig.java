@@ -1,6 +1,5 @@
-package me.gg.pinit.pinittask.infrastructure.events;
+package me.gg.pinit.pinittask.infrastructure.events.auth;
 
-import me.gg.pinit.pinittask.infrastructure.events.messaging.AuthMemberMessaging;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
@@ -8,10 +7,10 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import static me.gg.pinit.pinittask.infrastructure.events.messaging.AuthMemberMessaging.MEMBER_CREATED_QUEUE;
+import static me.gg.pinit.pinittask.infrastructure.events.auth.AuthMemberMessaging.MEMBER_CREATED_QUEUE;
 
 @Configuration
-public class RabbitMQConfig {
+public class AuthRabbitMQConfig {
 
     @Bean
     public DirectExchange authMemberDirect() {

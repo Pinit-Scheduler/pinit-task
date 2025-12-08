@@ -1,4 +1,4 @@
-package me.gg.pinit.pinittask.infrastructure.events.messaging;
+package me.gg.pinit.pinittask.infrastructure.events.auth;
 
 public class AuthMemberMessaging {
     public static final String DIRECT_EXCHANGE = "auth.member.direct";
