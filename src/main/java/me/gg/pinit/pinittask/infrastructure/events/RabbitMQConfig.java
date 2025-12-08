@@ -8,8 +8,11 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import static me.gg.pinit.pinittask.infrastructure.events.messaging.AuthMemberMessaging.MEMBER_CREATED_QUEUE;
+
 @Configuration
 public class RabbitMQConfig {
+
     @Bean
     public DirectExchange authMemberDirect() {
         return new DirectExchange(AuthMemberMessaging.DIRECT_EXCHANGE);
@@ -24,6 +27,6 @@ public class RabbitMQConfig {
 
     @Bean
     public Queue memberCreatedQueue() {
-        return new Queue("member.created.queue", true);
+        return new Queue(MEMBER_CREATED_QUEUE, true);
     }
 }
