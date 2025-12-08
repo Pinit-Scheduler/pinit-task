@@ -23,7 +23,6 @@ public class Member {
     @Id
     @Getter
     @Column(name = "member_id")
-    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @Version
