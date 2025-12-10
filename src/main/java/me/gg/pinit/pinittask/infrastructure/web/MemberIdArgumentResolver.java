@@ -1,11 +1,8 @@
 package me.gg.pinit.pinittask.infrastructure.web;
 
-import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import me.gg.pinit.pinittask.domain.member.exception.MemberNotFoundException;
-import me.gg.pinit.pinittask.domain.member.model.Member;
-import me.gg.pinit.pinittask.domain.member.repository.MemberRepository;
 import me.gg.pinit.pinittask.infrastructure.authenticate.JwtTokenProvider;
 import me.gg.pinit.pinittask.interfaces.utils.MemberId;
 import org.springframework.core.MethodParameter;
@@ -15,15 +12,12 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import java.time.Duration;
-import java.time.ZoneId;
-import java.util.Objects;
 @Slf4j
 @Component
-public class MemberIdForTestArgumentResolver implements HandlerMethodArgumentResolver {
+public class MemberIdArgumentResolver implements HandlerMethodArgumentResolver {
     private final JwtTokenProvider jwtTokenProvider;
 
-    public MemberIdForTestArgumentResolver(JwtTokenProvider jwtTokenProvider) {
+    public MemberIdArgumentResolver(JwtTokenProvider jwtTokenProvider) {
         this.jwtTokenProvider = jwtTokenProvider;
     }
 

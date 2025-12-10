@@ -1,8 +1,6 @@
 package me.gg.pinit.pinittask.interfaces.config;
 
-import me.gg.pinit.pinittask.infrastructure.web.MemberIdForTestArgumentResolver;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import me.gg.pinit.pinittask.infrastructure.web.MemberIdArgumentResolver;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -12,11 +10,11 @@ import java.util.List;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
-    private final MemberIdForTestArgumentResolver memberIdForTestArgumentResolver;
+    private final MemberIdArgumentResolver memberIdForTestArgumentResolver;
 
     private final CorsProperties corsProperties;
 
-    public WebConfig(MemberIdForTestArgumentResolver memberIdForTestArgumentResolver, CorsProperties corsProperties) {
+    public WebConfig(MemberIdArgumentResolver memberIdForTestArgumentResolver, CorsProperties corsProperties) {
         this.memberIdForTestArgumentResolver = memberIdForTestArgumentResolver;
         this.corsProperties = corsProperties;
     }
