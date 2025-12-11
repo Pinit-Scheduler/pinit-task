@@ -4,7 +4,6 @@ import me.gg.pinit.pinittask.domain.events.DomainEvents;
 import me.gg.pinit.pinittask.domain.schedule.event.ScheduleCanceledEvent;
 import me.gg.pinit.pinittask.domain.schedule.exception.IllegalTransitionException;
 
-import java.time.Duration;
 import java.time.ZonedDateTime;
 
 public class CompletedState implements ScheduleState{
@@ -19,10 +18,8 @@ public class CompletedState implements ScheduleState{
         throw new IllegalTransitionException("완료된 일정을 일시정지할 수 없습니다.");
     }
 
-    @Override
-    public void cancel(Schedule ctx) {
-        DomainEvents.raise(new ScheduleCanceledEvent(ownerFor(ctx), taskTypeFor(ctx), elapsedTimeFor(ctx), startTimeFor(ctx)));
-        ctx.setState(new NotStartedState());
+    private static Long idFor(Schedule ctx) {
+        return ctx.getId();
     }
 
     @Override
@@ -39,15 +36,9 @@ public class CompletedState implements ScheduleState{
         return ctx.getOwnerId();
     }
 
-    private Duration elapsedTimeFor(Schedule ctx) {
-        return ctx.getHistory().getElapsedTime();
-    }
-
-    private TaskType taskTypeFor(Schedule ctx) {
-        return ctx.getTemporalConstraint().getTaskType();
-    }
-
-    private ZonedDateTime startTimeFor(Schedule ctx) {
-        return ctx.getDesignatedStartTime();
+    @Override
+    public void cancel(Schedule ctx) {
+        DomainEvents.raise(new ScheduleCanceledEvent(idFor(ctx), ownerFor(ctx), this.toString()));
+        ctx.setState(new NotStartedState());
     }
 }

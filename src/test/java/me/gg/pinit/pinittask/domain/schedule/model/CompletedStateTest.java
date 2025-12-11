@@ -62,8 +62,6 @@ class CompletedStateTest {
 
         if (event instanceof ScheduleCanceledEvent canceledEvent) {
             Assertions.assertThat(canceledEvent.getOwnerId()).isEqualTo(schedule.getOwnerId());
-            Assertions.assertThat(canceledEvent.getDuration()).isEqualTo(schedule.getHistory().getElapsedTime());
-            Assertions.assertThat(canceledEvent.getTaskType()).isEqualTo(schedule.getTemporalConstraint().getTaskType());
         }
     }
 
