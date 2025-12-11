@@ -67,7 +67,7 @@ public class SecurityConfig {
     @Bean
     public JwtTokenProvider jwtTokenProvider() {
         PublicKey publicKey = RsaKeyProvider.loadPublicKey("keys/public_key.pem");
-        return new JwtTokenProvider(publicKey, "https://pinit.go-gradually.me");
+        return new JwtTokenProvider(publicKey);
     }
 
     @Bean

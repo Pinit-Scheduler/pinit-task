@@ -15,11 +15,9 @@ import java.util.stream.Collectors;
 
 public class JwtTokenProvider {
     private final PublicKey publicKey;
-    private final String issuer;
 
-    public JwtTokenProvider(PublicKey publicKey, String issuer) {
+    public JwtTokenProvider(PublicKey publicKey) {
         this.publicKey = publicKey;
-        this.issuer = issuer;
     }
 
     public boolean validateToken(String token) {
