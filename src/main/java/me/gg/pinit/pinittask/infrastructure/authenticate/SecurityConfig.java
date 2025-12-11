@@ -1,7 +1,7 @@
 package me.gg.pinit.pinittask.infrastructure.authenticate;
 
 import jakarta.servlet.http.HttpServletResponse;
-import me.gg.pinit.pinittask.interfaces.config.CorsProperties;
+import me.gg.pinit.pinittask.infrastructure.config.CorsProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;

@@ -1,4 +1,4 @@
-package me.gg.pinit.pinittask.interfaces.config;
+package me.gg.pinit.pinittask.infrastructure.config;
 
 import lombok.Getter;
 import lombok.Setter;
