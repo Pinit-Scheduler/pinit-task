@@ -6,7 +6,7 @@ import me.gg.pinit.pinittask.domain.converter.service.ScheduleStateConverter;
 import me.gg.pinit.pinittask.domain.datetime.ZonedDateTimeAttribute;
 import me.gg.pinit.pinittask.domain.events.DomainEvents;
 import me.gg.pinit.pinittask.domain.schedule.event.ScheduleDeletedEvent;
-import me.gg.pinit.pinittask.domain.schedule.event.ScheduleTimeChangedEvent;
+import me.gg.pinit.pinittask.domain.schedule.event.ScheduleTimeUpdatedEvent;
 import me.gg.pinit.pinittask.domain.schedule.exception.IllegalChangeException;
 import me.gg.pinit.pinittask.domain.schedule.exception.IllegalDescriptionException;
 import me.gg.pinit.pinittask.domain.schedule.exception.IllegalTitleException;
@@ -134,7 +134,7 @@ public class Schedule {
     public void setDesignatedStartTime(ZonedDateTime zdt) {
         validateStartTime(zdt);
         this.designatedStartTime = ZonedDateTimeAttribute.from(zdt);
-        DomainEvents.raise(new ScheduleTimeChangedEvent(this.id, this.ownerId, zdt));
+        DomainEvents.raise(new ScheduleTimeUpdatedEvent(this.id, this.ownerId, zdt));
     }
 
     public void changeDeadline(ZonedDateTime newDeadline) {
