@@ -26,7 +26,9 @@ public class ScheduleUtils {
 
 
     public static Schedule getNotStartedSchedule() {
-        return new Schedule(1L, "Sample Schedule", "sample description", ENROLLED_TIME, getTemporalConstraintSample(), getImportanceConstraintSample());
+        Schedule schedule = new Schedule(1L, "Sample Schedule", "sample description", ENROLLED_TIME, getTemporalConstraintSample(), getImportanceConstraintSample());
+        DomainEvents.getEventsAndClear();
+        return schedule;
     }
 
     public static Schedule getNotStartedSchedule(
