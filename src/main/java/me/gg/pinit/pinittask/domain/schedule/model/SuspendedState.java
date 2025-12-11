@@ -1,21 +1,18 @@
 package me.gg.pinit.pinittask.domain.schedule.model;
 
 import me.gg.pinit.pinittask.domain.events.DomainEvents;
-import me.gg.pinit.pinittask.domain.schedule.event.ScheduleCompletedEvent;
+import me.gg.pinit.pinittask.domain.schedule.event.ScheduleCanceledEvent;
+import me.gg.pinit.pinittask.domain.schedule.event.ScheduleStartedEvent;
 import me.gg.pinit.pinittask.domain.schedule.exception.IllegalTransitionException;
 import me.gg.pinit.pinittask.domain.schedule.vo.ScheduleHistory;
 
-import java.time.Duration;
 import java.time.ZonedDateTime;
 
 public class SuspendedState implements ScheduleState {
     public static final String SUSPENDED = "SUSPENDED";
 
-    @Override
-    public void start(Schedule ctx, ZonedDateTime startTime) {
-        ScheduleHistory history = ctx.getHistory();
-        ctx.updateHistoryTo(history.recordStart(startTime));
-        ctx.setState(new InProgressState());
+    private static Long idFor(Schedule ctx) {
+        return ctx.getId();
     }
 
     @Override
@@ -24,10 +21,11 @@ public class SuspendedState implements ScheduleState {
     }
 
     @Override
-    public void cancel(Schedule ctx) {
+    public void start(Schedule ctx, ZonedDateTime startTime) {
+        DomainEvents.raise(new ScheduleStartedEvent(idFor(ctx), ownerFor(ctx), this.toString()));
         ScheduleHistory history = ctx.getHistory();
-        ctx.updateHistoryTo(history.rollback());
-        ctx.setState(new NotStartedState());
+        ctx.updateHistoryTo(history.recordStart(startTime));
+        ctx.setState(new InProgressState());
     }
 
     @Override
@@ -44,11 +42,11 @@ public class SuspendedState implements ScheduleState {
         return ctx.getOwnerId();
     }
 
-    private Duration elapsedTimeFor(Schedule ctx) {
-        return ctx.getHistory().getElapsedTime();
-    }
-
-    private TaskType taskTypeFor(Schedule ctx) {
-        return ctx.getTemporalConstraint().getTaskType();
+    @Override
+    public void cancel(Schedule ctx) {
+        DomainEvents.raise(new ScheduleCanceledEvent(idFor(ctx), ownerFor(ctx), this.toString()));
+        ScheduleHistory history = ctx.getHistory();
+        ctx.updateHistoryTo(history.rollback());
+        ctx.setState(new NotStartedState());
     }
 }
