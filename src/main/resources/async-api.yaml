@@ -13,23 +13,10 @@ servers:
 defaultContentType: application/json
 
 channels:
-  schedule.time.upcoming.enrolled:
-    address: schedule.time.upcoming.enrolled # 채널의 주소 정의, RabbitMQ의 라우팅 키로 사용
+  schedule.time.upcoming.updated:
+    address: schedule.time.upcoming.updated # 채널의 주소 정의, RabbitMQ의 라우팅 키로 사용
     messages:
-      scheduleTimeUpcomingEnrolled:
-        $ref: '#/components/messages/ScheduleTimeUpcomingState'
-    bindings:
-      amqp:
-        is: routingKey
-        exchange: # RabbitMQ의 익스체인지 설정. exchange 이름: task.schedule.direct
-          name: task.schedule.direct
-          type: direct
-          durable: true
-          autoDelete: false
-  schedule.time.upcoming.changed:
-    address: schedule.time.upcoming.changed # 채널의 주소 정의, RabbitMQ의 라우팅 키로 사용
-    messages:
-      scheduleTimeUpcomingChanged:
+      scheduleTimeUpcomingUpdated:
         $ref: '#/components/messages/ScheduleTimeUpcomingState'
     bindings:
       amqp:
@@ -93,37 +80,21 @@ channels:
           autoDelete: false
 
 operations:
-  publishScheduleTimeUpcomingChanged: # 발행하는 방법의 정의, 여기서 발행을 처리함을 명시
+  publishScheduleTimeUpcomingUpdated: # 발행하는 방법의 정의, 여기서 발행을 처리함을 명시
     action: send
     channel:
-      $ref: '#/channels/schedule.time.upcoming.changed'
+      $ref: '#/channels/schedule.time.upcoming.updated'
     summary: 일정 시작시간 변경 이벤트 발행
     messages:
-      - $ref: '#/channels/schedule.time.upcoming.changed/messages/scheduleTimeUpcomingChanged'
+      - $ref: '#/channels/schedule.time.upcoming.updated/messages/scheduleTimeUpcomingUpdated'
 
-  subscribeScheduleTimeUpcomingChanged: # 구독하는 방법의 정의, 여기서 구독을 처리함을 명시
+  subscribeScheduleTimeUpcomingUpdated: # 구독하는 방법의 정의, 여기서 구독을 처리함을 명시
     action: receive
     channel:
-      $ref: '#/channels/schedule.time.upcoming.changed'
+      $ref: '#/channels/schedule.time.upcoming.updated'
     summary: 일정 시작시간 변경 이벤트 구독
     messages:
-      - $ref: '#/channels/schedule.time.upcoming.changed/messages/scheduleTimeUpcomingChanged'
-
-  publishScheduleTimeUpcomingEnrolled: # 발행하는 방법의 정의, 여기서 발행을 처리함을 명시
-    action: send
-    channel:
-      $ref: '#/channels/schedule.time.upcoming.enrolled'
-    summary: 일정 시작시간 등록 이벤트 발행
-    messages:
-      - $ref: '#/channels/schedule.time.upcoming.enrolled/messages/scheduleTimeUpcomingEnrolled'
-
-  subscribeScheduleTimeUpcomingEnrolled: # 구독하는 방법의 정의, 여기서 구독을 처리함을 명시
-    action: receive
-    channel:
-      $ref: '#/channels/schedule.time.upcoming.enrolled'
-    summary: 일정 시작시간 등록 이벤트 구독
-    messages:
-      - $ref: '#/channels/schedule.time.upcoming.enrolled/messages/scheduleTimeUpcomingEnrolled'
+      - $ref: '#/channels/schedule.time.upcoming.updated/messages/scheduleTimeUpcomingUpdated'
 
   publishScheduleDeleted: # 발행하는 방법의 정의, 여기서 발행을 처리함을 명시
     action: send
