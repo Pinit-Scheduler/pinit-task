@@ -39,11 +39,11 @@ channels:
           type: direct
           durable: true
           autoDelete: false
-  schedule.time.upcoming.deleted:
-    address: schedule.time.upcoming.deleted # 채널의 주소 정의, RabbitMQ의 라우팅 키로 사용
+  schedule.deleted:
+    address: schedule.deleted # 채널의 주소 정의, RabbitMQ의 라우팅 키로 사용
     messages:
-      scheduleTimeUpcomingDeleted:
-        $ref: '#/components/messages/ScheduleTimeUpcomingState'
+      scheduleDeleted:
+        $ref: '#/components/messages/ScheduleDeleted'
     bindings:
       amqp:
         is: routingKey
@@ -121,25 +121,25 @@ operations:
     action: receive
     channel:
       $ref: '#/channels/schedule.time.upcoming.enrolled'
-      summary: 일정 시작시간 등록 이벤트 구독
+    summary: 일정 시작시간 등록 이벤트 구독
     messages:
       - $ref: '#/channels/schedule.time.upcoming.enrolled/messages/scheduleTimeUpcomingEnrolled'
 
-  publishScheduleTimeUpcomingDeleted: # 발행하는 방법의 정의, 여기서 발행을 처리함을 명시
+  publishScheduleDeleted: # 발행하는 방법의 정의, 여기서 발행을 처리함을 명시
     action: send
     channel:
-      $ref: '#/channels/schedule.time.upcoming.deleted'
+      $ref: '#/channels/schedule.deleted'
     summary: 일정 삭제 이벤트 발행
     messages:
-      - $ref: '#/channels/schedule.time.upcoming.deleted/messages/scheduleTimeUpcomingDeleted'
+      - $ref: '#/channels/schedule.deleted/messages/scheduleDeleted'
 
-  subscribeScheduleTimeUpcomingDeleted: # 구독하는 방법의 정의, 여기서 구독을 처리함을 명시
+  subscribeScheduleDeleted: # 구독하는 방법의 정의, 여기서 구독을 처리함을 명시
     action: receive
     channel:
-      $ref: '#/channels/schedule.time.upcoming.deleted'
+      $ref: '#/channels/schedule.deleted'
     summary: 일정 삭제 이벤트 구독
     messages:
-      - $ref: '#/channels/schedule.time.upcoming.deleted/messages/scheduleTimeUpcomingDeleted'
+      - $ref: '#/channels/schedule.deleted/messages/scheduleDeleted'
 
   publishScheduleStateStarted:
     action: send
@@ -212,6 +212,24 @@ components:
           idempotencyKey:
             type: string
         required: [ memberId, scheduleId, newUpcomingTime, occurredAt, idempotencyKey ]
+    ScheduleDeleted:
+      name: ScheduleDeleted
+      title: 일정 삭제 정보
+      payload:
+        type: object
+        properties:
+          memberId:
+            type: integer
+            format: int64
+          scheduleId:
+            type: integer
+            format: int64
+          occurredAt:
+            type: string
+            format: date-time
+          idempotencyKey:
+            type: string
+        required: [ memberId, scheduleId, occurredAt, idempotencyKey ]
     ScheduleStateChanged:
       name: ScheduleStateChanged
       title: 일정 상태 변경 정보
