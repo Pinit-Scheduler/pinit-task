@@ -1,14 +1,14 @@
 package me.gg.pinit.pinittask.domain.schedule.model;
 
 import me.gg.pinit.pinittask.domain.events.DomainEvents;
+import me.gg.pinit.pinittask.domain.schedule.event.ScheduleCanceledEvent;
 import me.gg.pinit.pinittask.domain.schedule.event.ScheduleCompletedEvent;
 import me.gg.pinit.pinittask.domain.schedule.exception.IllegalTransitionException;
 import me.gg.pinit.pinittask.domain.schedule.vo.ScheduleHistory;
 
-import java.time.Duration;
 import java.time.ZonedDateTime;
 
-public class InProgressState implements ScheduleState{
+public class InProgressState implements ScheduleState {
     public static final String IN_PROGRESS = "IN_PROGRESS";
 
     @Override
@@ -23,19 +23,16 @@ public class InProgressState implements ScheduleState{
         ctx.setState(new SuspendedState());
     }
 
-    @Override
-    public void cancel(Schedule ctx) {
-        ScheduleHistory history = ctx.getHistory();
-        ctx.updateHistoryTo(history.rollback());
-        ctx.setState(new NotStartedState());
+    private static Long idFor(Schedule ctx) {
+        return ctx.getId();
     }
 
     @Override
-    public void finish(Schedule ctx, ZonedDateTime finishTime) {
+    public void cancel(Schedule ctx) {
+        DomainEvents.raise(new ScheduleCanceledEvent(idFor(ctx), ownerFor(ctx), this.toString()));
         ScheduleHistory history = ctx.getHistory();
-        ctx.updateHistoryTo(history.recordStop(finishTime));
-        DomainEvents.raise(new ScheduleCompletedEvent(ownerFor(ctx), taskTypeFor(ctx), elapsedTimeFor(ctx), startTimeFor(ctx)));
-        ctx.setState(new CompletedState());
+        ctx.updateHistoryTo(history.rollback());
+        ctx.setState(new NotStartedState());
     }
 
     @Override
@@ -47,15 +44,11 @@ public class InProgressState implements ScheduleState{
         return ctx.getOwnerId();
     }
 
-    private Duration elapsedTimeFor(Schedule ctx) {
-        return ctx.getHistory().getElapsedTime();
-    }
-
-    private TaskType taskTypeFor(Schedule ctx) {
-        return ctx.getTemporalConstraint().getTaskType();
-    }
-
-    private ZonedDateTime startTimeFor(Schedule ctx) {
-        return ctx.getDesignatedStartTime();
+    @Override
+    public void finish(Schedule ctx, ZonedDateTime finishTime) {
+        DomainEvents.raise(new ScheduleCompletedEvent(idFor(ctx), ownerFor(ctx), this.toString()));
+        ScheduleHistory history = ctx.getHistory();
+        ctx.updateHistoryTo(history.recordStop(finishTime));
+        ctx.setState(new CompletedState());
     }
 }

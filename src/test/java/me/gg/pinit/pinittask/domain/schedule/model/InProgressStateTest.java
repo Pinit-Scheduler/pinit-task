@@ -77,9 +77,7 @@ class InProgressStateTest {
         assertThat(event).isInstanceOf(ScheduleCompletedEvent.class);
 
         if (event instanceof ScheduleCompletedEvent completedEvent) {
-            assertThat(completedEvent.getDuration()).isEqualTo(Duration.between(START_TIME, FINISH_TIME));
             assertThat(completedEvent.getOwnerId()).isEqualTo(schedule.getOwnerId());
-            assertThat(completedEvent.getTaskType()).isEqualTo(schedule.getTemporalConstraint().getTaskType());
         }
 
         assertThat(schedule.isCompleted()).isTrue();
