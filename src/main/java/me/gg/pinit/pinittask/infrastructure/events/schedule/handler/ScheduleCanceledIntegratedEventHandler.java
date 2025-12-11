@@ -8,10 +8,10 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 @Component
-public class ScheduleCanceledEventHandler {
+public class ScheduleCanceledIntegratedEventHandler {
     private final RabbitEventPublisher rabbitEventPublisher;
 
-    public ScheduleCanceledEventHandler(RabbitEventPublisher rabbitEventPublisher) {
+    public ScheduleCanceledIntegratedEventHandler(RabbitEventPublisher rabbitEventPublisher) {
         this.rabbitEventPublisher = rabbitEventPublisher;
     }
 
