@@ -42,3 +42,6 @@ out/
 
 ### key pair
 keys/
+
+### async api documentation
+src/main/resources/static/async-api/**
