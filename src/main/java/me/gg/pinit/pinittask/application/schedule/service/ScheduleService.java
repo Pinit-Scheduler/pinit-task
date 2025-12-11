@@ -2,7 +2,7 @@ package me.gg.pinit.pinittask.application.schedule.service;
 
 import lombok.RequiredArgsConstructor;
 import me.gg.pinit.pinittask.application.datetime.DateTimeUtils;
-import me.gg.pinit.pinittask.application.events.EventPublisher;
+import me.gg.pinit.pinittask.application.events.DomainEventPublisher;
 import me.gg.pinit.pinittask.application.member.service.MemberService;
 import me.gg.pinit.pinittask.domain.dependency.exception.ScheduleNotFoundException;
 import me.gg.pinit.pinittask.domain.events.DomainEvent;
@@ -24,7 +24,7 @@ import java.util.List;
 public class ScheduleService {
     private final ScheduleRepository scheduleRepository;
     private final MemberService memberService;
-    private final EventPublisher eventPublisher;
+    private final DomainEventPublisher domainEventPublisher;
     private final DateTimeUtils dateTimeUtils;
 
 
@@ -113,6 +113,6 @@ public class ScheduleService {
 
     private void publishEvent() {
         Deque<DomainEvent> queue = DomainEvents.getEventsAndClear();
-        queue.forEach(eventPublisher::publish);
+        queue.forEach(domainEventPublisher::publish);
     }
 }

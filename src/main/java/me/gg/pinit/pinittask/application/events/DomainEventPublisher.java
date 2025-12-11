@@ -5,10 +5,10 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 @Component
-public class EventPublisher {
+public class DomainEventPublisher {
     ApplicationEventPublisher eventPublisher;
 
-    public EventPublisher(ApplicationEventPublisher eventPublisher) {
+    public DomainEventPublisher(ApplicationEventPublisher eventPublisher) {
         this.eventPublisher = eventPublisher;
     }
 

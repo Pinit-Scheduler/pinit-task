@@ -1,7 +1,7 @@
 package me.gg.pinit.pinittask.application.schedule.service;
 
 import me.gg.pinit.pinittask.application.dependency.service.DependencyService;
-import me.gg.pinit.pinittask.application.events.EventPublisher;
+import me.gg.pinit.pinittask.application.events.DomainEventPublisher;
 import me.gg.pinit.pinittask.application.member.service.MemberService;
 import me.gg.pinit.pinittask.domain.events.DomainEvents;
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
@@ -29,7 +29,7 @@ class ScheduleStateChangeServiceTest {
     @Mock
     MemberService memberService;
     @Mock
-    EventPublisher eventPublisher;
+    DomainEventPublisher domainEventPublisher;
     @Mock
     DependencyService dependencyService;
     @Mock

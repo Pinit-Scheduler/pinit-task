@@ -2,7 +2,7 @@ package me.gg.pinit.pinittask.application.schedule.service;
 
 import lombok.RequiredArgsConstructor;
 import me.gg.pinit.pinittask.application.dependency.service.DependencyService;
-import me.gg.pinit.pinittask.application.events.EventPublisher;
+import me.gg.pinit.pinittask.application.events.DomainEventPublisher;
 import me.gg.pinit.pinittask.application.member.service.MemberService;
 import me.gg.pinit.pinittask.domain.dependency.exception.ScheduleNotFoundException;
 import me.gg.pinit.pinittask.domain.events.DomainEvent;
@@ -21,7 +21,7 @@ import java.util.List;
 public class ScheduleStateChangeService {
     private final ScheduleRepository scheduleRepository;
     private final MemberService memberService;
-    private final EventPublisher eventPublisher;
+    private final DomainEventPublisher domainEventPublisher;
     private final DependencyService dependencyService;
     private final ScheduleService scheduleService;
 
@@ -75,7 +75,7 @@ public class ScheduleStateChangeService {
 
     private void publishEvent() {
         Deque<DomainEvent> queue = DomainEvents.getEventsAndClear();
-        queue.forEach(eventPublisher::publish);
+        queue.forEach(domainEventPublisher::publish);
     }
 
     private void checkBeforeScheduleIsCompleted(Long memberId, Long scheduleId) {

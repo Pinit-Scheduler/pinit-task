@@ -1,6 +1,6 @@
 package me.gg.pinit.pinittask.application.schedule.service;
 
-import me.gg.pinit.pinittask.application.events.EventPublisher;
+import me.gg.pinit.pinittask.application.events.DomainEventPublisher;
 import me.gg.pinit.pinittask.application.member.service.MemberService;
 import me.gg.pinit.pinittask.domain.dependency.exception.ScheduleNotFoundException;
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
@@ -16,7 +16,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,7 +32,7 @@ class ScheduleServiceTest {
     @Mock
     MemberService memberService;
     @Mock
-    EventPublisher eventPublisher;
+    DomainEventPublisher domainEventPublisher;
     @InjectMocks
     ScheduleService scheduleService;
     Long memberId;
@@ -94,6 +93,6 @@ class ScheduleServiceTest {
         scheduleService.deleteSchedule(memberId, scheduleId);
         Assertions.assertThatThrownBy(() -> scheduleService.getSchedule(memberId, scheduleId)).isInstanceOf(ScheduleNotFoundException.class).hasMessage("해당 일정을 찾을 수 없습니다.");
         verify(scheduleRepository).delete(scheduleSample);
-        verify(eventPublisher, atLeast(0)).publish(any());
+        verify(domainEventPublisher, atLeast(0)).publish(any());
     }
 }
