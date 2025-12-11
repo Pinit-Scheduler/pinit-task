@@ -39,7 +39,19 @@ channels:
           type: direct
           durable: true
           autoDelete: false
-
+  schedule.time.upcoming.deleted:
+    address: schedule.time.upcoming.deleted # 채널의 주소 정의, RabbitMQ의 라우팅 키로 사용
+    messages:
+      scheduleTimeUpcomingDeleted:
+        $ref: '#/components/messages/ScheduleTimeUpcomingState'
+    bindings:
+      amqp:
+        is: routingKey
+        exchange: # RabbitMQ의 익스체인지 설정. exchange 이름: task.schedule.time.direct
+          name: task.schedule.time.direct
+          type: direct
+          durable: true
+          autoDelete: false
 operations:
   publishScheduleTimeUpcomingChanged: # 발행하는 방법의 정의, 여기서 발행을 처리함을 명시
     action: send
@@ -72,6 +84,22 @@ operations:
       summary: 일정 시작시간 등록 이벤트 구독
     messages:
       - $ref: '#/channels/schedule.time.upcoming.enrolled/messages/scheduleTimeUpcomingEnrolled'
+
+  publishScheduleTimeUpcomingDeleted: # 발행하는 방법의 정의, 여기서 발행을 처리함을 명시
+    action: send
+    channel:
+      $ref: '#/channels/schedule.time.upcoming.deleted'
+    summary: 일정 삭제 이벤트 발행
+    messages:
+      - $ref: '#/channels/schedule.time.upcoming.deleted/messages/scheduleTimeUpcomingDeleted'
+
+  subscribeScheduleTimeUpcomingDeleted: # 구독하는 방법의 정의, 여기서 구독을 처리함을 명시
+    action: receive
+    channel:
+      $ref: '#/channels/schedule.time.upcoming.deleted'
+    summary: 일정 삭제 이벤트 구독
+    messages:
+      - $ref: '#/channels/schedule.time.upcoming.deleted/messages/scheduleTimeUpcomingDeleted'
 
 components:
   messages:
