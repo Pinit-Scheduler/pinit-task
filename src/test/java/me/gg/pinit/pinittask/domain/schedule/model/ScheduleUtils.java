@@ -68,6 +68,7 @@ public class ScheduleUtils {
     public static Schedule getInProgressSchedule() {
         Schedule schedule = new Schedule(1L, "Sample Schedule", "sample description", ENROLLED_TIME, getTemporalConstraintSample(), getImportanceConstraintSample());
         schedule.start(START_TIME);
+        DomainEvents.getEventsAndClear();
         return schedule;
     }
 
@@ -90,12 +91,14 @@ public class ScheduleUtils {
         setScheduleId(schedule, id);
         schedule.start(START_TIME);
         schedule.suspend(SUSPEND_TIME);
+        DomainEvents.getEventsAndClear();
         return schedule;
     }
 
     public static Schedule getSuspendedSchedule(Long id) {
         Schedule schedule = getSuspendedSchedule();
         setScheduleId(schedule, id);
+        DomainEvents.getEventsAndClear();
         return schedule;
     }
 
@@ -103,6 +106,7 @@ public class ScheduleUtils {
         Schedule schedule = new Schedule(1L, "Sample Schedule", "sample description", ENROLLED_TIME, getTemporalConstraintSample(), getImportanceConstraintSample());
         schedule.start(START_TIME);
         schedule.suspend(SUSPEND_TIME);
+        DomainEvents.getEventsAndClear();
         return schedule;
     }
 
@@ -134,6 +138,7 @@ public class ScheduleUtils {
     public static Schedule getCompletedSchedule(Long id) {
         Schedule schedule = getCompletedSchedule();
         setScheduleId(schedule, id);
+        DomainEvents.getEventsAndClear();
         return schedule;
     }
 
