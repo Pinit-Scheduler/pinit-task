@@ -118,6 +118,9 @@ components:
           newUpcomingTime:
             type: string
             format: date-time
+          occuredAt:
+            type: string
+            format: date-time
           idempotencyKey:
             type: string
-        required: [ memberId, scheduleId, newUpcomingTime, idempotencyKey ]
+        required: [ memberId, scheduleId, newUpcomingTime, occurredAt, idempotencyKey ]
