@@ -3,8 +3,10 @@ package me.gg.pinit.pinittask.domain.schedule.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import me.gg.pinit.pinittask.domain.converter.service.ScheduleStateConverter;
+import me.gg.pinit.pinittask.domain.datetime.ZonedDateTimeAttribute;
 import me.gg.pinit.pinittask.domain.events.DomainEvents;
 import me.gg.pinit.pinittask.domain.schedule.event.ScheduleDeletedEvent;
+import me.gg.pinit.pinittask.domain.schedule.event.ScheduleTimeChangedEvent;
 import me.gg.pinit.pinittask.domain.schedule.exception.IllegalChangeException;
 import me.gg.pinit.pinittask.domain.schedule.exception.IllegalDescriptionException;
 import me.gg.pinit.pinittask.domain.schedule.exception.IllegalTitleException;
@@ -13,7 +15,6 @@ import me.gg.pinit.pinittask.domain.schedule.patch.SchedulePatch;
 import me.gg.pinit.pinittask.domain.schedule.vo.ImportanceConstraint;
 import me.gg.pinit.pinittask.domain.schedule.vo.ScheduleHistory;
 import me.gg.pinit.pinittask.domain.schedule.vo.TemporalConstraint;
-import me.gg.pinit.pinittask.domain.datetime.ZonedDateTimeAttribute;
 
 import java.time.ZonedDateTime;
 
@@ -133,6 +134,7 @@ public class Schedule {
     public void setDesignatedStartTime(ZonedDateTime zdt) {
         validateStartTime(zdt);
         this.designatedStartTime = ZonedDateTimeAttribute.from(zdt);
+        DomainEvents.raise(new ScheduleTimeChangedEvent(this.id, this.ownerId, zdt));
     }
 
     public void changeDeadline(ZonedDateTime newDeadline) {
