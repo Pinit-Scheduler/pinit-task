@@ -56,6 +56,8 @@ class InProgressStateTest {
         schedule.cancel();
 
         //then
+        Deque<DomainEvent> eventsAndClear = DomainEvents.getEventsAndClear();
+        assertThat(eventsAndClear).hasSize(1);
         assertThat(schedule.isNotStarted()).isTrue();
         assertThat(schedule.getHistory().getElapsedTime()).isEqualTo(Duration.ZERO);
         assertThat(schedule.getHistory().getStartTime()).isNull();

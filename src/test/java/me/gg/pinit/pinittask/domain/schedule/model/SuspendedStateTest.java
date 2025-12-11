@@ -1,11 +1,13 @@
 package me.gg.pinit.pinittask.domain.schedule.model;
 
+import me.gg.pinit.pinittask.domain.events.DomainEvent;
 import me.gg.pinit.pinittask.domain.events.DomainEvents;
 import me.gg.pinit.pinittask.domain.schedule.exception.IllegalTransitionException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
+import java.util.Deque;
 
 import static me.gg.pinit.pinittask.domain.schedule.model.ScheduleUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,6 +29,8 @@ class SuspendedStateTest {
         schedule.start(RESTART_TIME);
 
         //then
+        Deque<DomainEvent> eventsAndClear = DomainEvents.getEventsAndClear();
+        assertThat(eventsAndClear).hasSize(1);
         assertThat(schedule.isInProgress()).isTrue();
         assertThat(schedule.getHistory().getStartTime()).isEqualTo(RESTART_TIME);
     }
@@ -51,6 +55,8 @@ class SuspendedStateTest {
         schedule.cancel();
 
         //then
+        Deque<DomainEvent> eventsAndClear = DomainEvents.getEventsAndClear();
+        assertThat(eventsAndClear).hasSize(1);
         assertThat(schedule.isNotStarted()).isTrue();
         assertThat(schedule.getHistory().getElapsedTime()).isEqualTo(Duration.between(START_TIME, SUSPEND_TIME));
     }

@@ -30,6 +30,8 @@ class NotStartedStateTest {
         schedule.start(ENROLLED_TIME.plusHours(1));
 
         //then
+        Deque<DomainEvent> eventsAndClear = DomainEvents.getEventsAndClear();
+        assertThat(eventsAndClear).hasSize(1);
         assertThat(schedule.isInProgress()).isTrue();
         assertThat(schedule.getHistory().getStartTime()).isEqualTo(ENROLLED_TIME.plusHours(1));
     }
