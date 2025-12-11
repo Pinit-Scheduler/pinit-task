@@ -197,7 +197,7 @@ components:
       payload:
         type: object
         properties:
-          memberId:
+          ownerId:
             type: integer
             format: int64
           scheduleId:
@@ -209,16 +209,16 @@ components:
           occurredAt:
             type: string
             format: date-time
-          idempotencyKey:
+          idempotentKey:
             type: string
-        required: [ memberId, scheduleId, newUpcomingTime, occurredAt, idempotencyKey ]
+        required: [ ownerId, scheduleId, newUpcomingTime, occurredAt, idempotentKey ]
     ScheduleDeleted:
       name: ScheduleDeleted
       title: 일정 삭제 정보
       payload:
         type: object
         properties:
-          memberId:
+          ownerId:
             type: integer
             format: int64
           scheduleId:
@@ -227,16 +227,16 @@ components:
           occurredAt:
             type: string
             format: date-time
-          idempotencyKey:
+          idempotentKey:
             type: string
-        required: [ memberId, scheduleId, occurredAt, idempotencyKey ]
+        required: [ ownerId, scheduleId, occurredAt, idempotentKey ]
     ScheduleStateChanged:
       name: ScheduleStateChanged
       title: 일정 상태 변경 정보
       payload:
         type: object
         properties:
-          memberId:
+          ownerId:
             type: integer
             format: int64
           scheduleId:
@@ -248,6 +248,6 @@ components:
           occurredAt:
             type: string
             format: date-time
-          idempotencyKey:
+          idempotentKey:
             type: string
-        required: [ memberId, scheduleId, beforeState, occurredAt, idempotencyKey ]
+        required: [ ownerId, scheduleId, beforeState, occurredAt, idempotentKey ]
