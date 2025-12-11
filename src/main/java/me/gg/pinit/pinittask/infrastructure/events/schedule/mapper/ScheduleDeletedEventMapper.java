@@ -4,10 +4,12 @@ import me.gg.pinit.pinittask.domain.schedule.event.ScheduleDeletedEvent;
 import me.gg.pinit.pinittask.infrastructure.events.AmqpEventMapper;
 import me.gg.pinit.pinittask.infrastructure.events.schedule.ScheduleMessaging;
 import me.gg.pinit.pinittask.infrastructure.events.schedule.dto.ScheduleDeletedPayload;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Component
 public class ScheduleDeletedEventMapper implements AmqpEventMapper<ScheduleDeletedEvent> {
     @Override
     public Class<ScheduleDeletedEvent> eventType() {

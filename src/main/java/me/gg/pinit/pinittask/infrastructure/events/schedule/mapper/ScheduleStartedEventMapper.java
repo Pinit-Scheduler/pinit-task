@@ -4,10 +4,12 @@ import me.gg.pinit.pinittask.domain.schedule.event.ScheduleStartedEvent;
 import me.gg.pinit.pinittask.infrastructure.events.AmqpEventMapper;
 import me.gg.pinit.pinittask.infrastructure.events.schedule.ScheduleMessaging;
 import me.gg.pinit.pinittask.infrastructure.events.schedule.dto.ScheduleStartedPayload;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Component
 public class ScheduleStartedEventMapper implements AmqpEventMapper<ScheduleStartedEvent> {
     @Override
     public Class<ScheduleStartedEvent> eventType() {
