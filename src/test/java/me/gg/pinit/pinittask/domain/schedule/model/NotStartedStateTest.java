@@ -7,7 +7,6 @@ import me.gg.pinit.pinittask.domain.schedule.exception.IllegalTransitionExceptio
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-import java.time.Duration;
 import java.util.Deque;
 
 import static me.gg.pinit.pinittask.domain.schedule.model.ScheduleUtils.ENROLLED_TIME;
@@ -72,9 +71,7 @@ class NotStartedStateTest {
         DomainEvent event = eventsAndClear.peek();
 
         if (event instanceof ScheduleCompletedEvent completedEvent) {
-            assertThat(completedEvent.getDuration()).isEqualTo(Duration.ZERO);
             assertThat(completedEvent.getOwnerId()).isEqualTo(schedule.getOwnerId());
-            assertThat(completedEvent.getTaskType()).isEqualTo(schedule.getTemporalConstraint().getTaskType());
         }
 
         assertThat(event).isInstanceOf(me.gg.pinit.pinittask.domain.schedule.event.ScheduleCompletedEvent.class);
