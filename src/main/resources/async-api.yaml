@@ -21,8 +21,8 @@ channels:
     bindings:
       amqp:
         is: routingKey
-        exchange: # RabbitMQ의 익스체인지 설정. exchange 이름: task.schedule.time.direct
-          name: task.schedule.time.direct
+        exchange: # RabbitMQ의 익스체인지 설정. exchange 이름: task.schedule.direct
+          name: task.schedule.direct
           type: direct
           durable: true
           autoDelete: false
@@ -34,8 +34,8 @@ channels:
     bindings:
       amqp:
         is: routingKey
-        exchange: # RabbitMQ의 익스체인지 설정. exchange 이름: task.schedule.time.direct
-          name: task.schedule.time.direct
+        exchange: # RabbitMQ의 익스체인지 설정. exchange 이름: task.schedule.direct
+          name: task.schedule.direct
           type: direct
           durable: true
           autoDelete: false
@@ -47,11 +47,51 @@ channels:
     bindings:
       amqp:
         is: routingKey
-        exchange: # RabbitMQ의 익스체인지 설정. exchange 이름: task.schedule.time.direct
-          name: task.schedule.time.direct
+        exchange:
+          name: task.schedule.direct
           type: direct
           durable: true
           autoDelete: false
+  schedule.state.started:
+    address: schedule.state.started
+    messages:
+      scheduleStateStarted:
+        $ref: '#/components/messages/ScheduleStateChanged'
+    bindings:
+      amqp:
+        is: routingKey
+        exchange:
+          name: task.schedule.direct
+          type: direct
+          durable: true
+          autoDelete: false
+  schedule.state.canceled:
+    address: schedule.state.canceled
+    messages:
+      scheduleStateCanceled:
+        $ref: '#/components/messages/ScheduleStateChanged'
+    bindings:
+      amqp:
+        is: routingKey
+        exchange:
+          name: task.schedule.direct
+          type: direct
+          durable: true
+          autoDelete: false
+  schedule.state.completed:
+    address: schedule.state.completed
+    messages:
+      scheduleStateCompleted:
+        $ref: '#/components/messages/ScheduleStateChanged'
+    bindings:
+      amqp:
+        is: routingKey
+        exchange:
+          name: task.schedule.direct
+          type: direct
+          durable: true
+          autoDelete: false
+
 operations:
   publishScheduleTimeUpcomingChanged: # 발행하는 방법의 정의, 여기서 발행을 처리함을 명시
     action: send
@@ -101,6 +141,54 @@ operations:
     messages:
       - $ref: '#/channels/schedule.time.upcoming.deleted/messages/scheduleTimeUpcomingDeleted'
 
+  publishScheduleStateStarted:
+    action: send
+    channel:
+      $ref: '#/channels/schedule.state.started'
+    summary: 일정 시작 이벤트 발행
+    messages:
+      - $ref: '#/channels/schedule.state.started/messages/scheduleStateStarted'
+
+  subscribeScheduleStateStarted:
+    action: receive
+    channel:
+      $ref: '#/channels/schedule.state.started'
+    summary: 일정 시작 이벤트 구독
+    messages:
+      - $ref: '#/channels/schedule.state.started/messages/scheduleStateStarted'
+
+  publishScheduleStateCanceled:
+    action: send
+    channel:
+      $ref: '#/channels/schedule.state.canceled'
+    summary: 일정 취소 이벤트 발행
+    messages:
+      - $ref: '#/channels/schedule.state.canceled/messages/scheduleStateCanceled'
+
+  subscribeScheduleStateCanceled:
+    action: receive
+    channel:
+      $ref: '#/channels/schedule.state.canceled'
+    summary: 일정 취소 이벤트 구독
+    messages:
+      - $ref: '#/channels/schedule.state.canceled/messages/scheduleStateCanceled'
+
+  publishScheduleStateCompleted:
+    action: send
+    channel:
+      $ref: '#/channels/schedule.state.completed'
+    summary: 일정 완료 이벤트 발행
+    messages:
+      - $ref: '#/channels/schedule.state.completed/messages/scheduleStateCompleted'
+
+  subscribeScheduleStateCompleted:
+    action: receive
+    channel:
+      $ref: '#/channels/schedule.state.completed'
+    summary: 일정 완료 이벤트 구독
+    messages:
+      - $ref: '#/channels/schedule.state.completed/messages/scheduleStateCompleted'
+
 components:
   messages:
     ScheduleTimeUpcomingState:
@@ -118,9 +206,30 @@ components:
           newUpcomingTime:
             type: string
             format: date-time
-          occuredAt:
+          occurredAt:
             type: string
             format: date-time
           idempotencyKey:
             type: string
         required: [ memberId, scheduleId, newUpcomingTime, occurredAt, idempotencyKey ]
+    ScheduleStateChanged:
+      name: ScheduleStateChanged
+      title: 일정 상태 변경 정보
+      payload:
+        type: object
+        properties:
+          memberId:
+            type: integer
+            format: int64
+          scheduleId:
+            type: integer
+            format: int64
+          beforeState:
+            type: string
+            description: 상태 전환 전 상태
+          occurredAt:
+            type: string
+            format: date-time
+          idempotencyKey:
+            type: string
+        required: [ memberId, scheduleId, beforeState, occurredAt, idempotencyKey ]
