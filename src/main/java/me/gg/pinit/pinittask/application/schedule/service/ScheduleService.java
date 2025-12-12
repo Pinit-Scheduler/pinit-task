@@ -65,7 +65,9 @@ public class ScheduleService {
 
     @Transactional
     public Schedule addSchedule(Schedule schedule) {
-        return scheduleRepository.save(schedule);
+        Schedule saved = scheduleRepository.save(schedule);
+        publishEvent();
+        return saved;
     }
 
     /**
@@ -85,6 +87,7 @@ public class ScheduleService {
         validateOwner(memberId, findSchedule);
 
         findSchedule.patch(updateSchedule);
+        publishEvent();
         return findSchedule;
     }
 
