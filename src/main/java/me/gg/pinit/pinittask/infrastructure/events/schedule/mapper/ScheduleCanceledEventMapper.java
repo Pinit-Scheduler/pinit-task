@@ -6,7 +6,7 @@ import me.gg.pinit.pinittask.infrastructure.events.schedule.ScheduleMessaging;
 import me.gg.pinit.pinittask.infrastructure.events.schedule.dto.ScheduleCanceledPayload;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Component
@@ -28,6 +28,6 @@ public class ScheduleCanceledEventMapper implements AmqpEventMapper<ScheduleCanc
 
     @Override
     public Object payload(ScheduleCanceledEvent event) {
-        return new ScheduleCanceledPayload(event.getScheduleId(), event.getOwnerId(), event.getBeforeState(), LocalDateTime.now().toString(), UUID.randomUUID().toString());
+        return new ScheduleCanceledPayload(event.getScheduleId(), event.getOwnerId(), event.getBeforeState(), OffsetDateTime.now().toString(), UUID.randomUUID().toString());
     }
 }

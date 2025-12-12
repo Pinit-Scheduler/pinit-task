@@ -6,7 +6,7 @@ import me.gg.pinit.pinittask.infrastructure.events.schedule.ScheduleMessaging;
 import me.gg.pinit.pinittask.infrastructure.events.schedule.dto.ScheduleCompletedPayload;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Component
@@ -32,7 +32,7 @@ public class ScheduleCompletedEventMapper implements AmqpEventMapper<ScheduleCom
                 event.getScheduleId(),
                 event.getOwnerId(),
                 event.getBeforeState(),
-                LocalDateTime.now().toString(),
+                OffsetDateTime.now().toString(),
                 UUID.randomUUID().toString()
         );
     }
