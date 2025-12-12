@@ -31,7 +31,7 @@ public class ScheduleTimeUpdatedEventMapper implements AmqpEventMapper<ScheduleT
         return new ScheduleTimeUpdatedPayload(
                 event.getScheduleId(),
                 event.getOwnerId(),
-                event.getScheduledTime().toString(),
+                event.getScheduledTime().toOffsetDateTime().toString(),
                 OffsetDateTime.now().toString(),
                 UUID.randomUUID().toString()
         );
