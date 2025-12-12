@@ -18,3 +18,8 @@ spring:
 logging:
   level:
     org.hibernate.SQL: debug
+
+
+grpc:
+  server:
+    port: 0
