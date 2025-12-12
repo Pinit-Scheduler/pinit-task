@@ -28,7 +28,7 @@ public class ScheduleCanceledEventHandler {
                 event.getOwnerId(),
                 schedule.getTemporalConstraint().getTaskType(),
                 schedule.getHistory().getElapsedTime(),
-                schedule.getHistory().getStartTime()
+                schedule.getDesignatedStartTime()
         );
     }
 }
