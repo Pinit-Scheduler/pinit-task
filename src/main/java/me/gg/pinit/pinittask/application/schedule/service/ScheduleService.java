@@ -7,6 +7,7 @@ import me.gg.pinit.pinittask.application.member.service.MemberService;
 import me.gg.pinit.pinittask.domain.dependency.exception.ScheduleNotFoundException;
 import me.gg.pinit.pinittask.domain.events.DomainEvent;
 import me.gg.pinit.pinittask.domain.events.DomainEvents;
+import me.gg.pinit.pinittask.domain.schedule.event.ScheduleTimeUpdatedEvent;
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
 import me.gg.pinit.pinittask.domain.schedule.patch.SchedulePatch;
 import me.gg.pinit.pinittask.domain.schedule.repository.ScheduleRepository;
@@ -66,7 +67,7 @@ public class ScheduleService {
     @Transactional
     public Schedule addSchedule(Schedule schedule) {
         Schedule saved = scheduleRepository.save(schedule);
-        publishEvent();
+        domainEventPublisher.publish(new ScheduleTimeUpdatedEvent(saved.getId(), saved.getOwnerId(), saved.getDesignatedStartTime()));
         return saved;
     }
 
