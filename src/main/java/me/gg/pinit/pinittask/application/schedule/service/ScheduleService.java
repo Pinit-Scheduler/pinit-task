@@ -33,7 +33,6 @@ public class ScheduleService {
     public Schedule getSchedule(Long memberId, Long scheduleId) {
         Schedule findSchedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new ScheduleNotFoundException("해당 일정을 찾을 수 없습니다."));
-        validateOwner(memberId, findSchedule);
 
         return findSchedule;
     }
@@ -85,7 +84,6 @@ public class ScheduleService {
     public Schedule updateSchedule(Long memberId, Long scheduleId, SchedulePatch updateSchedule) {
         Schedule findSchedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new ScheduleNotFoundException("해당 일정을 찾을 수 없습니다."));
-        validateOwner(memberId, findSchedule);
 
         findSchedule.patch(updateSchedule);
         publishEvent();
@@ -96,7 +94,6 @@ public class ScheduleService {
     public void deleteSchedule(Long memberId, Long scheduleId) {
         Schedule findSchedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new ScheduleNotFoundException("해당 일정을 찾을 수 없습니다."));
-        validateOwner(memberId, findSchedule);
 
         findSchedule.deleteSchedule();
         scheduleRepository.delete(findSchedule);
@@ -109,11 +106,6 @@ public class ScheduleService {
         return scheduleRepository.findAllById(previousScheduleIds);
     }
 
-    private void validateOwner(Long memberId, Schedule schedule) {
-        if (!schedule.getOwnerId().equals(memberId)) {
-            throw new IllegalArgumentException("Member does not own the schedule");
-        }
-    }
 
     private void publishEvent() {
         Deque<DomainEvent> queue = DomainEvents.getEventsAndClear();
