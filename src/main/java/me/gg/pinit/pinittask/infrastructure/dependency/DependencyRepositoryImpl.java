@@ -1,4 +1,4 @@
-package me.gg.pinit.pinittask.infrastructure.repository;
+package me.gg.pinit.pinittask.infrastructure.dependency;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
