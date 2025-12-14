@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package pinit.schedule;
+
+option java_multiple_files = true;
+option java_package = "me.gg.pinit.pinittask.grpc";
+option java_outer_classname = "ScheduleServiceProto";
+
+import "google/protobuf/timestamp.proto";
+
+service ScheduleGrpcService {
+  rpc GetScheduleBasics (GetScheduleRequest) returns (GetScheduleResponse);
+}
+
+message GetScheduleRequest {
+  int64 schedule_id = 1;
+  int64 owner_id = 2;
+}
+
+message GetScheduleResponse {
+  int64 schedule_id = 1;
+  int64 owner_id = 2;
+  string schedule_title = 3;
+  google.protobuf.Timestamp designated_start_time = 4;
+}
