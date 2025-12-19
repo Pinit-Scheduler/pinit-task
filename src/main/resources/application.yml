@@ -1,0 +1,23 @@
+spring:
+  autoconfigure:
+    exclude: net.devh.boot.grpc.server.autoconfigure.GrpcServerSecurityAutoConfiguration
+  sql:
+    init:
+      mode: never
+
+cors:
+  allowed-origins:
+    - "http://localhost:5173"
+    - "http://localhost:5174"
+    - "https://pinit.go-gradually.me"
+  allowed-methods:
+    - GET
+    - POST
+    - PUT
+    - PATCH
+    - DELETE
+    - OPTIONS
+  allowed-headers:
+    - "*"
+  allow-credentials: true
+  max-age: 3600

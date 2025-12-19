@@ -1,0 +1,21 @@
+grpc:
+  server:
+    port: 9091
+
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate    # dev: update, create-drop / prod: validate 추천
+    open-in-view: false
+  datasource:
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT}/pinit_task?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  rabbitmq:
+    addresses: amqp://${RABBITMQ_HOST}:${RABBITMQ_PORT}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
+    virtual-host: /pinit
+    connection-timeout: 5000
