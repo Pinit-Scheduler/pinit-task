@@ -45,3 +45,7 @@ keys/
 
 ### async api documentation
 src/main/resources/static/async-api/**
+
+
+### secret
+k8s/secret.yaml
