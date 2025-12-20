@@ -8,9 +8,11 @@ spec:
     app: pinit-task
   ports:
     - protocol: TCP
+      name: http
       port: 80
       targetPort: 8080
     - protocol: TCP
+      name: grpc
       port: 9090
       targetPort: 9090
   type: ClusterIP
