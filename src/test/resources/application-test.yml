@@ -28,4 +28,4 @@ grpc:
 path:
   key:
     jwt:
-      public: /etc/pinit/keys/jwt-public-key.pem
+      public: ${HOME}/pinit/keys/jwt-public-key.pem
