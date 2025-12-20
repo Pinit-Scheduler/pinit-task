@@ -30,11 +30,15 @@ spec:
         - name: keys
           secret:
             secretName: pinit-keys
-            defaultMode: 0400
+            defaultMode: 0444
       containers:
         - name: app
           image: ghcr.io/pinit-scheduler/pinit-task/app:${GITHUB_SHA} # GITHUB_SHA 환경변수는 GitHub Actions에서 설정되며 envsubst로 치환됩니다.
           imagePullPolicy: IfNotPresent
+
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: prod
 
           volumeMounts:
             - mountPath: /etc/keys
