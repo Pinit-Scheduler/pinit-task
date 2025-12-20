@@ -92,3 +92,10 @@ protobuf {
         }
     }
 }
+
+tasks.named('compileJava') {
+    dependsOn(tasks.named('generateProto'))
+}
+tasks.named('compileTestJava') {
+    dependsOn(tasks.named('generateTestProto'))
+}

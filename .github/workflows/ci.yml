@@ -22,4 +22,4 @@ jobs:
           cache: gradle
 
       - name: Build & Test
-        run: ./gradlew clean test build
+        run: ./gradlew clean generateProto test build
