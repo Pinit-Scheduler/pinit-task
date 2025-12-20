@@ -25,3 +25,8 @@ spring:
     password: ${RABBITMQ_PASSWORD}
     virtual-host: /pinit
     connection-timeout: 5000
+
+path:
+  key:
+    jwt:
+      public: ${HOME}/pinit/keys/jwt-public-key.pem

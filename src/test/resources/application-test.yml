@@ -23,3 +23,9 @@ logging:
 grpc:
   server:
     port: 0
+
+
+path:
+  key:
+    jwt:
+      public: /etc/pinit/keys/jwt-public-key.pem
