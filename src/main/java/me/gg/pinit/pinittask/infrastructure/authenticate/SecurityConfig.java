@@ -2,6 +2,7 @@ package me.gg.pinit.pinittask.infrastructure.authenticate;
 
 import jakarta.servlet.http.HttpServletResponse;
 import me.gg.pinit.pinittask.infrastructure.config.CorsProperties;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,6 +21,11 @@ import java.security.PublicKey;
 
 @Configuration
 public class SecurityConfig {
+
+    @Value("${path.key.jwt.public}")
+    private String jwtPublicKeyPath;
+
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
         http
@@ -59,7 +65,7 @@ public class SecurityConfig {
 
     @Bean
     public JwtTokenProvider jwtTokenProvider() {
-        PublicKey publicKey = RsaKeyProvider.loadPublicKey("keys/public_key.pem");
+        PublicKey publicKey = RsaKeyProvider.loadPublicKey(jwtPublicKeyPath);
         return new JwtTokenProvider(publicKey);
     }
 
