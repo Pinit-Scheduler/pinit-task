@@ -41,6 +41,9 @@ dependencies {
     // MySQL
     implementation 'com.mysql:mysql-connector-j'
 
+    // Actuator
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
     // Querydsl dependencies
     implementation "com.querydsl:querydsl-jpa:${querydslVersion}:jakarta"
     annotationProcessor "com.querydsl:querydsl-apt:${querydslVersion}:jakarta"
