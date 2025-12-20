@@ -23,6 +23,8 @@ spec:
       labels:
         app: pinit-task
     spec:
+      imagePullSecrets:
+        - name: ghcr-pull-secret
       terminationGracePeriodSeconds: 30
       volumes:
         - name: keys
