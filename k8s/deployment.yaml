@@ -31,7 +31,7 @@ spec:
             defaultMode: 0400
       containers:
         - name: app
-          image: ghcr.io/pinit-scheduler/pinit-task/app:${GITHUB_SHA} # ${{ github.sha }} 환경변수로 주입 필요
+          image: ghcr.io/pinit-scheduler/pinit-task/app:${GITHUB_SHA} # GITHUB_SHA 환경변수는 GitHub Actions에서 설정되며 envsubst로 치환됩니다.
           imagePullPolicy: IfNotPresent
 
           volumeMounts:
