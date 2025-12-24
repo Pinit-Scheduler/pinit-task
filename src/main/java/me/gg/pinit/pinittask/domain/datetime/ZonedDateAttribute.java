@@ -27,7 +27,7 @@ public class ZonedDateAttribute {
 
     public static ZonedDateAttribute from(ZonedDateTime zonedDateTime) {
         Objects.requireNonNull(zonedDateTime, "zonedDateTime must not be null");
-        return new ZonedDateAttribute(zonedDateTime.toLocalDate(), zonedDateTime.getZone().getId());
+        return new ZonedDateAttribute(zonedDateTime.toLocalDate(), zonedDateTime.getOffset().getId());
     }
 
     public ZonedDateTime toZonedDateTime() {
