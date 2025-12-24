@@ -4,7 +4,9 @@ package me.gg.pinit.pinittask.domain.datetime;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
-import java.time.*;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Objects;
 
 @Embeddable
@@ -12,7 +14,7 @@ public class ZonedDateAttribute {
     @Column(name = "date")
     private LocalDate date;
 
-    @Column(name = "zone_offset")
+    @Column(name = "offset_id")
     private String offsetId;
 
     protected ZonedDateAttribute() {
@@ -32,14 +34,9 @@ public class ZonedDateAttribute {
         Objects.requireNonNull(date, "dateTime must not be null");
         Objects.requireNonNull(offsetId, "offsetId must not be null");
 
-        ZoneOffset from = ZoneOffset.UTC;
         ZoneOffset to = ZoneOffset.of(offsetId);
 
-        int deltaSeconds = to.getTotalSeconds() - from.getTotalSeconds();
-        Duration delta = Duration.ofSeconds(deltaSeconds);
-
-        LocalDateTime moved = date.atStartOfDay().plus(delta);
-        return moved.atOffset(to).toZonedDateTime();
+        return date.atStartOfDay().atOffset(to).toZonedDateTime();
     }
 
     public LocalDate getDate() {
