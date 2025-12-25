@@ -14,10 +14,7 @@ import me.gg.pinit.pinittask.domain.schedule.repository.ScheduleRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.Deque;
 import java.util.List;
 
@@ -53,8 +50,9 @@ public class ScheduleService {
 
     @Transactional(readOnly = true)
     public List<Schedule> getScheduleListForWeek(Long memberId, ZonedDateTime now) {
-        Instant start = dateTimeUtils.lastMondayStart(now).toInstant();
-        Instant end = dateTimeUtils.lastMondayStart(now).plusDays(7).toInstant();
+        ZoneOffset zoneOffsetOfMember = memberService.findZoneOffsetOfMember(memberId);
+        Instant start = dateTimeUtils.lastMondayStart(now, zoneOffsetOfMember).toInstant();
+        Instant end = dateTimeUtils.lastMondayStart(now, zoneOffsetOfMember).plusDays(7).toInstant();
         return scheduleRepository.findAllByOwnerIdAndDesignatedStartTimeInstantBetween(
                 memberId,
                 start,
