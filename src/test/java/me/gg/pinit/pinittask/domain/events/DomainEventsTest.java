@@ -1,5 +1,6 @@
 package me.gg.pinit.pinittask.domain.events;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Deque;
@@ -9,6 +10,11 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class DomainEventsTest {
+
+    @AfterEach
+    void tearDown() {
+        DomainEvents.getEventsAndClear();
+    }
 
     @Test
     void collectsAndClearsEventsInOrder() {
