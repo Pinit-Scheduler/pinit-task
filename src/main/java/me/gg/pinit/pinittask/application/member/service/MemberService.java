@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Optional;
 
 @Service
@@ -21,6 +22,15 @@ public class MemberService {
     public ZoneId findZoneIdOfMember(Long memberId) {
         return memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberNotFoundException("Member not found")).getZoneId();
+    }
+
+    @Transactional(readOnly = true)
+    public ZoneOffset findZoneOffsetOfMember(Long memberId) {
+        return memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberNotFoundException("Member not found"))
+                .getZoneId()
+                .getRules()
+                .getOffset(java.time.Instant.now());
     }
 
     public Long getNowInProgressScheduleId(Long memberId) {

@@ -8,11 +8,10 @@ import java.util.Objects;
 
 @Service
 public class DateTimeUtils {
-    public ZonedDateTime lastMondayStart(ZonedDateTime point) {
-        ZoneId zone = point.getZone();
+    public ZonedDateTime lastMondayStart(ZonedDateTime point, ZoneOffset offset) {
         LocalDate monday = point.toLocalDate()
                 .with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-        return monday.atStartOfDay(zone);
+        return monday.atStartOfDay(offset);
     }
 
     public ZonedDateTime toZonedDateTime(LocalDateTime localDateTime, ZoneId zoneId) {

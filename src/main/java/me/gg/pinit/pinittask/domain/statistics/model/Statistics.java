@@ -3,6 +3,7 @@ package me.gg.pinit.pinittask.domain.statistics.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import me.gg.pinit.pinittask.domain.converter.service.DurationConverter;
+import me.gg.pinit.pinittask.domain.datetime.ZonedDateAttribute;
 import me.gg.pinit.pinittask.domain.datetime.ZonedDateTimeAttribute;
 
 import java.time.Duration;
@@ -28,6 +29,13 @@ public class Statistics {
     })
     private ZonedDateTimeAttribute startOfWeek;
 
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "date", column = @Column(name = "start_of_week_date")),
+            @AttributeOverride(name = "offsetId", column = @Column(name = "start_of_week_offset_id"))
+    })
+    private ZonedDateAttribute startOfWeekDate;
+
     @Convert(converter = DurationConverter.class)
     private Duration deepWorkElapsedTime;
     @Convert(converter = DurationConverter.class)
@@ -44,6 +52,7 @@ public class Statistics {
     public Statistics(Long memberId, ZonedDateTime startOfWeek) {
         this.memberId = memberId;
         this.startOfWeek = ZonedDateTimeAttribute.from(startOfWeek);
+        this.startOfWeekDate = ZonedDateAttribute.from(startOfWeek);
         this.deepWorkElapsedTime = Duration.ZERO;
         this.adminWorkElapsedTime = Duration.ZERO;
         this.totalWorkElapsedTime = Duration.ZERO;
@@ -77,23 +86,11 @@ public class Statistics {
         this.totalWorkElapsedTime = this.totalWorkElapsedTime.minus(duration);
     }
 
-    public Duration getDeepWorkElapsedTime() {
-        return deepWorkElapsedTime;
-    }
-
-    public Duration getAdminWorkElapsedTime() {
-        return adminWorkElapsedTime;
-    }
-
-    public Duration getTotalWorkElapsedTime() {
-        return totalWorkElapsedTime;
-    }
-
-    public Long getMemberId() {
-        return memberId;
-    }
-
     public ZonedDateTime getStartOfWeek() {
         return startOfWeek.toZonedDateTime();
+    }
+
+    public ZonedDateTime getStartOfWeekDate() {
+        return startOfWeekDate.toZonedDateTime();
     }
 }
