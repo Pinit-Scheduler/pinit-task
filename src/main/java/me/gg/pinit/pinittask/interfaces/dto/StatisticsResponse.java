@@ -25,7 +25,7 @@ public class StatisticsResponse {
     public static StatisticsResponse from(Statistics statistics) {
         StatisticsResponse response = new StatisticsResponse();
         response.memberId = statistics.getMemberId();
-        response.startOfWeek = DateTimeWithZone.from(statistics.getStartOfWeek());
+        response.startOfWeek = DateTimeWithZone.from(statistics.getStartOfWeekDate());
         response.deepWorkElapsedTime = statistics.getDeepWorkElapsedTime();
         response.adminWorkElapsedTime = statistics.getAdminWorkElapsedTime();
         response.totalWorkElapsedTime = statistics.getTotalWorkElapsedTime();

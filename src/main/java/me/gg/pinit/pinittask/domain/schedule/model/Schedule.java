@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import me.gg.pinit.pinittask.domain.converter.service.InstantToDatetime6UtcConverter;
 import me.gg.pinit.pinittask.domain.converter.service.ScheduleStateConverter;
-import me.gg.pinit.pinittask.domain.datetime.ZonedDateTimeAttribute;
 import me.gg.pinit.pinittask.domain.events.DomainEvents;
 import me.gg.pinit.pinittask.domain.schedule.event.ScheduleDeletedEvent;
 import me.gg.pinit.pinittask.domain.schedule.event.ScheduleTimeUpdatedEvent;
@@ -39,13 +38,6 @@ public class Schedule {
     private String title;
     @Getter
     private String description;
-
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "dateTime", column = @Column(name = "designated_start_time")),
-            @AttributeOverride(name = "zoneId", column = @Column(name = "designated_start_zone_id"))
-    })
-    private ZonedDateTimeAttribute designatedStartTime;
 
     @Column(name = "designated_start_time_utc", columnDefinition = "DATETIME(6)", nullable = false)
     @Convert(converter = InstantToDatetime6UtcConverter.class)
@@ -135,7 +127,6 @@ public class Schedule {
 
     public void setDesignatedStartTime(ZonedDateTime zdt) {
         validateStartTime(zdt);
-        this.designatedStartTime = ZonedDateTimeAttribute.from(zdt);
         this.designatedStartTimeInstant = zdt.toInstant();
         DomainEvents.raise(new ScheduleTimeUpdatedEvent(this.id, this.ownerId, zdt));
     }
