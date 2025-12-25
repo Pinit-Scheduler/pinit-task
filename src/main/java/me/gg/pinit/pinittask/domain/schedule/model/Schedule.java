@@ -2,6 +2,7 @@ package me.gg.pinit.pinittask.domain.schedule.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import me.gg.pinit.pinittask.domain.converter.service.InstantToDatetime6UtcConverter;
 import me.gg.pinit.pinittask.domain.converter.service.ScheduleStateConverter;
 import me.gg.pinit.pinittask.domain.datetime.ZonedDateTimeAttribute;
 import me.gg.pinit.pinittask.domain.events.DomainEvents;
@@ -16,6 +17,8 @@ import me.gg.pinit.pinittask.domain.schedule.vo.ImportanceConstraint;
 import me.gg.pinit.pinittask.domain.schedule.vo.ScheduleHistory;
 import me.gg.pinit.pinittask.domain.schedule.vo.TemporalConstraint;
 
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 @Entity
@@ -44,6 +47,10 @@ public class Schedule {
     })
     private ZonedDateTimeAttribute designatedStartTime;
 
+    @Column(name = "designated_start_time_utc", columnDefinition = "DATETIME(6)", nullable = false)
+    @Convert(converter = InstantToDatetime6UtcConverter.class)
+    private Instant designatedStartTimeInstant;
+
     @Getter
     @Embedded
     private TemporalConstraint temporalConstraint;
@@ -70,7 +77,7 @@ public class Schedule {
     }
 
     public ZonedDateTime getDesignatedStartTime() {
-        return designatedStartTime.toZonedDateTime();
+        return designatedStartTimeInstant.atOffset(ZoneOffset.UTC).toZonedDateTime();
     }
 
     public void start(ZonedDateTime startTime) {
@@ -126,15 +133,16 @@ public class Schedule {
         this.title = title;
     }
 
-    public void setDescription(String description) {
-        validateDescrption(description);
-        this.description = description;
-    }
-
     public void setDesignatedStartTime(ZonedDateTime zdt) {
         validateStartTime(zdt);
         this.designatedStartTime = ZonedDateTimeAttribute.from(zdt);
+        this.designatedStartTimeInstant = zdt.toInstant();
         DomainEvents.raise(new ScheduleTimeUpdatedEvent(this.id, this.ownerId, zdt));
+    }
+
+    public void setDescription(String description) {
+        validateDescription(description);
+        this.description = description;
     }
 
     public void changeDeadline(ZonedDateTime newDeadline) {
@@ -190,7 +198,7 @@ public class Schedule {
         }
     }
 
-    private void validateDescrption(String description) {
+    private void validateDescription(String description) {
         if (description == null || description.isBlank()) {
             throw new IllegalDescriptionException("설명의 길이는 1자 이상 100자 이하여야 합니다.");
         }else if (description.length() > 100) {
