@@ -3,12 +3,14 @@ package me.gg.pinit.pinittask.domain.datetime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import lombok.Getter;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
+@Getter
 @Embeddable
 public class ZonedDateAttribute {
     @Column(name = "date")
@@ -37,14 +39,6 @@ public class ZonedDateAttribute {
         ZoneOffset to = ZoneOffset.of(offsetId);
 
         return date.atStartOfDay(to);
-    }
-
-    public LocalDate getDate() {
-        return date;
-    }
-
-    public String getOffsetId() {
-        return offsetId;
     }
 
     @Override

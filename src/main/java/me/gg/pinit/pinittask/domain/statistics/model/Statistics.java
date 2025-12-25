@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import me.gg.pinit.pinittask.domain.converter.service.DurationConverter;
 import me.gg.pinit.pinittask.domain.datetime.ZonedDateAttribute;
-import me.gg.pinit.pinittask.domain.datetime.ZonedDateTimeAttribute;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
@@ -22,19 +21,13 @@ public class Statistics {
 
     private Long memberId;
 
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "dateTime", column = @Column(name = "start_of_week_time")),
-            @AttributeOverride(name = "zoneId", column = @Column(name = "start_of_week_zone_id"))
-    })
-    private ZonedDateTimeAttribute startOfWeek;
 
     @Embedded
     @AttributeOverrides({
             @AttributeOverride(name = "date", column = @Column(name = "start_of_week_date")),
             @AttributeOverride(name = "offsetId", column = @Column(name = "start_of_week_offset_id"))
     })
-    private ZonedDateAttribute startOfWeekDate;
+    private ZonedDateAttribute startOfWeek;
 
     @Convert(converter = DurationConverter.class)
     private Duration deepWorkElapsedTime;
@@ -51,8 +44,7 @@ public class Statistics {
 
     public Statistics(Long memberId, ZonedDateTime startOfWeek) {
         this.memberId = memberId;
-        this.startOfWeek = ZonedDateTimeAttribute.from(startOfWeek);
-        this.startOfWeekDate = ZonedDateAttribute.from(startOfWeek);
+        this.startOfWeek = ZonedDateAttribute.from(startOfWeek);
         this.deepWorkElapsedTime = Duration.ZERO;
         this.adminWorkElapsedTime = Duration.ZERO;
         this.totalWorkElapsedTime = Duration.ZERO;
@@ -88,9 +80,5 @@ public class Statistics {
 
     public ZonedDateTime getStartOfWeek() {
         return startOfWeek.toZonedDateTime();
-    }
-
-    public ZonedDateTime getStartOfWeekDate() {
-        return startOfWeekDate.toZonedDateTime();
     }
 }
