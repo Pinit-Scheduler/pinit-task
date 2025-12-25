@@ -28,7 +28,7 @@ import java.time.ZoneId;
 import java.util.List;
 
 @RestController
-@RequestMapping("/schedules")
+@RequestMapping("/v1/schedules")
 @RequiredArgsConstructor
 @Tag(name = "Schedule", description = "일정 관리 API")
 @ApiResponses({
