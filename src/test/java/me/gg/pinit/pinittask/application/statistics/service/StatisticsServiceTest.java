@@ -42,14 +42,14 @@ class StatisticsServiceTest {
         Statistics existing = new Statistics(memberId, mondayStart);
         when(memberService.findZoneOffsetOfMember(memberId)).thenReturn(ZoneOffset.UTC);
         when(dateTimeUtils.lastMondayStart(now, ZoneOffset.UTC)).thenReturn(mondayStart);
-        when(statisticsRepository.findByMemberIdAndStartOfWeekDate(memberId, mondayStart.toLocalDateTime(), mondayStart.getZone().getId())).thenReturn(Optional.of(existing));
+        when(statisticsRepository.findByMemberIdAndStartOfWeekDate(memberId, mondayStart.toLocalDate(), mondayStart.getZone().getId())).thenReturn(Optional.of(existing));
 
         //when
         Statistics result = statisticsService.getStatistics(memberId, now);
 
         //then
         assertThat(result).isSameAs(existing);
-        verify(statisticsRepository).findByMemberIdAndStartOfWeekDate(memberId, mondayStart.toLocalDateTime(), mondayStart.getZone().getId());
+        verify(statisticsRepository).findByMemberIdAndStartOfWeekDate(memberId, mondayStart.toLocalDate(), mondayStart.getZone().getId());
     }
 
     @Test
@@ -62,7 +62,7 @@ class StatisticsServiceTest {
         Duration rollback = Duration.ofMinutes(15);
         when(memberService.findZoneOffsetOfMember(memberId)).thenReturn(ZoneOffset.UTC);
         when(dateTimeUtils.lastMondayStart(startTime, ZoneOffset.UTC)).thenReturn(mondayStart);
-        when(statisticsRepository.findByMemberIdAndStartOfWeekDate(memberId, mondayStart.toLocalDateTime(), mondayStart.getZone().getId())).thenReturn(Optional.of(stats));
+        when(statisticsRepository.findByMemberIdAndStartOfWeekDate(memberId, mondayStart.toLocalDate(), mondayStart.getZone().getId())).thenReturn(Optional.of(stats));
 
         //when
         statisticsService.removeElapsedTime(memberId, TaskType.DEEP_WORK, rollback, startTime);
@@ -81,7 +81,7 @@ class StatisticsServiceTest {
         Duration duration = Duration.ofMinutes(45);
         when(memberService.findZoneOffsetOfMember(memberId)).thenReturn(ZoneOffset.UTC);
         when(dateTimeUtils.lastMondayStart(startTime, ZoneOffset.UTC)).thenReturn(mondayStart);
-        when(statisticsRepository.findByMemberIdAndStartOfWeekDate(memberId, mondayStart.toLocalDateTime(), mondayStart.getZone().getId())).thenReturn(Optional.empty());
+        when(statisticsRepository.findByMemberIdAndStartOfWeekDate(memberId, mondayStart.toLocalDate(), mondayStart.getZone().getId())).thenReturn(Optional.empty());
 
         //when
         statisticsService.addElapsedTime(memberId, TaskType.ADMIN_TASK, duration, startTime);
