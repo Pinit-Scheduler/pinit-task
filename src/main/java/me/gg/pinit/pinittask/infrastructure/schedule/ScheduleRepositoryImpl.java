@@ -27,8 +27,8 @@ public class ScheduleRepositoryImpl implements ScheduleRepositoryCustom {
                 .from(schedule)
                 .where(
                         schedule.ownerId.eq(ownerId)
-                                .and(schedule.designatedStartTimeInstant.goe(start))
-                                .and(schedule.designatedStartTimeInstant.lt(end)))
+                                .and(schedule.designatedStartTime.goe(start))
+                                .and(schedule.designatedStartTime.lt(end)))
                 .fetch();
     }
 }
