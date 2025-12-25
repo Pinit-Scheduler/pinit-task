@@ -9,6 +9,6 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 public interface StatisticsRepository extends JpaRepository<Statistics, Long> {
-    @Query("SELECT s FROM Statistics s WHERE s.memberId = :memberId AND s.startOfWeek.dateTime = :startOfWeek AND s.startOfWeek.zoneId = :zoneId")
-    Optional<Statistics> findByMemberIdAndStartOfWeek(@Param("memberId") Long memberId, @Param("startOfWeek") LocalDateTime startOfWeek, @Param("zoneId") String zoneId);
+    @Query("SELECT s FROM Statistics s WHERE s.memberId = :memberId AND s.startOfWeekDate.date = :startOfWeekDate AND s.startOfWeekDate.offsetId = :offsetId")
+    Optional<Statistics> findByMemberIdAndStartOfWeekDate(@Param("memberId") Long memberId, @Param("startOfWeekDate") LocalDateTime startOfWeekDate, @Param("offsetId") String offsetId);
 }
