@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 
 @RestController
-@RequestMapping("/v1/statistics")
+@RequestMapping("/statistics")
 @Tag(name = "Statistics", description = "통계 조회 API")
 public class StatisticsController {
     private final StatisticsService statisticsService;
