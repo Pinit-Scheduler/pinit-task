@@ -27,7 +27,7 @@ public class Statistics {
             @AttributeOverride(name = "date", column = @Column(name = "start_of_week_date")),
             @AttributeOverride(name = "offsetId", column = @Column(name = "start_of_week_offset_id"))
     })
-    private ZonedDateAttribute startOfWeekDate;
+    private ZonedDateAttribute startOfWeek;
 
     @Convert(converter = DurationConverter.class)
     private Duration deepWorkElapsedTime;
@@ -44,7 +44,7 @@ public class Statistics {
 
     public Statistics(Long memberId, ZonedDateTime startOfWeek) {
         this.memberId = memberId;
-        this.startOfWeekDate = ZonedDateAttribute.from(startOfWeek);
+        this.startOfWeek = ZonedDateAttribute.from(startOfWeek);
         this.deepWorkElapsedTime = Duration.ZERO;
         this.adminWorkElapsedTime = Duration.ZERO;
         this.totalWorkElapsedTime = Duration.ZERO;
@@ -78,7 +78,7 @@ public class Statistics {
         this.totalWorkElapsedTime = this.totalWorkElapsedTime.minus(duration);
     }
 
-    public ZonedDateTime getStartOfWeekDate() {
-        return startOfWeekDate.toZonedDateTime();
+    public ZonedDateTime getStartOfWeek() {
+        return startOfWeek.toZonedDateTime();
     }
 }
