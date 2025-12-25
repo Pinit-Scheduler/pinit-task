@@ -14,6 +14,7 @@ import me.gg.pinit.pinittask.domain.schedule.repository.ScheduleRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -40,26 +41,24 @@ public class ScheduleService {
     @Transactional(readOnly = true)
     public List<Schedule> getScheduleList(Long memberId, LocalDate date) {
         ZoneId memberZoneById = memberService.findZoneIdOfMember(memberId);
-        ZonedDateTime startOfDay = date.atStartOfDay(memberZoneById);
-        ZonedDateTime endExclusive = date.plusDays(1).atStartOfDay(memberZoneById);
+        Instant startOfDay = date.atStartOfDay(memberZoneById).toInstant();
+        Instant endExclusive = date.plusDays(1).atStartOfDay(memberZoneById).toInstant();
 
-        return scheduleRepository.findAllByOwnerIdAndDesignatedStartTimeBetween(
+        return scheduleRepository.findAllByOwnerIdAndDesignatedStartTimeInstantBetween(
                 memberId,
-                startOfDay.toLocalDateTime(),
-                endExclusive.toLocalDateTime(),
-                memberZoneById.getId()
+                startOfDay,
+                endExclusive
         );
     }
 
     @Transactional(readOnly = true)
     public List<Schedule> getScheduleListForWeek(Long memberId, ZonedDateTime now) {
-        ZonedDateTime start = dateTimeUtils.lastMondayStart(now);
-        ZonedDateTime end = start.plusDays(7);
-        return scheduleRepository.findAllByOwnerIdAndDesignatedStartTimeBetween(
+        Instant start = dateTimeUtils.lastMondayStart(now).toInstant();
+        Instant end = dateTimeUtils.lastMondayStart(now).plusDays(7).toInstant();
+        return scheduleRepository.findAllByOwnerIdAndDesignatedStartTimeInstantBetween(
                 memberId,
-                start.toLocalDateTime(),
-                end.toLocalDateTime(),
-                start.getZone().getId()
+                start,
+                end
         );
     }
 
