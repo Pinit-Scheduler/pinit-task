@@ -36,7 +36,7 @@ public class ZonedDateAttribute {
 
         ZoneOffset to = ZoneOffset.of(offsetId);
 
-        return date.atStartOfDay().atOffset(to).toZonedDateTime();
+        return date.atStartOfDay(to);
     }
 
     public LocalDate getDate() {
