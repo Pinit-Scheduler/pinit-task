@@ -22,7 +22,8 @@ import java.util.Optional;
 import static me.gg.pinit.pinittask.domain.schedule.model.ScheduleUtils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -56,20 +57,30 @@ class ScheduleServiceTest {
 
     @Test
     void getScheduleList() {
+        //given
         when(memberService.findZoneIdOfMember(memberId)).thenReturn(ZoneId.of("Asia/Seoul"));
-        when(scheduleRepository.findAllByOwnerIdAndDesignatedStartTimeBetween(eq(memberId), any(), any(), anyString())).thenReturn(List.of(scheduleSample));
+        when(scheduleRepository.findAllByOwnerIdAndDesignatedStartTimeInstantBetween(eq(memberId), any(), any())).thenReturn(List.of(scheduleSample));
+
+        //when
         List<Schedule> scheduleList = scheduleService.getScheduleList(memberId, LocalDate.of(2025, 10, 1));
+
+        //then
         assertNotNull(scheduleList);
         assertEquals(1, scheduleList.size());
         verify(memberService).findZoneIdOfMember(memberId);
-        verify(scheduleRepository).findAllByOwnerIdAndDesignatedStartTimeBetween(eq(memberId), any(), any(), anyString());
+        verify(scheduleRepository).findAllByOwnerIdAndDesignatedStartTimeInstantBetween(eq(memberId), any(), any());
     }
 
     @Test
     void addSchedule() {
+        //given
         when(scheduleRepository.save(any(Schedule.class))).thenAnswer(invocation -> invocation.getArgument(0));
         Schedule newSchedule = new Schedule(memberId, "new title", "new description", ENROLLED_TIME, getTemporalConstraintSample(), getImportanceConstraintSample());
+
+        //when
         Schedule savedSchedule = scheduleService.addSchedule(newSchedule);
+
+        //then
         assertNotNull(savedSchedule);
         assertEquals("new title", savedSchedule.getTitle());
         verify(scheduleRepository).save(any(Schedule.class));
@@ -77,9 +88,14 @@ class ScheduleServiceTest {
 
     @Test
     void updateSchedule() {
+        //given
         when(scheduleRepository.findById(scheduleId)).thenReturn(Optional.of(scheduleSample));
         SchedulePatch schedulePatch = new SchedulePatch().setTitle("new title");
+
+        //when
         Schedule updatedSchedule = scheduleService.updateSchedule(memberId, scheduleId, schedulePatch);
+
+        //then
         assertNotNull(updatedSchedule);
         assertEquals("new title", updatedSchedule.getTitle());
         Assertions.assertThat(updatedSchedule.getDescription()).isEqualTo("description");
@@ -88,9 +104,14 @@ class ScheduleServiceTest {
 
     @Test
     void deleteSchedule() {
+        //given
         when(scheduleRepository.findById(scheduleId)).thenReturn(Optional.of(scheduleSample)).thenReturn(Optional.empty());
         doNothing().when(scheduleRepository).delete(any(Schedule.class));
+
+        //when
         scheduleService.deleteSchedule(memberId, scheduleId);
+
+        //then
         Assertions.assertThatThrownBy(() -> scheduleService.getSchedule(memberId, scheduleId)).isInstanceOf(ScheduleNotFoundException.class).hasMessage("해당 일정을 찾을 수 없습니다.");
         verify(scheduleRepository).delete(scheduleSample);
         verify(domainEventPublisher, atLeast(0)).publish(any());
