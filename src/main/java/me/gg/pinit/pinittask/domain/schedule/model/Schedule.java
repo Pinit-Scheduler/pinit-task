@@ -41,7 +41,7 @@ public class Schedule {
 
     @Column(name = "designated_start_time_utc", columnDefinition = "DATETIME(6)", nullable = false)
     @Convert(converter = InstantToDatetime6UtcConverter.class)
-    private Instant designatedStartTimeInstant;
+    private Instant designatedStartTime;
 
     @Getter
     @Embedded
@@ -69,7 +69,7 @@ public class Schedule {
     }
 
     public ZonedDateTime getDesignatedStartTime() {
-        return designatedStartTimeInstant.atOffset(ZoneOffset.UTC).toZonedDateTime();
+        return designatedStartTime.atOffset(ZoneOffset.UTC).toZonedDateTime();
     }
 
     public void start(ZonedDateTime startTime) {
@@ -127,7 +127,7 @@ public class Schedule {
 
     public void setDesignatedStartTime(ZonedDateTime zdt) {
         validateStartTime(zdt);
-        this.designatedStartTimeInstant = zdt.toInstant();
+        this.designatedStartTime = zdt.toInstant();
         DomainEvents.raise(new ScheduleTimeUpdatedEvent(this.id, this.ownerId, zdt));
     }
 
