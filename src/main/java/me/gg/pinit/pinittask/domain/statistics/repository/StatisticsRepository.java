@@ -5,10 +5,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Optional;
 
 public interface StatisticsRepository extends JpaRepository<Statistics, Long> {
     @Query("SELECT s FROM Statistics s WHERE s.memberId = :memberId AND s.startOfWeekDate.date = :startOfWeekDate AND s.startOfWeekDate.offsetId = :offsetId")
-    Optional<Statistics> findByMemberIdAndStartOfWeekDate(@Param("memberId") Long memberId, @Param("startOfWeekDate") LocalDateTime startOfWeekDate, @Param("offsetId") String offsetId);
+    Optional<Statistics> findByMemberIdAndStartOfWeekDate(@Param("memberId") Long memberId, @Param("startOfWeekDate") LocalDate startOfWeekDate, @Param("offsetId") String offsetId);
 }

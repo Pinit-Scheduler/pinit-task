@@ -31,7 +31,7 @@ public class StatisticsService {
         ZoneOffset zoneOffsetOfMember = memberService.findZoneOffsetOfMember(memberId);
         ZonedDateTime startTime = dateTimeUtils.lastMondayStart(now, zoneOffsetOfMember);
         log.warn("startTime = {}", startTime);
-        return statisticsRepository.findByMemberIdAndStartOfWeekDate(memberId, startTime.toLocalDateTime(), startTime.getZone().getId())
+        return statisticsRepository.findByMemberIdAndStartOfWeekDate(memberId, startTime.toLocalDate(), startTime.getZone().getId())
                 .orElseGet(() -> new Statistics(memberId, startTime));
     }
 
@@ -39,7 +39,7 @@ public class StatisticsService {
     public void removeElapsedTime(Long ownerId, TaskType taskType, Duration duration, ZonedDateTime startTime) {
         ZoneOffset zoneOffsetOfMember = memberService.findZoneOffsetOfMember(ownerId);
         ZonedDateTime dateTime = dateTimeUtils.lastMondayStart(startTime, zoneOffsetOfMember);
-        Statistics statistics = statisticsRepository.findByMemberIdAndStartOfWeekDate(ownerId, dateTime.toLocalDateTime(), dateTime.getZone().getId())
+        Statistics statistics = statisticsRepository.findByMemberIdAndStartOfWeekDate(ownerId, dateTime.toLocalDate(), dateTime.getZone().getId())
                 .orElseGet(() -> new Statistics(ownerId, dateTime));
         taskType.rollback(statistics, duration);
         statisticsRepository.save(statistics);
@@ -49,7 +49,7 @@ public class StatisticsService {
     public void addElapsedTime(Long ownerId, TaskType taskType, Duration duration, ZonedDateTime startTime) {
         ZoneOffset zoneOffsetOfMember = memberService.findZoneOffsetOfMember(ownerId);
         ZonedDateTime dateTime = dateTimeUtils.lastMondayStart(startTime, zoneOffsetOfMember);
-        Statistics statistics = statisticsRepository.findByMemberIdAndStartOfWeekDate(ownerId, dateTime.toLocalDateTime(), dateTime.getZone().getId())
+        Statistics statistics = statisticsRepository.findByMemberIdAndStartOfWeekDate(ownerId, dateTime.toLocalDate(), dateTime.getZone().getId())
                 .orElseGet(() -> new Statistics(ownerId, dateTime));
         taskType.record(statistics, duration);
         statisticsRepository.save(statistics);
