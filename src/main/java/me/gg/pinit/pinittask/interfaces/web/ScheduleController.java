@@ -22,7 +22,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
@@ -75,8 +74,8 @@ public class ScheduleController {
             @ApiResponse(responseCode = "400", description = "날짜 형식이 올바르지 않습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public List<ScheduleResponse> getSchedules(@MemberId Long memberId,
-                                               @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        return scheduleService.getScheduleList(memberId, date).stream()
+                                               @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime date) {
+        return scheduleService.getScheduleList(memberId, date.toLocalDate()).stream()
                 .map(ScheduleResponse::from)
                 .toList();
     }
