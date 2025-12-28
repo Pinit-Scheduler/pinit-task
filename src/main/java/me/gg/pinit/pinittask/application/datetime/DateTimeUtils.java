@@ -1,5 +1,6 @@
 package me.gg.pinit.pinittask.application.datetime;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
@@ -7,9 +8,11 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.Objects;
 
 @Service
+@Slf4j
 public class DateTimeUtils {
     public ZonedDateTime lastMondayStart(ZonedDateTime point, ZoneOffset offset) {
-        LocalDate monday = point.toLocalDate()
+        ZonedDateTime converted = point.withZoneSameInstant(offset);
+        LocalDate monday = converted.toLocalDate()
                 .with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         return monday.atStartOfDay(offset);
     }
