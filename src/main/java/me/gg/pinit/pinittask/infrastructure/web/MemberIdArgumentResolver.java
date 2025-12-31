@@ -39,20 +39,6 @@ public class MemberIdArgumentResolver implements HandlerMethodArgumentResolver {
             log.info("HttpServletRequest is null");
             throw new MemberNotFoundException("사용자 정보를 찾을 수 없습니다.");
         }
-
-        String token = resolveToken(request);
-        if (token == null || !jwtTokenProvider.validateToken(token)) {
-            throw new MemberNotFoundException("사용자 정보를 찾을 수 없습니다.");
-        }
-
-        return jwtTokenProvider.getMemberId(token);
-    }
-
-    private String resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
-        }
-        return null;
+        return Long.parseLong(request.getHeader("X-Member-Id"));
     }
 }
