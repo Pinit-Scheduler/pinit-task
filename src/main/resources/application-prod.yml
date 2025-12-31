@@ -15,6 +15,14 @@ spring:
     virtual-host: /pinit
     connection-timeout: 5000
 
+management:
+  server:
+    port: 9095
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,metrics,prometheus"
+
 
 path:
   key:
