@@ -43,6 +43,7 @@ dependencies {
 
     // Actuator
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
 
     // Querydsl dependencies
     implementation "com.querydsl:querydsl-jpa:${querydslVersion}:jakarta"
