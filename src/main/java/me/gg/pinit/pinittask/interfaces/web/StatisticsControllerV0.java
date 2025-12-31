@@ -19,15 +19,14 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
-@Deprecated
 @RestController
-@RequestMapping("/statistics")
+@RequestMapping("/v0/statistics")
 @Tag(name = "Statistics", description = "통계 조회 API")
-public class StatisticsController {
+public class StatisticsControllerV0 {
     private final StatisticsService statisticsService;
     private final DateTimeUtils dateTimeUtils;
 
-    public StatisticsController(StatisticsService statisticsService, DateTimeUtils dateTimeUtils) {
+    public StatisticsControllerV0(StatisticsService statisticsService, DateTimeUtils dateTimeUtils) {
         this.statisticsService = statisticsService;
         this.dateTimeUtils = dateTimeUtils;
     }

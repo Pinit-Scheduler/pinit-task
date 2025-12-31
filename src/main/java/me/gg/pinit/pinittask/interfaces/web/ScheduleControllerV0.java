@@ -26,9 +26,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 
-@Deprecated
 @RestController
-@RequestMapping("/schedules")
+@RequestMapping("/v0/schedules")
 @RequiredArgsConstructor
 @Tag(name = "Schedule", description = "일정 관리 API")
 @ApiResponses({
@@ -37,7 +36,7 @@ import java.util.List;
         @ApiResponse(responseCode = "409", description = "현재 상태와 충돌했습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
 })
-public class ScheduleController {
+public class ScheduleControllerV0 {
     private final DateTimeUtils dateTimeUtils;
     private final ScheduleService scheduleService;
     private final ScheduleAdjustmentService scheduleAdjustmentService;
