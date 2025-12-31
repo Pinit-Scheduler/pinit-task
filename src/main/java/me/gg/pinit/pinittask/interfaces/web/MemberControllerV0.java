@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import me.gg.pinit.pinittask.application.member.service.MemberService;
 import me.gg.pinit.pinittask.interfaces.utils.MemberId;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/v0")
+@Tag(name = "Member", description = "회원 관련 정보 API")
 public class MemberControllerV0 {
     private final MemberService memberService;
 
