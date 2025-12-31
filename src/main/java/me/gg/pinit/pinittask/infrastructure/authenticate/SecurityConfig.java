@@ -1,7 +1,6 @@
 package me.gg.pinit.pinittask.infrastructure.authenticate;
 
 import jakarta.servlet.http.HttpServletResponse;
-import me.gg.pinit.pinittask.infrastructure.config.CorsProperties;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,9 +12,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.security.PublicKey;
 
@@ -67,19 +63,5 @@ public class SecurityConfig {
     public JwtTokenProvider jwtTokenProvider() {
         PublicKey publicKey = RsaKeyProvider.loadPublicKey(jwtPublicKeyPath);
         return new JwtTokenProvider(publicKey);
-    }
-
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource(CorsProperties corsProperties) {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(corsProperties.getAllowedOrigins());
-        config.setAllowedMethods(corsProperties.getAllowedMethods());
-        config.setAllowedHeaders(corsProperties.getAllowedHeaders());
-        config.setAllowCredentials(corsProperties.getAllowCredentials());
-        config.setMaxAge(corsProperties.getMaxAge());
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        return source;
     }
 }
