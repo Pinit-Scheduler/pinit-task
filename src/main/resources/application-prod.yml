@@ -22,9 +22,3 @@ management:
     web:
       exposure:
         include: "health,info,metrics,prometheus"
-
-
-path:
-  key:
-    jwt:
-      public: /etc/keys/jwt-public-key.pem
