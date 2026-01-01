@@ -74,8 +74,9 @@ public class ScheduleControllerV0 {
             @ApiResponse(responseCode = "400", description = "날짜 형식이 올바르지 않습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public List<ScheduleResponse> getSchedules(@MemberId Long memberId,
-                                               @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime date) {
-        return scheduleService.getScheduleList(memberId, date.toLocalDate()).stream()
+                                               @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime time,
+                                               @RequestParam ZoneId zoneId) {
+        return scheduleService.getScheduleList(memberId, dateTimeUtils.toZonedDateTime(time, zoneId)).stream()
                 .map(ScheduleResponse::from)
                 .toList();
     }
