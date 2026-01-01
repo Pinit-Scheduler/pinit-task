@@ -14,8 +14,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -62,7 +62,7 @@ class ScheduleServiceTest {
         when(scheduleRepository.findAllByOwnerIdAndDesignatedStartTimeInstantBetween(eq(memberId), any(), any())).thenReturn(List.of(scheduleSample));
 
         //when
-        List<Schedule> scheduleList = scheduleService.getScheduleList(memberId, LocalDate.of(2025, 10, 1));
+        List<Schedule> scheduleList = scheduleService.getScheduleList(memberId, ZonedDateTime.of(2025, 10, 1, 0, 0, 0, 0, ZoneId.of("Asia/Seoul")));
 
         //then
         assertNotNull(scheduleList);

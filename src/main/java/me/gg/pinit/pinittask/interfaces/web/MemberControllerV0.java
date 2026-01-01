@@ -1,6 +1,7 @@
 package me.gg.pinit.pinittask.interfaces.web;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -25,7 +26,7 @@ public class MemberControllerV0 {
 
     @GetMapping("/now")
     @Operation(summary = "현재 진행 중인 일정 ID 조회", description = "사용자의 현재 진행 중인 일정 ID를 조회합니다.")
-    public ResponseEntity<Long> getNowInProgressScheduleId(@MemberId Long memberId) {
+    public ResponseEntity<Long> getNowInProgressScheduleId(@Parameter(hidden = true) @MemberId Long memberId) {
         Long scheduleId = memberService.getNowInProgressScheduleId(memberId);
         return ResponseEntity.ok(scheduleId);
     }
@@ -35,7 +36,7 @@ public class MemberControllerV0 {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "사용자 시간대 조회 성공", content = @Content(schema = @Schema(implementation = String.class, example = "+09:00"))),
     })
-    public ResponseEntity<String> getMemberZoneOffset(@MemberId Long memberId) {
+    public ResponseEntity<String> getMemberZoneOffset(@Parameter(hidden = true) @MemberId Long memberId) {
         String zoneOffset = memberService.findZoneOffsetOfMember(memberId).toString();
         return ResponseEntity.ok(zoneOffset);
     }
