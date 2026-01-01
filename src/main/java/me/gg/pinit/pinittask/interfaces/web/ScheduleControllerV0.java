@@ -1,6 +1,7 @@
 package me.gg.pinit.pinittask.interfaces.web;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -48,7 +49,7 @@ public class ScheduleControllerV0 {
             @ApiResponse(responseCode = "201", description = "일정이 성공적으로 생성되었습니다."),
             @ApiResponse(responseCode = "400", description = "요청 값 검증에 실패했습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<ScheduleResponse> createSchedule(@MemberId Long memberId,
+    public ResponseEntity<ScheduleResponse> createSchedule(@Parameter(hidden = true) @MemberId Long memberId,
                                                            @Valid @RequestBody ScheduleRequest request) {
         Schedule saved = scheduleAdjustmentService.createSchedule(memberId, request.toCommand(null, memberId, dateTimeUtils));
         return ResponseEntity.status(HttpStatus.CREATED).body(ScheduleResponse.from(saved));
@@ -60,7 +61,7 @@ public class ScheduleControllerV0 {
             @ApiResponse(responseCode = "200", description = "일정이 수정되었습니다."),
             @ApiResponse(responseCode = "400", description = "요청 값 검증에 실패했습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<ScheduleResponse> updateSchedule(@MemberId Long memberId,
+    public ResponseEntity<ScheduleResponse> updateSchedule(@Parameter(hidden = true) @MemberId Long memberId,
                                                            @PathVariable Long scheduleId,
                                                            @Valid @RequestBody ScheduleRequest request) {
         Schedule updated = scheduleAdjustmentService.adjustSchedule(memberId, request.toCommand(scheduleId, memberId, dateTimeUtils));
@@ -73,7 +74,7 @@ public class ScheduleControllerV0 {
             @ApiResponse(responseCode = "200", description = "목록 조회에 성공했습니다."),
             @ApiResponse(responseCode = "400", description = "날짜 형식이 올바르지 않습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public List<ScheduleResponse> getSchedules(@MemberId Long memberId,
+    public List<ScheduleResponse> getSchedules(@Parameter(hidden = true) @MemberId Long memberId,
                                                @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime time,
                                                @RequestParam ZoneId zoneId) {
         return scheduleService.getScheduleList(memberId, dateTimeUtils.toZonedDateTime(time, zoneId)).stream()
@@ -87,7 +88,7 @@ public class ScheduleControllerV0 {
             @ApiResponse(responseCode = "200", description = "단건 조회에 성공했습니다."),
             @ApiResponse(responseCode = "404", description = "일정을 찾을 수 없습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ScheduleResponse getSchedule(@MemberId Long memberId, @PathVariable Long scheduleId) {
+    public ScheduleResponse getSchedule(@Parameter(hidden = true) @MemberId Long memberId, @PathVariable Long scheduleId) {
         Schedule schedule = scheduleService.getSchedule(memberId, scheduleId);
         return ScheduleResponse.from(schedule);
     }
@@ -98,7 +99,7 @@ public class ScheduleControllerV0 {
             @ApiResponse(responseCode = "200", description = "주간 일정 조회에 성공했습니다."),
             @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public List<ScheduleResponse> getWeeklySchedules(@MemberId Long memberId,
+    public List<ScheduleResponse> getWeeklySchedules(@Parameter(hidden = true) @MemberId Long memberId,
                                                      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime time,
                                                      @RequestParam ZoneId zoneId) {
         return scheduleService.getScheduleListForWeek(memberId, dateTimeUtils.toZonedDateTime(time, zoneId)).stream()
@@ -112,7 +113,7 @@ public class ScheduleControllerV0 {
             @ApiResponse(responseCode = "204", description = "일정이 시작되었습니다."),
             @ApiResponse(responseCode = "409", description = "잘못된 상태 전환입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<Void> startSchedule(@MemberId Long memberId, @PathVariable Long scheduleId,
+    public ResponseEntity<Void> startSchedule(@Parameter(hidden = true) @MemberId Long memberId, @PathVariable Long scheduleId,
                                               @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime time,
                                               @RequestParam ZoneId zoneId) {
         scheduleStateChangeService.startSchedule(memberId, scheduleId, dateTimeUtils.toZonedDateTime(time, zoneId));
@@ -125,7 +126,7 @@ public class ScheduleControllerV0 {
             @ApiResponse(responseCode = "204", description = "일정이 완료되었습니다."),
             @ApiResponse(responseCode = "409", description = "잘못된 상태 전환입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<Void> completeSchedule(@MemberId Long memberId, @PathVariable Long scheduleId,
+    public ResponseEntity<Void> completeSchedule(@Parameter(hidden = true) @MemberId Long memberId, @PathVariable Long scheduleId,
                                                  @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime time,
                                                  @RequestParam ZoneId zoneId) {
         scheduleStateChangeService.completeSchedule(memberId, scheduleId, dateTimeUtils.toZonedDateTime(time, zoneId));
@@ -138,7 +139,7 @@ public class ScheduleControllerV0 {
             @ApiResponse(responseCode = "204", description = "일정이 일시중지되었습니다."),
             @ApiResponse(responseCode = "409", description = "잘못된 상태 전환입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<Void> suspendSchedule(@MemberId Long memberId, @PathVariable Long scheduleId,
+    public ResponseEntity<Void> suspendSchedule(@Parameter(hidden = true) @MemberId Long memberId, @PathVariable Long scheduleId,
                                                 @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime time,
                                                 @RequestParam ZoneId zoneId) {
         scheduleStateChangeService.suspendSchedule(memberId, scheduleId, dateTimeUtils.toZonedDateTime(time, zoneId));
@@ -151,7 +152,7 @@ public class ScheduleControllerV0 {
             @ApiResponse(responseCode = "204", description = "일정이 취소되었습니다."),
             @ApiResponse(responseCode = "409", description = "잘못된 상태 전환입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<Void> cancelSchedule(@MemberId Long memberId, @PathVariable Long scheduleId) {
+    public ResponseEntity<Void> cancelSchedule(@Parameter(hidden = true) @MemberId Long memberId, @PathVariable Long scheduleId) {
         scheduleStateChangeService.cancelSchedule(memberId, scheduleId);
         return ResponseEntity.noContent().build();
     }
@@ -162,7 +163,7 @@ public class ScheduleControllerV0 {
             @ApiResponse(responseCode = "204", description = "일정이 삭제되었습니다."),
             @ApiResponse(responseCode = "409", description = "잘못된 상태 전환입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<Void> deleteSchedule(@MemberId Long memberId, @PathVariable Long scheduleId) {
+    public ResponseEntity<Void> deleteSchedule(@Parameter(hidden = true) @MemberId Long memberId, @PathVariable Long scheduleId) {
         scheduleService.deleteSchedule(memberId, scheduleId);
         return ResponseEntity.noContent().build();
     }
