@@ -23,8 +23,8 @@ public record ScheduleResponse(
         DateTimeWithZone deadline,
         @Schema(description = "중요도")
         int importance,
-        @Schema(description = "긴급도")
-        int urgency,
+        @Schema(description = "난이도")
+        int difficulty,
         @Schema(description = "누적 작업 시간")
         Duration duration,
         @Schema(description = "현재 상태")
@@ -42,7 +42,7 @@ public record ScheduleResponse(
                 DateTimeWithZone.from(schedule.getDesignatedStartTime()),
                 DateTimeWithZone.from(temporal.getDeadline()),
                 importanceConstraint.getImportance(),
-                importanceConstraint.getUrgency(),
+                importanceConstraint.getDifficulty(),
                 history.getElapsedTime(),
                 schedule.getState()
         );

@@ -45,7 +45,7 @@ class ScheduleAdjustmentServiceTest {
                 "DESC",
                 now.plusHours(4),
                 5,
-                6,
+                5,
                 TaskType.DEEP_WORK,
                 now,
                 Collections.emptyList(),
@@ -116,7 +116,7 @@ class ScheduleAdjustmentServiceTest {
         assertEquals("NEW_TITLE", patch.title().orElse(null));
         assertEquals("NEW_DESC", patch.description().orElse(null));
         assertEquals(9, patch.importance().orElse(-1));
-        assertEquals(3, patch.urgency().orElse(-1));
+        assertEquals(3, patch.difficulty().orElse(-1));
         assertEquals(TaskType.QUICK_TASK, patch.taskType().orElse(null));
 
         verify(dependencyService).deleteAll(anyList());
