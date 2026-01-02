@@ -10,7 +10,7 @@ public final class SchedulePatch {
     private String description;
     private ZonedDateTime deadline;
     private Integer importance;
-    private Integer urgency;
+    private Integer difficulty;
     private TaskType taskType;
     private ZonedDateTime date;
 
@@ -34,8 +34,8 @@ public final class SchedulePatch {
         return this;
     }
 
-    public SchedulePatch setUrgency(Integer v) {
-        this.urgency = v;
+    public SchedulePatch setDifficulty(Integer v) {
+        this.difficulty = v;
         return this;
     }
 
@@ -65,8 +65,8 @@ public final class SchedulePatch {
         return Optional.ofNullable(importance);
     }
 
-    public Optional<Integer> urgency() {
-        return Optional.ofNullable(urgency);
+    public Optional<Integer> difficulty() {
+        return Optional.ofNullable(difficulty);
     }
 
     public Optional<TaskType> taskType() {
@@ -79,7 +79,7 @@ public final class SchedulePatch {
 
     public boolean isEmpty() {
         return title == null && description == null && deadline == null
-                && importance == null && urgency == null && taskType == null && date == null;
+                && importance == null && difficulty == null && taskType == null && date == null;
     }
 }
 
