@@ -33,7 +33,7 @@ public record ScheduleRequest(
         Integer importance,
         @NotNull
         @Min(1)
-        @Max(9)
+        @Max(21)
         @Schema(description = "난이도 (21 이하의 피보나치 수)", example = "3")
         Integer difficulty,
         @NotNull
