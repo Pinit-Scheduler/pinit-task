@@ -107,7 +107,7 @@ public class Schedule {
     public void patch(SchedulePatch patch) {
         checkStateIsNotCompleted();
         patch.importance().ifPresent(this::changeImportance);
-        patch.urgency().ifPresent(this::changeUrgency);
+        patch.difficulty().ifPresent(this::changeDifficulty);
         patch.title().ifPresent(this::setTitle);
         patch.description().ifPresent(this::setDescription);
         patch.deadline().ifPresent(this::changeDeadline);
@@ -149,8 +149,8 @@ public class Schedule {
         this.importanceConstraint = this.importanceConstraint.changeImportance(newImportance);
     }
 
-    public void changeUrgency(int newUrgency) {
-        this.importanceConstraint = this.importanceConstraint.changeUrgency(newUrgency);
+    public void changeDifficulty(int newDifficulty) {
+        this.importanceConstraint = this.importanceConstraint.changeDifficultyLevel(newDifficulty);
     }
 
     public String getState() {
