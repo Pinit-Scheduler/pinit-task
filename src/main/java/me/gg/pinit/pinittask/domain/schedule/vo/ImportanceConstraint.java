@@ -21,7 +21,9 @@ public class ImportanceConstraint {
     protected ImportanceConstraint() {}
 
     public ImportanceConstraint(int importance, int difficulty) {
+        validateImportanceLevel(importance);
         this.importance = importance;
+        validateDifficultyLevel(difficulty);
         this.difficulty = difficulty;
     }
 

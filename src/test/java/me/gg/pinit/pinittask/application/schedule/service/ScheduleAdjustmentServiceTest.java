@@ -45,7 +45,7 @@ class ScheduleAdjustmentServiceTest {
                 "DESC",
                 now.plusHours(4),
                 5,
-                6,
+                5,
                 TaskType.DEEP_WORK,
                 now,
                 Collections.emptyList(),
