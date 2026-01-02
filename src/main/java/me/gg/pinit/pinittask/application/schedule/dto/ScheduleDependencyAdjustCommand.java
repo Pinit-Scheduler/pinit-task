@@ -14,34 +14,34 @@ import java.util.List;
 import java.util.Objects;
 
 public class ScheduleDependencyAdjustCommand {
-    private Long scheduleId;
+    private final Long scheduleId;
     @Getter
-    private Long ownerId;
+    private final Long ownerId;
     @Getter
-    private String title;
+    private final String title;
     @Getter
-    private String description;
+    private final String description;
     @Getter
-    private ZonedDateTime deadline;
+    private final ZonedDateTime deadline;
     @Getter
-    private Integer importance;
+    private final Integer importance;
     @Getter
-    private Integer urgency;
+    private final Integer difficulty;
     @Getter
-    private TaskType taskType;
+    private final TaskType taskType;
     @Getter
-    private ZonedDateTime date;
-    private List<DependencyDto> removeDependencies;
-    private List<DependencyDto> addDependencies;
+    private final ZonedDateTime date;
+    private final List<DependencyDto> removeDependencies;
+    private final List<DependencyDto> addDependencies;
 
-    public ScheduleDependencyAdjustCommand(Long scheduleId, Long ownerId, String title, String description, ZonedDateTime deadline, Integer importance, Integer urgency, TaskType taskType, ZonedDateTime date, List<DependencyDto> removeDependencies, List<DependencyDto> addDependencies) {
+    public ScheduleDependencyAdjustCommand(Long scheduleId, Long ownerId, String title, String description, ZonedDateTime deadline, Integer importance, Integer difficulty, TaskType taskType, ZonedDateTime date, List<DependencyDto> removeDependencies, List<DependencyDto> addDependencies) {
         this.scheduleId = scheduleId;
         this.ownerId = ownerId;
         this.title = title;
         this.description = description;
         this.deadline = deadline;
         this.importance = importance;
-        this.urgency = urgency;
+        this.difficulty = difficulty;
         this.taskType = taskType;
         this.date = date;
         this.removeDependencies = removeDependencies;
@@ -59,7 +59,7 @@ public class ScheduleDependencyAdjustCommand {
                 description,
                 date,
                 new TemporalConstraint(deadline, Duration.ZERO, taskType),
-                new ImportanceConstraint(importance, urgency)
+                new ImportanceConstraint(importance, difficulty)
         );
     }
 
@@ -69,7 +69,7 @@ public class ScheduleDependencyAdjustCommand {
                 .setDescription(description)
                 .setDeadline(deadline)
                 .setImportance(importance)
-                .setUrgency(urgency)
+                .setDifficulty(difficulty)
                 .setTaskType(taskType)
                 .setDate(date);
     }
