@@ -1,10 +1,10 @@
-package me.gg.pinit.pinittask.domain.schedule.model;
+package me.gg.pinit.pinittask.domain.task.model;
 
 import me.gg.pinit.pinittask.domain.statistics.model.Statistics;
 
 import java.time.Duration;
 
-public enum TaskType implements Recorder{
+public enum TaskType implements Recorder {
     DEEP_WORK {
         @Override
         public void record(Statistics statistics, Duration duration) {
@@ -37,6 +37,5 @@ public enum TaskType implements Recorder{
         public void rollback(Statistics statistics, Duration duration) {
             statistics.removeAdminWorkDuration(duration);
         }
-    };
-
+    }
 }
