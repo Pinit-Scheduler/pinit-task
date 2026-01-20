@@ -140,7 +140,7 @@ class ScheduleTest {
 
         //when
         SchedulePatch schedulePatch = new SchedulePatch()
-                .setDate(changedDate)
+                .setDesignatedStartTime(changedDate)
                 .setTitle(newTitle)
                 .setDescription(newDesc);
         schedule.patch(schedulePatch);
