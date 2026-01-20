@@ -18,6 +18,8 @@ public class ScheduleDeletedEventHandler {
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void on(ScheduleDeletedEvent event) {
-        dependencyService.deleteWithScheduleId(event.getScheduleId());
+        if (event.getTaskId() != null) {
+            dependencyService.deleteWithTaskId(event.getTaskId());
+        }
     }
 }

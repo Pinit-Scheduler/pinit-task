@@ -20,12 +20,12 @@ class ScheduleDeletedEventHandlerTest {
     @Test
     void deletesDependenciesAfterScheduleRemoval() {
         //given
-        ScheduleDeletedEvent event = new ScheduleDeletedEvent(77L, 9L);
+        ScheduleDeletedEvent event = new ScheduleDeletedEvent(77L, 9L, 33L);
 
         //when
         handler.on(event);
 
         //then
-        verify(dependencyService).deleteWithScheduleId(77L);
+        verify(dependencyService).deleteWithTaskId(33L);
     }
 }
