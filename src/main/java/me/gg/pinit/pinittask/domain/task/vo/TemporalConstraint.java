@@ -1,10 +1,10 @@
-package me.gg.pinit.pinittask.domain.schedule.vo;
+package me.gg.pinit.pinittask.domain.task.vo;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import me.gg.pinit.pinittask.domain.converter.service.DurationConverter;
 import me.gg.pinit.pinittask.domain.datetime.ZonedDateTimeAttribute;
-import me.gg.pinit.pinittask.domain.schedule.model.TaskType;
+import me.gg.pinit.pinittask.domain.task.model.TaskType;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
