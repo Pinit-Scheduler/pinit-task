@@ -1,10 +1,9 @@
-package me.gg.pinit.pinittask.domain.schedule.vo;
+package me.gg.pinit.pinittask.domain.task.vo;
 
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.internal.matchers.Equals;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 class ImportanceConstraintTest {
 
@@ -17,7 +16,7 @@ class ImportanceConstraintTest {
     }
 
     @Test
-    void ImportanceConstraint_Equals_서로_다른_경우(){
+    void ImportanceConstraint_Equals_서로_다른_경우() {
         //given
         ImportanceConstraint constraint = new ImportanceConstraint(1, 2);
         ImportanceConstraint differentConstraint = new ImportanceConstraint(1, 3);

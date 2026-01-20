@@ -1,4 +1,4 @@
-package me.gg.pinit.pinittask.domain.schedule.vo;
+package me.gg.pinit.pinittask.domain.task.vo;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
@@ -15,7 +15,8 @@ public class ImportanceConstraint {
     @Column(name = "urgency_level")
     private int urgency;
 
-    protected ImportanceConstraint() {}
+    protected ImportanceConstraint() {
+    }
 
     public ImportanceConstraint(int importance, int urgency) {
         this.importance = importance;
