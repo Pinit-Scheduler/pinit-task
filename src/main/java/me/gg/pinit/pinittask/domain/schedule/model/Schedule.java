@@ -10,11 +10,10 @@ import me.gg.pinit.pinittask.domain.schedule.event.ScheduleTimeUpdatedEvent;
 import me.gg.pinit.pinittask.domain.schedule.exception.IllegalChangeException;
 import me.gg.pinit.pinittask.domain.schedule.exception.IllegalDescriptionException;
 import me.gg.pinit.pinittask.domain.schedule.exception.IllegalTitleException;
-import me.gg.pinit.pinittask.domain.schedule.exception.TimeOrderReversedException;
 import me.gg.pinit.pinittask.domain.schedule.patch.SchedulePatch;
-import me.gg.pinit.pinittask.domain.schedule.vo.ImportanceConstraint;
 import me.gg.pinit.pinittask.domain.schedule.vo.ScheduleHistory;
-import me.gg.pinit.pinittask.domain.schedule.vo.TemporalConstraint;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -33,6 +32,8 @@ public class Schedule {
 
     @Getter
     private Long ownerId;
+    @Getter
+    private Long taskId;
 
     @Getter
     private String title;
@@ -45,31 +46,33 @@ public class Schedule {
 
     @Getter
     @Embedded
-    private TemporalConstraint temporalConstraint;
-    @Getter
-    @Embedded
-    private ImportanceConstraint importanceConstraint;
-    @Getter
-    @Embedded
     private ScheduleHistory history = ScheduleHistory.zero();
 
     @Convert(converter = ScheduleStateConverter.class)
     private ScheduleState state;
 
+    @Getter
+    @CreationTimestamp
+    @Column(updatable = false, columnDefinition = "DATETIME(6)")
+    private Instant createdAt;
+    @Getter
+    @UpdateTimestamp
+    @Column(columnDefinition = "DATETIME(6)")
+    private Instant updatedAt;
+
     protected Schedule() {}
 
-    public Schedule(Long ownerId, String title, String description, ZonedDateTime zdt, TemporalConstraint tc, ImportanceConstraint ic) {
+    public Schedule(Long ownerId, Long taskId, String title, String description, ZonedDateTime zdt) {
         this.ownerId = ownerId;
+        this.taskId = taskId;
         setTitle(title);
         setDescription(description);
-        this.temporalConstraint = tc;
-        this.importanceConstraint = ic;
-        setDesignatedStartTime(zdt);
         this.state = new NotStartedState();
+        setDesignatedStartTime(zdt);
     }
 
     public ZonedDateTime getDesignatedStartTime() {
-        return designatedStartTime.atOffset(ZoneOffset.UTC).toZonedDateTime();
+        return designatedStartTime == null ? null : designatedStartTime.atZone(ZoneOffset.UTC);
     }
 
     public void start(ZonedDateTime startTime) {
@@ -104,20 +107,19 @@ public class Schedule {
         return state instanceof SuspendedState;
     }
 
-    public void patch(SchedulePatch patch) {
-        checkStateIsNotCompleted();
-        patch.importance().ifPresent(this::changeImportance);
-        patch.urgency().ifPresent(this::changeUrgency);
-        patch.title().ifPresent(this::setTitle);
-        patch.description().ifPresent(this::setDescription);
-        patch.deadline().ifPresent(this::changeDeadline);
-        patch.date().ifPresent(this::setDesignatedStartTime);
-        patch.taskType().ifPresent(this::changeTaskType);
+    public void setDesignatedStartTime(ZonedDateTime zdt) {
+        if (zdt == null) {
+            throw new IllegalArgumentException("일정 시작 예정 시각은 비어 있을 수 없습니다.");
+        }
+        this.designatedStartTime = zdt.toInstant();
+        DomainEvents.raise(new ScheduleTimeUpdatedEvent(this.id, this.ownerId, zdt));
     }
 
-    public void deleteSchedule() {
-        checkCanDelete();
-        DomainEvents.raise(new ScheduleDeletedEvent(this.id, this.ownerId));
+    public void patch(SchedulePatch patch) {
+        checkStateIsNotCompleted();
+        patch.title().ifPresent(this::setTitle);
+        patch.description().ifPresent(this::setDescription);
+        patch.designatedStartTime().ifPresent(this::setDesignatedStartTime);
     }
 
     public void setTitle(String title) {
@@ -125,32 +127,14 @@ public class Schedule {
         this.title = title;
     }
 
-    public void setDesignatedStartTime(ZonedDateTime zdt) {
-        validateStartTime(zdt);
-        this.designatedStartTime = zdt.toInstant();
-        DomainEvents.raise(new ScheduleTimeUpdatedEvent(this.id, this.ownerId, zdt));
+    public void deleteSchedule() {
+        checkCanDelete();
+        DomainEvents.raise(new ScheduleDeletedEvent(this.id, this.ownerId, this.taskId));
     }
 
     public void setDescription(String description) {
         validateDescription(description);
         this.description = description;
-    }
-
-    public void changeDeadline(ZonedDateTime newDeadline) {
-        validateDeadline(newDeadline);
-        this.temporalConstraint = this.temporalConstraint.changeDeadline(newDeadline);
-    }
-
-    public void changeTaskType(TaskType newTaskType) {
-        this.temporalConstraint = this.temporalConstraint.changeTaskType(newTaskType);
-    }
-
-    public void changeImportance(int newImportance) {
-        this.importanceConstraint = this.importanceConstraint.changeImportance(newImportance);
-    }
-
-    public void changeUrgency(int newUrgency) {
-        this.importanceConstraint = this.importanceConstraint.changeUrgency(newUrgency);
     }
 
     public String getState() {
@@ -167,6 +151,10 @@ public class Schedule {
 
     void updateHistoryTo(ScheduleHistory history) {
         this.history = history;
+    }
+
+    public void detachTask() {
+        this.taskId = null;
     }
 
     private void checkStateIsNotCompleted() {
@@ -194,18 +182,6 @@ public class Schedule {
             throw new IllegalDescriptionException("설명의 길이는 1자 이상 100자 이하여야 합니다.");
         }else if (description.length() > 100) {
             throw new IllegalDescriptionException("설명의 길이는 1자 이상 100자 이하여야 합니다.");
-        }
-    }
-
-    private void validateStartTime(ZonedDateTime zdt) {
-        if(zdt.isAfter(this.temporalConstraint.getDeadline())) {
-            throw new TimeOrderReversedException("일정의 날짜는 데드라인을 초과할 수 없습니다.");
-        }
-    }
-
-    private void validateDeadline(ZonedDateTime newDeadline) {
-        if (newDeadline.isBefore(this.getDesignatedStartTime())) {
-            throw new TimeOrderReversedException("데드라인은 일정 등록 날짜보다 앞설 수 없습니다.");
         }
     }
 }
