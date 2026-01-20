@@ -11,7 +11,7 @@ import java.util.List;
 
 @Service
 public class DependencyService {
-    private DependencyRepository dependencyRepository;
+    private final DependencyRepository dependencyRepository;
 
     public DependencyService(DependencyRepository dependencyRepository) {
         this.dependencyRepository = dependencyRepository;
@@ -26,17 +26,17 @@ public class DependencyService {
 
 
     @Transactional(readOnly = true)
-    public List<Long> getNextScheduleIds(Long memberId, Long scheduleId) {
+    public List<Long> getNextTaskIds(Long memberId, Long taskId) {
         List<Dependency> allByOwnerId = dependencyRepository.findAllByOwnerId(memberId);
         Graph graph = Graph.of(allByOwnerId);
-        return graph.getNextScheduleIds(scheduleId);
+        return graph.getNextTaskIds(taskId);
     }
 
     @Transactional(readOnly = true)
-    public List<Long> getPreviousScheduleIds(Long memberId, Long scheduleId) {
+    public List<Long> getPreviousTaskIds(Long memberId, Long taskId) {
         List<Dependency> allByOwnerId = dependencyRepository.findAllByOwnerId(memberId);
         Graph graph = Graph.of(allByOwnerId);
-        return graph.getPreviousScheduleIds(scheduleId);
+        return graph.getPreviousTaskIds(taskId);
     }
 
     @Transactional
@@ -53,7 +53,7 @@ public class DependencyService {
     }
 
     @Transactional
-    public void deleteWithScheduleId(Long scheduleId) {
-        dependencyRepository.deleteAllRelatedToSchedule(scheduleId);
+    public void deleteWithTaskId(Long taskId) {
+        dependencyRepository.deleteAllRelatedToTask(taskId);
     }
 }

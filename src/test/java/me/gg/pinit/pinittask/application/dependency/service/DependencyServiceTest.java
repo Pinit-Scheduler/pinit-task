@@ -75,8 +75,8 @@ class DependencyServiceTest {
     }
 
     @Test
-    @DisplayName("다음 일정 ID 조회 - 1에서 출발")
-    void getNextScheduleIds_returnsOutgoingTargets() {
+    @DisplayName("다음 작업 ID 조회 - 1에서 출발")
+    void getNextTaskIds_returnsOutgoingTargets() {
         Long memberId = 20L;
         List<Dependency> existing = Arrays.asList(
                 new Dependency(1L, 2L),
@@ -84,23 +84,23 @@ class DependencyServiceTest {
                 new Dependency(2L, 4L)
         );
         when(dependencyRepository.findAllByOwnerId(memberId)).thenReturn(existing);
-        List<Long> nextIds = dependencyService.getNextScheduleIds(memberId, 1L);
+        List<Long> nextIds = dependencyService.getNextTaskIds(memberId, 1L);
         assertEquals(2, nextIds.size());
         assertTrue(nextIds.containsAll(Set.of(2L, 3L)));
     }
 
     @Test
-    @DisplayName("다음 일정 ID 없음 - 출발 노드 미존재")
-    void getNextScheduleIds_empty_whenNodeNotExists() {
+    @DisplayName("다음 작업 ID 없음 - 출발 노드 미존재")
+    void getNextTaskIds_empty_whenNodeNotExists() {
         Long memberId = 21L;
         when(dependencyRepository.findAllByOwnerId(memberId)).thenReturn(Collections.emptyList());
-        List<Long> nextIds = dependencyService.getNextScheduleIds(memberId, 999L);
+        List<Long> nextIds = dependencyService.getNextTaskIds(memberId, 999L);
         assertTrue(nextIds.isEmpty());
     }
 
     @Test
-    @DisplayName("이전 일정 ID 조회 - 4로 도달")
-    void getPreviousScheduleIds_returnsIncomingSources() {
+    @DisplayName("이전 작업 ID 조회 - 4로 도달")
+    void getPreviousTaskIds_returnsIncomingSources() {
         Long memberId = 30L;
         List<Dependency> existing = Arrays.asList(
                 new Dependency(1L, 4L),
@@ -108,17 +108,17 @@ class DependencyServiceTest {
                 new Dependency(3L, 5L)
         );
         when(dependencyRepository.findAllByOwnerId(memberId)).thenReturn(existing);
-        List<Long> prevIds = dependencyService.getPreviousScheduleIds(memberId, 4L);
+        List<Long> prevIds = dependencyService.getPreviousTaskIds(memberId, 4L);
         assertEquals(2, prevIds.size());
         assertTrue(prevIds.containsAll(Set.of(1L, 2L)));
     }
 
     @Test
-    @DisplayName("이전 일정 ID 없음 - 대상 노드 미존재")
-    void getPreviousScheduleIds_empty_whenNodeNotExists() {
+    @DisplayName("이전 작업 ID 없음 - 대상 노드 미존재")
+    void getPreviousTaskIds_empty_whenNodeNotExists() {
         Long memberId = 31L;
         when(dependencyRepository.findAllByOwnerId(memberId)).thenReturn(Collections.emptyList());
-        List<Long> prevIds = dependencyService.getPreviousScheduleIds(memberId, 555L);
+        List<Long> prevIds = dependencyService.getPreviousTaskIds(memberId, 555L);
         assertTrue(prevIds.isEmpty());
     }
 
@@ -141,10 +141,10 @@ class DependencyServiceTest {
     }
 
     @Test
-    @DisplayName("특정 스케줄 관련 의존 삭제 호출")
-    void deleteWithScheduleId_delegates() {
-        when(dependencyRepository.deleteAllRelatedToSchedule(777L)).thenReturn(0);
-        dependencyService.deleteWithScheduleId(777L);
-        verify(dependencyRepository, times(1)).deleteAllRelatedToSchedule(777L);
+    @DisplayName("특정 작업 관련 의존 삭제 호출")
+    void deleteWithTaskId_delegates() {
+        when(dependencyRepository.deleteAllRelatedToTask(777L)).thenReturn(0);
+        dependencyService.deleteWithTaskId(777L);
+        verify(dependencyRepository, times(1)).deleteAllRelatedToTask(777L);
     }
 }
