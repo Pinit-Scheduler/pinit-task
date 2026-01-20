@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 public class Graph {
-    private Map<Long, GraphNode> nodeMap = new HashMap<>();
+    private final Map<Long, GraphNode> nodeMap = new HashMap<>();
     private CycleChecker cycleChecker;
     private int size;
 
@@ -41,12 +41,12 @@ public class Graph {
         return graph;
     }
 
-    public List<Long> getNextScheduleIds(Long fromScheduleId) {
-        return nodeMap.getOrDefault(fromScheduleId, new GraphNode(fromScheduleId)).getNextSchedules();
+    public List<Long> getNextTaskIds(Long fromTaskId) {
+        return nodeMap.getOrDefault(fromTaskId, new GraphNode(fromTaskId)).getNextTasks();
     }
 
-    public List<Long> getPreviousScheduleIds(Long toScheduleId) {
-        return nodeMap.getOrDefault(toScheduleId, new GraphNode(toScheduleId)).getPreviousSchedules();
+    public List<Long> getPreviousTaskIds(Long toTaskId) {
+        return nodeMap.getOrDefault(toTaskId, new GraphNode(toTaskId)).getPreviousTasks();
     }
 
     public boolean hasCycle(List<Dependency> removedDependencies, List<Dependency> addedDependencies) {
