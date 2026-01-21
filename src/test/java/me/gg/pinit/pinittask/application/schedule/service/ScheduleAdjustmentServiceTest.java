@@ -3,10 +3,12 @@ package me.gg.pinit.pinittask.application.schedule.service;
 import me.gg.pinit.pinittask.application.dependency.service.DependencyService;
 import me.gg.pinit.pinittask.application.schedule.dto.DependencyDto;
 import me.gg.pinit.pinittask.application.schedule.dto.ScheduleDependencyAdjustCommand;
+import me.gg.pinit.pinittask.application.task.service.TaskService;
 import me.gg.pinit.pinittask.domain.dependency.model.Dependency;
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
-import me.gg.pinit.pinittask.domain.schedule.model.TaskType;
 import me.gg.pinit.pinittask.domain.schedule.patch.SchedulePatch;
+import me.gg.pinit.pinittask.domain.task.model.Task;
+import me.gg.pinit.pinittask.domain.task.model.TaskType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,6 +32,8 @@ class ScheduleAdjustmentServiceTest {
     DependencyService dependencyService;
     @Mock
     ScheduleService scheduleService;
+    @Mock
+    TaskService taskService;
     @InjectMocks
     ScheduleAdjustmentService scheduleAdjustmentService;
 
@@ -41,6 +45,7 @@ class ScheduleAdjustmentServiceTest {
         ScheduleDependencyAdjustCommand command = new ScheduleDependencyAdjustCommand(
                 null,
                 memberId,
+                null,
                 "TITLE",
                 "DESC",
                 now.plusHours(4),
@@ -53,6 +58,7 @@ class ScheduleAdjustmentServiceTest {
         );
         when(dependencyService.checkCycle(eq(memberId), anyList(), anyList())).thenReturn(false);
         when(scheduleService.addSchedule(any(Schedule.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(taskService.createTask(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
 
         scheduleAdjustmentService.createSchedule(memberId, command);
 
@@ -89,6 +95,7 @@ class ScheduleAdjustmentServiceTest {
         ScheduleDependencyAdjustCommand command = new ScheduleDependencyAdjustCommand(
                 scheduleId,
                 memberId,
+                null,
                 "NEW_TITLE",
                 "NEW_DESC",
                 now.plusHours(8),
@@ -99,6 +106,9 @@ class ScheduleAdjustmentServiceTest {
                 List.of(new DependencyDto(1L, 200L, 201L), new DependencyDto(2L, 201L, 202L)),
                 List.of(new DependencyDto(3L, 300L, 301L))
         );
+        Schedule current = mock(Schedule.class);
+        when(current.getTaskId()).thenReturn(10L);
+        when(scheduleService.getSchedule(memberId, scheduleId)).thenReturn(current);
         when(dependencyService.checkCycle(eq(memberId), anyList(), anyList())).thenReturn(false);
         when(scheduleService.updateSchedule(eq(memberId), eq(scheduleId), any(SchedulePatch.class))).thenReturn(mock(Schedule.class));
 
@@ -115,12 +125,42 @@ class ScheduleAdjustmentServiceTest {
         SchedulePatch patch = patchCap.getValue();
         assertEquals("NEW_TITLE", patch.title().orElse(null));
         assertEquals("NEW_DESC", patch.description().orElse(null));
-        assertEquals(9, patch.importance().orElse(-1));
-        assertEquals(3, patch.difficulty().orElse(-1));
-        assertEquals(TaskType.QUICK_TASK, patch.taskType().orElse(null));
+        assertEquals(now.plusMinutes(30), patch.designatedStartTime().orElse(null));
 
         verify(dependencyService).deleteAll(anyList());
         verify(dependencyService).saveAll(anyList());
         verify(scheduleService, never()).addSchedule(any(Schedule.class));
+    }
+
+    @Test
+    @DisplayName("createSchedule: 기존 Task를 참조할 경우 새 Task를 만들지 않는다")
+    void createScheduleWithExistingTask() {
+        Long memberId = 3L;
+        Long taskId = 901L;
+        ZonedDateTime now = ZonedDateTime.now();
+        ScheduleDependencyAdjustCommand command = new ScheduleDependencyAdjustCommand(
+                null,
+                memberId,
+                taskId,
+                "TITLE",
+                "DESC",
+                now.plusHours(2),
+                4,
+                8,
+                TaskType.ADMIN_TASK,
+                now,
+                Collections.emptyList(),
+                Collections.emptyList()
+        );
+        Task existingTask = mock(Task.class);
+        when(existingTask.getId()).thenReturn(taskId);
+        when(taskService.getTask(memberId, taskId)).thenReturn(existingTask);
+        when(scheduleService.addSchedule(any(Schedule.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        scheduleAdjustmentService.createSchedule(memberId, command);
+
+        verify(taskService).getTask(memberId, taskId);
+        verify(taskService, never()).createTask(any(Task.class));
+        verify(scheduleService).addSchedule(any(Schedule.class));
     }
 }
