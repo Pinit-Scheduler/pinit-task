@@ -71,7 +71,7 @@ public class Task {
         patch.description().ifPresent(this::setDescription);
         patch.dueDate().ifPresent(this::changeDeadline);
         patch.importance().ifPresent(this::changeImportance);
-        patch.urgency().ifPresent(this::changeUrgency);
+        patch.difficulty().ifPresent(this::changeDifficulty);
         patch.taskType().ifPresent(this::changeTaskType);
     }
 
@@ -101,8 +101,8 @@ public class Task {
         this.importanceConstraint = this.importanceConstraint.changeImportance(newImportance);
     }
 
-    public void changeUrgency(int newUrgency) {
-        this.importanceConstraint = this.importanceConstraint.changeUrgency(newUrgency);
+    public void changeDifficulty(int newDifficulty) {
+        this.importanceConstraint = this.importanceConstraint.changeDifficulty(newDifficulty);
     }
 
     public Instant getCreatedAt() {
