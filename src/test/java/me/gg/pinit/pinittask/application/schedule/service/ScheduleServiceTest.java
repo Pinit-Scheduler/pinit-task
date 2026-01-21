@@ -19,9 +19,9 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static me.gg.pinit.pinittask.domain.schedule.model.ScheduleUtils.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static me.gg.pinit.pinittask.domain.schedule.model.ScheduleUtils.ENROLLED_TIME;
+import static me.gg.pinit.pinittask.domain.schedule.model.ScheduleUtils.getNotStartedSchedule;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -44,7 +44,7 @@ class ScheduleServiceTest {
     void setUp() {
         memberId = 1L;
         scheduleId = 100L;
-        scheduleSample = new Schedule(memberId, "title", "description", ENROLLED_TIME, getTemporalConstraintSample(), getImportanceConstraintSample());
+        scheduleSample = getNotStartedSchedule(scheduleId, memberId, 1L, "title", "description", ENROLLED_TIME);
     }
 
     @Test
@@ -75,7 +75,7 @@ class ScheduleServiceTest {
     void addSchedule() {
         //given
         when(scheduleRepository.save(any(Schedule.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        Schedule newSchedule = new Schedule(memberId, "new title", "new description", ENROLLED_TIME, getTemporalConstraintSample(), getImportanceConstraintSample());
+        Schedule newSchedule = new Schedule(memberId, 1L, "new title", "new description", ENROLLED_TIME);
 
         //when
         Schedule savedSchedule = scheduleService.addSchedule(newSchedule);
@@ -115,5 +115,17 @@ class ScheduleServiceTest {
         Assertions.assertThatThrownBy(() -> scheduleService.getSchedule(memberId, scheduleId)).isInstanceOf(ScheduleNotFoundException.class).hasMessage("해당 일정을 찾을 수 없습니다.");
         verify(scheduleRepository).delete(scheduleSample);
         verify(domainEventPublisher, atLeast(0)).publish(any());
+    }
+
+    @Test
+    void detachSchedulesByTaskId_setsTaskIdNull_andDoesNotDelete() {
+        Long taskId = 777L;
+        Schedule schedule = getNotStartedSchedule(201L, memberId, taskId, "title", "desc", ENROLLED_TIME);
+        when(scheduleRepository.findAllByTaskId(taskId)).thenReturn(List.of(schedule));
+
+        scheduleService.detachSchedulesByTaskId(memberId, taskId);
+
+        assertNull(schedule.getTaskId());
+        verify(scheduleRepository, never()).delete(any(Schedule.class));
     }
 }
