@@ -38,6 +38,9 @@ public class ImportanceConstraint {
         return new ImportanceConstraint(this.importance, difficulty);
     }
 
+    public ImportanceConstraint changeDifficulty(int difficulty) {
+        return changeDifficultyLevel(difficulty);
+    }
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
