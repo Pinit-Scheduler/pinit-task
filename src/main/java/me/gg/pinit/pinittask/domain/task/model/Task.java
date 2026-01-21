@@ -42,6 +42,9 @@ public class Task {
 
     @Getter
     private boolean completed;
+    @Getter
+    @Column(nullable = false)
+    private int inboundDependencyCount;
 
     @CreationTimestamp
     @Column(updatable = false, columnDefinition = "DATETIME(6)")
@@ -60,6 +63,7 @@ public class Task {
         this.temporalConstraint = temporalConstraint;
         this.importanceConstraint = importanceConstraint;
         this.completed = false;
+        this.inboundDependencyCount = 0;
     }
 
     public ZonedDateTime getDueDate() {
@@ -111,6 +115,13 @@ public class Task {
 
     public Instant getUpdatedAt() {
         return updatedAt;
+    }
+
+    public void adjustInboundDependencies(int delta) {
+        this.inboundDependencyCount += delta;
+        if (this.inboundDependencyCount < 0) {
+            throw new IllegalStateException("Inbound dependency count cannot be negative");
+        }
     }
 
     private void setTitle(String title) {
