@@ -9,7 +9,8 @@ import jakarta.validation.constraints.NotNull;
 import me.gg.pinit.pinittask.application.datetime.DateTimeUtils;
 import me.gg.pinit.pinittask.application.schedule.dto.DependencyDto;
 import me.gg.pinit.pinittask.application.schedule.dto.ScheduleDependencyAdjustCommand;
-import me.gg.pinit.pinittask.domain.schedule.model.TaskType;
+import me.gg.pinit.pinittask.domain.task.model.TaskType;
+import me.gg.pinit.pinittask.interfaces.utils.FibonacciDifficulty;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,19 +23,20 @@ public record ScheduleRequest(
         @NotBlank
         @Schema(description = "일정 설명", example = "다음 주 발표 자료 정리")
         String description,
+        @Schema(description = "연결할 기존 작업 ID (선택)", example = "7")
+        Long taskId,
         @NotNull
-        @Schema(description = "마감 기한", example = "{\"dateTime\":\"2024-03-01T18:00:00\",\"zoneId\":\"Asia/Seoul\"}")
+        @Schema(description = "마감 기한 (V0 legacy, V1에서는 사용 안 함)", example = "{\"dateTime\":\"2024-03-01T18:00:00\",\"zoneId\":\"Asia/Seoul\"}", deprecated = true)
         @Valid
         DateTimeWithZone deadline,
         @NotNull
         @Min(1)
         @Max(9)
-        @Schema(description = "중요도 (1~9)", example = "5")
+        @Schema(description = "중요도 (1~9) - V0 legacy", example = "5", deprecated = true)
         Integer importance,
         @NotNull
-        @Min(1)
-        @Max(21)
-        @Schema(description = "난이도 (21 이하의 피보나치 수)", example = "3")
+        @FibonacciDifficulty
+        @Schema(description = "난이도 (피보나치 수: 1,2,3,5,8,13,21) - V0 legacy", example = "3", deprecated = true)
         Integer difficulty,
         @NotNull
         @Schema(description = "작업 유형", example = "TASK")
@@ -54,6 +56,7 @@ public record ScheduleRequest(
         return new ScheduleDependencyAdjustCommand(
                 scheduleId,
                 ownerId,
+                taskId,
                 title,
                 description,
                 dateTimeUtils.toZonedDateTime(deadline.dateTime(), deadline.zoneId()),
