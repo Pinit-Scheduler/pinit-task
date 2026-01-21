@@ -6,8 +6,8 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import me.gg.pinit.pinittask.application.schedule.dto.DependencyDto;
 import me.gg.pinit.pinittask.application.datetime.DateTimeUtils;
+import me.gg.pinit.pinittask.application.schedule.dto.DependencyDto;
 import me.gg.pinit.pinittask.application.schedule.dto.ScheduleDependencyAdjustCommand;
 import me.gg.pinit.pinittask.domain.schedule.model.TaskType;
 
@@ -33,9 +33,9 @@ public record ScheduleRequest(
         Integer importance,
         @NotNull
         @Min(1)
-        @Max(9)
-        @Schema(description = "긴급도 (1~9)", example = "7")
-        Integer urgency,
+        @Max(21)
+        @Schema(description = "난이도 (21 이하의 피보나치 수)", example = "3")
+        Integer difficulty,
         @NotNull
         @Schema(description = "작업 유형", example = "TASK")
         TaskType taskType,
@@ -58,7 +58,7 @@ public record ScheduleRequest(
                 description,
                 dateTimeUtils.toZonedDateTime(deadline.dateTime(), deadline.zoneId()),
                 importance,
-                urgency,
+                difficulty,
                 taskType,
                 dateTimeUtils.toZonedDateTime(date.dateTime(), date.zoneId()),
                 remove,
