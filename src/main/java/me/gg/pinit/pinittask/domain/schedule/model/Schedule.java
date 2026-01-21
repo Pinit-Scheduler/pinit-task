@@ -10,11 +10,10 @@ import me.gg.pinit.pinittask.domain.schedule.event.ScheduleTimeUpdatedEvent;
 import me.gg.pinit.pinittask.domain.schedule.exception.IllegalChangeException;
 import me.gg.pinit.pinittask.domain.schedule.exception.IllegalDescriptionException;
 import me.gg.pinit.pinittask.domain.schedule.exception.IllegalTitleException;
-import me.gg.pinit.pinittask.domain.schedule.exception.TimeOrderReversedException;
 import me.gg.pinit.pinittask.domain.schedule.patch.SchedulePatch;
-import me.gg.pinit.pinittask.domain.schedule.vo.ImportanceConstraint;
 import me.gg.pinit.pinittask.domain.schedule.vo.ScheduleHistory;
-import me.gg.pinit.pinittask.domain.schedule.vo.TemporalConstraint;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -35,6 +34,9 @@ public class Schedule {
     private Long ownerId;
 
     @Getter
+    private Long taskId;
+
+    @Getter
     private String title;
     @Getter
     private String description;
@@ -45,26 +47,29 @@ public class Schedule {
 
     @Getter
     @Embedded
-    private TemporalConstraint temporalConstraint;
-    @Getter
-    @Embedded
-    private ImportanceConstraint importanceConstraint;
-    @Getter
-    @Embedded
     private ScheduleHistory history = ScheduleHistory.zero();
 
     @Convert(converter = ScheduleStateConverter.class)
     private ScheduleState state;
 
-    protected Schedule() {}
+    @CreationTimestamp
+    @Column(updatable = false, columnDefinition = "DATETIME(6)")
+    private Instant createdAt;
 
-    public Schedule(Long ownerId, String title, String description, ZonedDateTime zdt, TemporalConstraint tc, ImportanceConstraint ic) {
+    @UpdateTimestamp
+    @Column(columnDefinition = "DATETIME(6)")
+    private Instant updatedAt;
+
+    protected Schedule() {
+    }
+
+    public Schedule(Long ownerId, Long taskId, String title, String description, ZonedDateTime designatedStartTime) {
         this.ownerId = ownerId;
+        this.taskId = taskId;
         setTitle(title);
         setDescription(description);
-        this.temporalConstraint = tc;
-        this.importanceConstraint = ic;
-        setDesignatedStartTime(zdt);
+        setDesignatedStartTime(designatedStartTime);
+        this.history = ScheduleHistory.zero();
         this.state = new NotStartedState();
     }
 
@@ -106,18 +111,18 @@ public class Schedule {
 
     public void patch(SchedulePatch patch) {
         checkStateIsNotCompleted();
-        patch.importance().ifPresent(this::changeImportance);
-        patch.difficulty().ifPresent(this::changeDifficulty);
         patch.title().ifPresent(this::setTitle);
         patch.description().ifPresent(this::setDescription);
-        patch.deadline().ifPresent(this::changeDeadline);
-        patch.date().ifPresent(this::setDesignatedStartTime);
-        patch.taskType().ifPresent(this::changeTaskType);
+        patch.designatedStartTime().ifPresent(this::setDesignatedStartTime);
     }
 
     public void deleteSchedule() {
         checkCanDelete();
-        DomainEvents.raise(new ScheduleDeletedEvent(this.id, this.ownerId));
+        DomainEvents.raise(new ScheduleDeletedEvent(this.id, this.ownerId, this.taskId));
+    }
+
+    public void detachTask() {
+        this.taskId = null;
     }
 
     public void setTitle(String title) {
@@ -126,7 +131,9 @@ public class Schedule {
     }
 
     public void setDesignatedStartTime(ZonedDateTime zdt) {
-        validateStartTime(zdt);
+        if (zdt == null) {
+            throw new IllegalArgumentException("일정 시작 시각은 null일 수 없습니다.");
+        }
         this.designatedStartTime = zdt.toInstant();
         DomainEvents.raise(new ScheduleTimeUpdatedEvent(this.id, this.ownerId, zdt));
     }
@@ -136,30 +143,13 @@ public class Schedule {
         this.description = description;
     }
 
-    public void changeDeadline(ZonedDateTime newDeadline) {
-        validateDeadline(newDeadline);
-        this.temporalConstraint = this.temporalConstraint.changeDeadline(newDeadline);
-    }
-
-    public void changeTaskType(TaskType newTaskType) {
-        this.temporalConstraint = this.temporalConstraint.changeTaskType(newTaskType);
-    }
-
-    public void changeImportance(int newImportance) {
-        this.importanceConstraint = this.importanceConstraint.changeImportance(newImportance);
-    }
-
-    public void changeDifficulty(int newDifficulty) {
-        this.importanceConstraint = this.importanceConstraint.changeDifficultyLevel(newDifficulty);
-    }
-
     public String getState() {
         return this.state.toString();
     }
 
     /**
      * Schedule 패키지 밖에서 사용하지 말 것
-     * @param state
+     * @param state state to apply
      */
     void setState(ScheduleState state) {
         this.state = state;
@@ -167,6 +157,14 @@ public class Schedule {
 
     void updateHistoryTo(ScheduleHistory history) {
         this.history = history;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
     }
 
     private void checkStateIsNotCompleted() {
@@ -192,32 +190,8 @@ public class Schedule {
     private void validateDescription(String description) {
         if (description == null || description.isBlank()) {
             throw new IllegalDescriptionException("설명의 길이는 1자 이상 100자 이하여야 합니다.");
-        }else if (description.length() > 100) {
+        } else if (description.length() > 100) {
             throw new IllegalDescriptionException("설명의 길이는 1자 이상 100자 이하여야 합니다.");
         }
     }
-
-    private void validateStartTime(ZonedDateTime zdt) {
-        if(zdt.isAfter(this.temporalConstraint.getDeadline())) {
-            throw new TimeOrderReversedException("일정의 날짜는 데드라인을 초과할 수 없습니다.");
-        }
-    }
-
-    private void validateDeadline(ZonedDateTime newDeadline) {
-        if (newDeadline.isBefore(this.getDesignatedStartTime())) {
-            throw new TimeOrderReversedException("데드라인은 일정 등록 날짜보다 앞설 수 없습니다.");
-        }
-    }
 }
-
-/**
- * 현재 진행중인 일정이 있는지 확인은 어떤 방식으로 해야 하지?
- * 이러면 일정 -> 멤버 방향으로 의존관계가 필요해진다.
- * 모든 일정은 해당 일정 생성자의 통계를 알고 있도록? 너무 많지 않나?
- * 일정 도메인
- * - 목표 일일 작업 시간
- * - 현재 진행하고 있는 일정 << 얘 혼자만 좀 위치가 붕 뜬다. 통계도 아니다 이건
- * 결국 일정이 회원을 알아야 하는 것은 변함이 없음
- * 피할 수 없는 것 -> 알게 할 필요 있음
- * 직접 아는 것이 아니라, 해당 서비스에게 위임하게 만들 수 있나?
- */
