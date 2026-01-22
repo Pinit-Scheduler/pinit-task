@@ -31,6 +31,7 @@ public class TaskAdjustmentService {
         if (taskId == null) {
             throw new IllegalArgumentException("taskId는 null일 수 없습니다.");
         }
+        command.validateNoPlaceholderForUpdate();
         List<Dependency> removedDependencies = command.getRemoveDependencies(taskId);
         List<Dependency> addedDependencies = command.getAddDependencies(taskId);
         dependencyService.assertNoCycle(memberId, removedDependencies, addedDependencies);

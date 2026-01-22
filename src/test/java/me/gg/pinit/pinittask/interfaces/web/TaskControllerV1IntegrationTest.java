@@ -7,7 +7,7 @@ import me.gg.pinit.pinittask.domain.member.repository.MemberRepository;
 import me.gg.pinit.pinittask.domain.schedule.model.ScheduleType;
 import me.gg.pinit.pinittask.infrastructure.events.RabbitEventPublisher;
 import me.gg.pinit.pinittask.interfaces.dto.DateTimeWithZone;
-import me.gg.pinit.pinittask.interfaces.dto.TaskRequest;
+import me.gg.pinit.pinittask.interfaces.dto.TaskCreateRequest;
 import me.gg.pinit.pinittask.interfaces.dto.TaskScheduleRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -59,13 +59,12 @@ class TaskControllerV1IntegrationTest {
 
     @Test
     void taskLifecycle_create_retrieve_list_cursor_complete_reopen_delete() throws Exception {
-        TaskRequest createRequest = new TaskRequest(
+        TaskCreateRequest createRequest = new TaskCreateRequest(
                 "리포트 작성",
                 "주간 리포트 초안 작성",
                 new DateTimeWithZone(LocalDateTime.of(2024, 4, 1, 18, 0), MEMBER_ZONE),
                 5,
                 3,
-                List.of(),
                 List.of()
         );
 
@@ -168,7 +167,6 @@ class TaskControllerV1IntegrationTest {
                   "dueDate": null,
                   "importance": 0,
                   "difficulty": 4,
-                  "removeDependencies": [],
                   "addDependencies": []
                 }
                 """;

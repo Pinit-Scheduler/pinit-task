@@ -81,6 +81,8 @@ Task 간 “선후 관계”를 관리합니다.
     * `GET /v1/members/now` 현재 진행 중인 일정 ID
     * `GET /v1/statistics` 주간 통계 조회
     * Task 응답에 의존성 메타(`previousTaskIds`,`nextTaskIds`) 포함
+  * Task 의존성 페이로드: **생성 시** 각 의존 관계마다 `fromId` 또는 `toId` 중 하나는 반드시 `0`(새로 생성될 자기 자신)이어야 하며, `removeDependencies`는 비워두어야
+    합니다. **수정 시에는 0을 사용할 수 없습니다.**
 * **작업 → 일정 복사**: `POST /v1/tasks/{taskId}/schedules`로 기존 작업을 지정 시각에 일정으로 등록할 수 있습니다.
 * **삭제 플래그**: `DELETE /v1/tasks/{taskId}?deleteSchedules=` 혹은 `DELETE /v0|v1/schedules/{scheduleId}?deleteTaskAlso=` 로
   연관 삭제 여부를 선택합니다(미설정 시 연관만 해제).
