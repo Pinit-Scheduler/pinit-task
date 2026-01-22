@@ -1,6 +1,7 @@
 package me.gg.pinit.pinittask.interfaces.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import me.gg.pinit.pinittask.application.dependency.service.DependencyService.TaskDependencyInfo;
 import me.gg.pinit.pinittask.domain.task.model.Task;
 import me.gg.pinit.pinittask.domain.task.vo.ImportanceConstraint;
 import me.gg.pinit.pinittask.domain.task.vo.TemporalConstraint;
@@ -41,7 +42,7 @@ public record TaskResponse(
         return from(task, null);
     }
 
-    public static TaskResponse from(Task task, me.gg.pinit.pinittask.application.dependency.service.DependencyService.TaskDependencyInfo dependencyInfo) {
+    public static TaskResponse from(Task task, TaskDependencyInfo dependencyInfo) {
         TemporalConstraint temporal = task.getTemporalConstraint();
         ImportanceConstraint importanceConstraint = task.getImportanceConstraint();
         List<Long> previous = dependencyInfo == null ? Collections.emptyList() : dependencyInfo.previousTaskIds();
