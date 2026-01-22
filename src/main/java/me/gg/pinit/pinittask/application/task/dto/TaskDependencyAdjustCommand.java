@@ -80,9 +80,6 @@ public class TaskDependencyAdjustCommand {
         if (rawId == null) {
             return selfId;
         }
-        if (rawId == 0L) {
-            return selfId;
-        }
         return rawId;
     }
 }
