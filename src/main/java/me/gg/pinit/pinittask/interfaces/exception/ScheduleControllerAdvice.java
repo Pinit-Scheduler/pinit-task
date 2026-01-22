@@ -8,7 +8,6 @@ import me.gg.pinit.pinittask.domain.member.exception.MemberNotFoundException;
 import me.gg.pinit.pinittask.domain.member.exception.ObjectiveNotNullException;
 import me.gg.pinit.pinittask.domain.member.exception.ObjectiveNotPositiveException;
 import me.gg.pinit.pinittask.domain.schedule.exception.*;
-import me.gg.pinit.pinittask.domain.task.exception.TaskNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -31,14 +30,15 @@ public class ScheduleControllerAdvice {
             ObjectiveNotPositiveException.class,
             ObjectiveNotNullException.class,
             DuplicatedScheduleRunningException.class,
-            IllegalArgumentException.class
+            IllegalArgumentException.class,
+            IllegalStateException.class
     })
     public ResponseEntity<ErrorResponse> handleBadRequest(RuntimeException ex, WebRequest request) {
         log.warn("Client error: {}", ex.getMessage());
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
     }
 
-    @ExceptionHandler({MemberNotFoundException.class, ScheduleNotFoundException.class, TaskNotFoundException.class})
+    @ExceptionHandler({MemberNotFoundException.class, ScheduleNotFoundException.class})
     public ResponseEntity<ErrorResponse> handleNotFound(RuntimeException ex, WebRequest request) {
         log.warn("Not found: {}", ex.getMessage());
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request);
