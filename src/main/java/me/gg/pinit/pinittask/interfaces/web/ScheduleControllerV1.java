@@ -12,7 +12,9 @@ import lombok.RequiredArgsConstructor;
 import me.gg.pinit.pinittask.application.datetime.DateTimeUtils;
 import me.gg.pinit.pinittask.application.schedule.service.ScheduleService;
 import me.gg.pinit.pinittask.application.schedule.service.ScheduleStateChangeService;
+import me.gg.pinit.pinittask.application.task.service.TaskService;
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
+import me.gg.pinit.pinittask.domain.task.model.Task;
 import me.gg.pinit.pinittask.interfaces.dto.ScheduleSimplePatchRequest;
 import me.gg.pinit.pinittask.interfaces.dto.ScheduleSimpleRequest;
 import me.gg.pinit.pinittask.interfaces.dto.ScheduleSimpleResponse;
@@ -26,6 +28,9 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/v1/schedules")
@@ -41,6 +46,7 @@ public class ScheduleControllerV1 {
     private final DateTimeUtils dateTimeUtils;
     private final ScheduleService scheduleService;
     private final ScheduleStateChangeService scheduleStateChangeService;
+    private final TaskService taskService;
 
     @PostMapping
     @Operation(summary = "일정 생성 (작업 없이)", description = "작업과 연결하지 않는 단순 일정을 등록합니다.")
@@ -56,8 +62,31 @@ public class ScheduleControllerV1 {
                                                      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime time,
                                                      @RequestParam ZoneId zoneId) {
         List<Schedule> schedules = scheduleService.getScheduleList(memberId, dateTimeUtils.toZonedDateTime(time, zoneId));
+        Map<Long, Task> taskMap = taskService.findTasksByIds(memberId, schedules.stream()
+                        .map(Schedule::getTaskId)
+                        .filter(id -> id != null)
+                        .toList())
+                .stream()
+                .collect(Collectors.toMap(Task::getId, Function.identity()));
         return schedules.stream()
-                .map(ScheduleSimpleResponse::from)
+                .map(schedule -> ScheduleSimpleResponse.from(schedule, taskMap.get(schedule.getTaskId())))
+                .toList();
+    }
+
+    @GetMapping("/week")
+    @Operation(summary = "주간 일정 조회 (작업 없이)", description = "주어진 날짜가 포함된 주간의 일정을 조회합니다.")
+    public List<ScheduleSimpleResponse> getWeeklySchedules(@Parameter(hidden = true) @MemberId Long memberId,
+                                                           @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime time,
+                                                           @RequestParam ZoneId zoneId) {
+        List<Schedule> schedules = scheduleService.getScheduleListForWeek(memberId, dateTimeUtils.toZonedDateTime(time, zoneId));
+        Map<Long, Task> taskMap = taskService.findTasksByIds(memberId, schedules.stream()
+                        .map(Schedule::getTaskId)
+                        .filter(id -> id != null)
+                        .toList())
+                .stream()
+                .collect(Collectors.toMap(Task::getId, Function.identity()));
+        return schedules.stream()
+                .map(schedule -> ScheduleSimpleResponse.from(schedule, taskMap.get(schedule.getTaskId())))
                 .toList();
     }
 
@@ -65,7 +94,11 @@ public class ScheduleControllerV1 {
     @Operation(summary = "일정 단건 조회 (작업 없이)")
     public ScheduleSimpleResponse getSchedule(@Parameter(hidden = true) @MemberId Long memberId, @PathVariable Long scheduleId) {
         Schedule schedule = scheduleService.getSchedule(memberId, scheduleId);
-        return ScheduleSimpleResponse.from(schedule);
+        Task task = null;
+        if (schedule.getTaskId() != null) {
+            task = taskService.getTask(memberId, schedule.getTaskId());
+        }
+        return ScheduleSimpleResponse.from(schedule, task);
     }
 
     @PatchMapping("/{scheduleId}")
