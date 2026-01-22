@@ -43,6 +43,7 @@ import java.util.stream.Collectors;
         @ApiResponse(responseCode = "409", description = "현재 상태와 충돌했습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
 })
+@Deprecated
 public class ScheduleControllerV0 {
     private final DateTimeUtils dateTimeUtils;
     private final ScheduleService scheduleService;
