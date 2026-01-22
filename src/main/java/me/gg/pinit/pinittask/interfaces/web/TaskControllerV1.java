@@ -15,10 +15,7 @@ import me.gg.pinit.pinittask.application.task.service.TaskAdjustmentService;
 import me.gg.pinit.pinittask.application.task.service.TaskService;
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
 import me.gg.pinit.pinittask.domain.task.model.Task;
-import me.gg.pinit.pinittask.interfaces.dto.ScheduleSimpleResponse;
-import me.gg.pinit.pinittask.interfaces.dto.TaskRequest;
-import me.gg.pinit.pinittask.interfaces.dto.TaskResponse;
-import me.gg.pinit.pinittask.interfaces.dto.TaskScheduleRequest;
+import me.gg.pinit.pinittask.interfaces.dto.*;
 import me.gg.pinit.pinittask.interfaces.exception.ErrorResponse;
 import me.gg.pinit.pinittask.interfaces.utils.MemberId;
 import org.springframework.data.domain.Page;
@@ -71,6 +68,15 @@ public class TaskControllerV1 {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Order.asc("temporalConstraint.deadline.dateTime")));
         return taskService.getTasks(memberId, pageable, readyOnly)
                 .map(TaskResponse::from);
+    }
+
+    @GetMapping("/cursor")
+    @Operation(summary = "작업 목록 커서 조회", description = "deadline asc, id asc 커서 기반 페이지네이션. cursor는 'YYYY-MM-DDTHH:MM:SS|taskId' 형식, 더 이상 데이터가 없으면 nextCursor=null.")
+    public TaskCursorPageResponse getTasksByCursor(@Parameter(hidden = true) @MemberId Long memberId,
+                                                   @RequestParam(defaultValue = "20") int size,
+                                                   @RequestParam(required = false) String cursor,
+                                                   @RequestParam(defaultValue = "false") boolean readyOnly) {
+        return taskService.getTasksByCursor(memberId, size, cursor, readyOnly);
     }
 
     @GetMapping("/{taskId}")
