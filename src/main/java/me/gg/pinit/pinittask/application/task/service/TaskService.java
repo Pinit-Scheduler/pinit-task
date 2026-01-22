@@ -11,11 +11,15 @@ import me.gg.pinit.pinittask.domain.task.exception.TaskNotFoundException;
 import me.gg.pinit.pinittask.domain.task.model.Task;
 import me.gg.pinit.pinittask.domain.task.patch.TaskPatch;
 import me.gg.pinit.pinittask.domain.task.repository.TaskRepository;
+import me.gg.pinit.pinittask.interfaces.dto.TaskCursorPageResponse;
+import me.gg.pinit.pinittask.interfaces.dto.TaskResponse;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.Deque;
 import java.util.List;
@@ -24,6 +28,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class TaskService {
+    private static final String CURSOR_DELIMITER = "|";
     private final TaskRepository taskRepository;
     private final DependencyService dependencyService;
     private final ScheduleService scheduleService;
@@ -43,6 +48,22 @@ public class TaskService {
             return taskRepository.findAllByOwnerIdAndInboundDependencyCountAndCompletedFalse(ownerId, 0, pageable);
         }
         return taskRepository.findAllByOwnerId(ownerId, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public TaskCursorPageResponse getTasksByCursor(Long ownerId, int size, String cursor, boolean readyOnly) {
+        Cursor decoded = decodeCursor(cursor);
+        List<Task> tasks = taskRepository.findNextByCursor(
+                ownerId,
+                readyOnly,
+                decoded.deadline(),
+                decoded.id(),
+                PageRequest.of(0, size)
+        );
+        boolean hasNext = tasks.size() == size;
+        String nextCursor = hasNext ? encodeCursor(tasks.get(tasks.size() - 1)) : null;
+        List<TaskResponse> data = tasks.stream().map(TaskResponse::from).toList();
+        return TaskCursorPageResponse.of(data, nextCursor, hasNext);
     }
 
     @Transactional(readOnly = true)
@@ -121,5 +142,30 @@ public class TaskService {
     private void publishEvents() {
         Deque<DomainEvent> queue = DomainEvents.getEventsAndClear();
         queue.forEach(domainEventPublisher::publish);
+    }
+
+    private String encodeCursor(Task task) {
+        LocalDateTime deadline = task.getTemporalConstraint().getDeadline().toLocalDateTime();
+        return deadline + CURSOR_DELIMITER + task.getId();
+    }
+
+    private Cursor decodeCursor(String cursor) {
+        if (cursor == null || cursor.isBlank()) {
+            return new Cursor(LocalDateTime.MIN, 0L);
+        }
+        String[] parts = cursor.split("\\|");
+        if (parts.length != 2) {
+            throw new IllegalArgumentException("잘못된 커서 형식입니다.");
+        }
+        try {
+            LocalDateTime deadline = LocalDateTime.parse(parts[0]);
+            Long id = Long.parseLong(parts[1]);
+            return new Cursor(deadline, id);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("잘못된 커서 값입니다.", e);
+        }
+    }
+
+    private record Cursor(LocalDateTime deadline, Long id) {
     }
 }
