@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import me.gg.pinit.pinittask.application.datetime.DateTimeUtils;
 import me.gg.pinit.pinittask.application.schedule.service.ScheduleService;
 import me.gg.pinit.pinittask.application.schedule.service.ScheduleStateChangeService;
-import me.gg.pinit.pinittask.application.task.service.TaskService;
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
 import me.gg.pinit.pinittask.interfaces.dto.ScheduleSimplePatchRequest;
 import me.gg.pinit.pinittask.interfaces.dto.ScheduleSimpleRequest;
@@ -42,7 +41,6 @@ public class ScheduleControllerV1 {
     private final DateTimeUtils dateTimeUtils;
     private final ScheduleService scheduleService;
     private final ScheduleStateChangeService scheduleStateChangeService;
-    private final TaskService taskService;
 
     @PostMapping
     @Operation(summary = "일정 생성 (작업 없이)", description = "작업과 연결하지 않는 단순 일정을 등록합니다.")
@@ -116,13 +114,8 @@ public class ScheduleControllerV1 {
     @DeleteMapping("/{scheduleId}")
     @Operation(summary = "일정 삭제 (작업 없이)")
     public ResponseEntity<Void> deleteSchedule(@Parameter(hidden = true) @MemberId Long memberId,
-                                               @PathVariable Long scheduleId,
-                                               @RequestParam(defaultValue = "false") boolean deleteTaskAlso) {
-        Schedule schedule = scheduleService.getSchedule(memberId, scheduleId);
+                                               @PathVariable Long scheduleId) {
         scheduleService.deleteSchedule(memberId, scheduleId);
-        if (deleteTaskAlso && schedule.getTaskId() != null) {
-            taskService.deleteTask(memberId, schedule.getTaskId(), false);
-        }
         return ResponseEntity.noContent().build();
     }
 }
