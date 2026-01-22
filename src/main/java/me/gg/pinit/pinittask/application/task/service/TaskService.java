@@ -6,15 +6,20 @@ import me.gg.pinit.pinittask.application.events.DomainEventPublisher;
 import me.gg.pinit.pinittask.application.schedule.service.ScheduleService;
 import me.gg.pinit.pinittask.domain.events.DomainEvent;
 import me.gg.pinit.pinittask.domain.events.DomainEvents;
+import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
 import me.gg.pinit.pinittask.domain.task.exception.TaskNotFoundException;
 import me.gg.pinit.pinittask.domain.task.model.Task;
 import me.gg.pinit.pinittask.domain.task.patch.TaskPatch;
 import me.gg.pinit.pinittask.domain.task.repository.TaskRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.ZonedDateTime;
 import java.util.Deque;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -33,9 +38,11 @@ public class TaskService {
     }
 
     @Transactional(readOnly = true)
-    public List<Task> getTasks(Long ownerId) {
-        // TODO: 필터 조건 확장 (due Importance, 위상정렬 된 topoRank 등)
-        return taskRepository.findAllByOwnerId(ownerId);
+    public Page<Task> getTasks(Long ownerId, Pageable pageable, boolean readyOnly) {
+        if (readyOnly) {
+            return taskRepository.findAllByOwnerIdAndInboundDependencyCountAndCompletedFalse(ownerId, 0, pageable);
+        }
+        return taskRepository.findAllByOwnerId(ownerId, pageable);
     }
 
     @Transactional(readOnly = true)
@@ -76,6 +83,7 @@ public class TaskService {
     @Transactional
     public void markCompleted(Long ownerId, Long taskId) {
         Task task = getTask(ownerId, taskId);
+        syncScheduleOnTaskCompletion(ownerId, task);
         task.markCompleted();
         publishEvents();
     }
@@ -90,6 +98,23 @@ public class TaskService {
     private void validateOwner(Long ownerId, Task task) {
         if (!task.getOwnerId().equals(ownerId)) {
             throw new IllegalArgumentException("Member does not own the task");
+        }
+    }
+
+    private void syncScheduleOnTaskCompletion(Long ownerId, Task task) {
+        Optional<Schedule> maybeSchedule = scheduleService.findByTaskId(task.getId());
+        if (maybeSchedule.isEmpty()) {
+            return;
+        }
+        Schedule schedule = maybeSchedule.get();
+        if (!schedule.getOwnerId().equals(ownerId)) {
+            throw new IllegalArgumentException("Member does not own the schedule");
+        }
+        if (schedule.isInProgress() || schedule.isSuspended()) {
+            throw new IllegalStateException("해당 작업과 연결된 일정이 현재 진행중이어서 작업을 완료할 수 없습니다. 일정을 통해 작업을 완료해주세요.");
+        }
+        if (!schedule.isCompleted()) {
+            schedule.finish(ZonedDateTime.now(schedule.getDesignatedStartTime().getZone()));
         }
     }
 
