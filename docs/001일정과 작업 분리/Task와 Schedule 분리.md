@@ -27,16 +27,16 @@
 ## Task와 Schedule 의 도메인 상태 분리
 
 - Task
-    - id
-    - title
-    - description
-    - dueDate
-    - isCompleted
-    - ImportanceConstraint
-    - TemporalConstraint
+  - id
+  - title
+  - description
+  - dueDate
+  - isCompleted
+  - ImportanceConstraint
+  - TemporalConstraint
   - inboundTaskCount
-    - createdAt
-    - updatedAt
+  - createdAt
+  - updatedAt
 
 - Schedule
   - id
