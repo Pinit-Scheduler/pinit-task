@@ -61,7 +61,7 @@ public class TaskService {
                 PageRequest.of(0, size)
         );
         boolean hasNext = tasks.size() == size;
-        String nextCursor = hasNext ? encodeCursor(tasks.get(tasks.size() - 1)) : null;
+        String nextCursor = hasNext ? encodeCursor(tasks.getLast()) : null;
         List<TaskResponse> data = tasks.stream().map(TaskResponse::from).toList();
         return TaskCursorPageResponse.of(data, nextCursor, hasNext);
     }
