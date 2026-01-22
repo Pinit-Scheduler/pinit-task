@@ -31,13 +31,13 @@ class CycleCheckerTest {
         long taskC = 3L;
 
         List<Dependency> dependencies = new ArrayList<>();
-        dependencies.add(new Dependency(taskA, taskB));
-        dependencies.add(new Dependency(taskB, taskC));
+        dependencies.add(new Dependency(1L, taskA, taskB));
+        dependencies.add(new Dependency(1L, taskB, taskC));
 
         Graph graph = Graph.of(dependencies);
 
         //when
-        boolean hasCycle = graph.hasCycle(List.of(), List.of(new Dependency(taskC, taskA)));
+        boolean hasCycle = graph.hasCycle(List.of(), List.of(new Dependency(1L, taskC, taskA)));
 
         //then
         assertTrue(hasCycle);
