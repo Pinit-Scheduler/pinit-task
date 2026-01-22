@@ -87,6 +87,15 @@ class ScheduleServiceTest {
     }
 
     @Test
+    void addSchedule_throwsWhenTaskAlreadyLinked() {
+        Schedule newSchedule = new Schedule(memberId, 1L, "new title", "new description", ENROLLED_TIME);
+        when(scheduleRepository.existsByTaskId(1L)).thenReturn(true);
+
+        assertThrows(IllegalStateException.class, () -> scheduleService.addSchedule(newSchedule));
+        verify(scheduleRepository, never()).save(any());
+    }
+
+    @Test
     void updateSchedule() {
         //given
         when(scheduleRepository.findById(scheduleId)).thenReturn(Optional.of(scheduleSample));

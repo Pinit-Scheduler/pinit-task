@@ -20,6 +20,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Deque;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -66,6 +67,9 @@ public class ScheduleService {
 
     @Transactional
     public Schedule addSchedule(Schedule schedule) {
+        if (schedule.getTaskId() != null && scheduleRepository.existsByTaskId(schedule.getTaskId())) {
+            throw new IllegalStateException("해당 작업에 이미 연결된 일정이 존재합니다.");
+        }
         Schedule saved = scheduleRepository.save(schedule);
         domainEventPublisher.publish(new ScheduleTimeUpdatedEvent(saved.getId(), saved.getOwnerId(), saved.getDesignatedStartTime()));
         return saved;
@@ -127,6 +131,11 @@ public class ScheduleService {
     @Transactional(readOnly = true)
     public List<Schedule> findSchedulesByIds(Long memberId, List<Long> previousScheduleIds) {
         return scheduleRepository.findAllById(previousScheduleIds);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<Schedule> findByTaskId(Long taskId) {
+        return scheduleRepository.findByTaskId(taskId);
     }
 
 
