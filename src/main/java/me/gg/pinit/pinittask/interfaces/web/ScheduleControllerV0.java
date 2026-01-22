@@ -13,7 +13,9 @@ import me.gg.pinit.pinittask.application.datetime.DateTimeUtils;
 import me.gg.pinit.pinittask.application.schedule.service.ScheduleAdjustmentService;
 import me.gg.pinit.pinittask.application.schedule.service.ScheduleService;
 import me.gg.pinit.pinittask.application.schedule.service.ScheduleStateChangeService;
+import me.gg.pinit.pinittask.application.task.service.TaskService;
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
+import me.gg.pinit.pinittask.domain.task.model.Task;
 import me.gg.pinit.pinittask.interfaces.dto.ScheduleRequest;
 import me.gg.pinit.pinittask.interfaces.dto.ScheduleResponse;
 import me.gg.pinit.pinittask.interfaces.exception.ErrorResponse;
@@ -26,6 +28,10 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/v0/schedules")
@@ -42,6 +48,7 @@ public class ScheduleControllerV0 {
     private final ScheduleService scheduleService;
     private final ScheduleAdjustmentService scheduleAdjustmentService;
     private final ScheduleStateChangeService scheduleStateChangeService;
+    private final TaskService taskService;
 
     @PostMapping
     @Operation(summary = "일정 생성", description = "새 일정과 의존 관계를 등록합니다.")
@@ -51,8 +58,9 @@ public class ScheduleControllerV0 {
     })
     public ResponseEntity<ScheduleResponse> createSchedule(@Parameter(hidden = true) @MemberId Long memberId,
                                                            @Valid @RequestBody ScheduleRequest request) {
-        Schedule saved = scheduleAdjustmentService.createSchedule(memberId, request.toCommand(null, memberId, dateTimeUtils));
-        return ResponseEntity.status(HttpStatus.CREATED).body(ScheduleResponse.from(saved));
+        Schedule saved = scheduleAdjustmentService.createScheduleLegacy(memberId, request.toCommand(null, memberId, dateTimeUtils));
+        Task task = loadTask(saved);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ScheduleResponse.from(saved, task));
     }
 
     @PatchMapping("/{scheduleId}")
@@ -65,7 +73,8 @@ public class ScheduleControllerV0 {
                                                            @PathVariable Long scheduleId,
                                                            @Valid @RequestBody ScheduleRequest request) {
         Schedule updated = scheduleAdjustmentService.adjustSchedule(memberId, request.toCommand(scheduleId, memberId, dateTimeUtils));
-        return ResponseEntity.ok(ScheduleResponse.from(updated));
+        Task task = loadTask(updated);
+        return ResponseEntity.ok(ScheduleResponse.from(updated, task));
     }
 
     @GetMapping
@@ -77,8 +86,10 @@ public class ScheduleControllerV0 {
     public List<ScheduleResponse> getSchedules(@Parameter(hidden = true) @MemberId Long memberId,
                                                @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime time,
                                                @RequestParam ZoneId zoneId) {
-        return scheduleService.getScheduleList(memberId, dateTimeUtils.toZonedDateTime(time, zoneId)).stream()
-                .map(ScheduleResponse::from)
+        List<Schedule> schedules = scheduleService.getScheduleList(memberId, dateTimeUtils.toZonedDateTime(time, zoneId));
+        Map<Long, Task> taskMap = loadTaskMap(memberId, schedules);
+        return schedules.stream()
+                .map(schedule -> ScheduleResponse.from(schedule, taskMap.get(schedule.getTaskId())))
                 .toList();
     }
 
@@ -90,7 +101,8 @@ public class ScheduleControllerV0 {
     })
     public ScheduleResponse getSchedule(@Parameter(hidden = true) @MemberId Long memberId, @PathVariable Long scheduleId) {
         Schedule schedule = scheduleService.getSchedule(memberId, scheduleId);
-        return ScheduleResponse.from(schedule);
+        Task task = loadTask(schedule);
+        return ScheduleResponse.from(schedule, task);
     }
 
     @GetMapping("/week")
@@ -102,8 +114,10 @@ public class ScheduleControllerV0 {
     public List<ScheduleResponse> getWeeklySchedules(@Parameter(hidden = true) @MemberId Long memberId,
                                                      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime time,
                                                      @RequestParam ZoneId zoneId) {
-        return scheduleService.getScheduleListForWeek(memberId, dateTimeUtils.toZonedDateTime(time, zoneId)).stream()
-                .map(ScheduleResponse::from)
+        List<Schedule> schedules = scheduleService.getScheduleListForWeek(memberId, dateTimeUtils.toZonedDateTime(time, zoneId));
+        Map<Long, Task> taskMap = loadTaskMap(memberId, schedules);
+        return schedules.stream()
+                .map(schedule -> ScheduleResponse.from(schedule, taskMap.get(schedule.getTaskId())))
                 .toList();
     }
 
@@ -163,8 +177,26 @@ public class ScheduleControllerV0 {
             @ApiResponse(responseCode = "204", description = "일정이 삭제되었습니다."),
             @ApiResponse(responseCode = "409", description = "잘못된 상태 전환입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<Void> deleteSchedule(@Parameter(hidden = true) @MemberId Long memberId, @PathVariable Long scheduleId) {
+    public ResponseEntity<Void> deleteSchedule(@Parameter(hidden = true) @MemberId Long memberId,
+                                               @PathVariable Long scheduleId) {
         scheduleService.deleteSchedule(memberId, scheduleId);
         return ResponseEntity.noContent().build();
+    }
+
+    private Task loadTask(Schedule schedule) {
+        if (schedule.getTaskId() == null) {
+            return null;
+        }
+        return taskService.getTask(schedule.getOwnerId(), schedule.getTaskId());
+    }
+
+    private Map<Long, Task> loadTaskMap(Long memberId, List<Schedule> schedules) {
+        List<Long> taskIds = schedules.stream()
+                .map(Schedule::getTaskId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        return taskService.findTasksByIds(memberId, taskIds).stream()
+                .collect(Collectors.toMap(Task::getId, Function.identity()));
     }
 }

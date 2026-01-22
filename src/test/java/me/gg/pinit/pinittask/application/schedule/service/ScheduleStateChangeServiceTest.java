@@ -3,9 +3,12 @@ package me.gg.pinit.pinittask.application.schedule.service;
 import me.gg.pinit.pinittask.application.dependency.service.DependencyService;
 import me.gg.pinit.pinittask.application.events.DomainEventPublisher;
 import me.gg.pinit.pinittask.application.member.service.MemberService;
+import me.gg.pinit.pinittask.application.task.service.TaskService;
 import me.gg.pinit.pinittask.domain.events.DomainEvents;
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
 import me.gg.pinit.pinittask.domain.schedule.repository.ScheduleRepository;
+import me.gg.pinit.pinittask.domain.task.model.Task;
+import me.gg.pinit.pinittask.domain.task.model.TaskUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,7 +22,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static me.gg.pinit.pinittask.domain.schedule.model.ScheduleUtils.*;
+import static me.gg.pinit.pinittask.domain.schedule.model.ScheduleUtils.ENROLLED_TIME;
+import static me.gg.pinit.pinittask.domain.schedule.model.ScheduleUtils.getNotStartedSchedule;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -33,7 +37,7 @@ class ScheduleStateChangeServiceTest {
     @Mock
     DependencyService dependencyService;
     @Mock
-    ScheduleService scheduleService;
+    TaskService taskService;
 
     @InjectMocks
     ScheduleStateChangeService scheduleStateChangeService;
@@ -57,8 +61,8 @@ class ScheduleStateChangeServiceTest {
     }
 
     private void stubNoDeps() {
-        when(dependencyService.getPreviousScheduleIds(memberId, scheduleId)).thenReturn(Collections.emptyList());
-        when(scheduleService.findSchedulesByIds(memberId, Collections.emptyList())).thenReturn(Collections.emptyList());
+        when(dependencyService.getPreviousTaskIds(memberId, scheduleSample.getTaskId())).thenReturn(Collections.emptyList());
+        when(taskService.findTasksByIds(memberId, Collections.emptyList())).thenReturn(Collections.emptyList());
     }
 
     @Test
@@ -68,8 +72,8 @@ class ScheduleStateChangeServiceTest {
         scheduleStateChangeService.startSchedule(memberId, scheduleId, now);
         Assertions.assertThat(scheduleSample.isInProgress()).isTrue();
         verify(memberService).setNowRunningSchedule(memberId, scheduleId);
-        verify(dependencyService).getPreviousScheduleIds(memberId, scheduleId);
-        verify(scheduleService).findSchedulesByIds(memberId, Collections.emptyList());
+        verify(dependencyService).getPreviousTaskIds(memberId, scheduleSample.getTaskId());
+        verify(taskService).findTasksByIds(memberId, Collections.emptyList());
     }
 
     @Test
@@ -77,6 +81,7 @@ class ScheduleStateChangeServiceTest {
         stubFind();
         scheduleStateChangeService.completeSchedule(memberId, scheduleId, now);
         Assertions.assertThat(scheduleSample.isCompleted()).isTrue();
+        verify(taskService).markCompleted(memberId, scheduleSample.getTaskId());
     }
 
     @Test
@@ -96,15 +101,25 @@ class ScheduleStateChangeServiceTest {
         scheduleStateChangeService.cancelSchedule(memberId, scheduleId);
         Assertions.assertThat(scheduleSample.isNotStarted()).isTrue();
         verify(memberService).clearNowRunningSchedule(memberId);
+        verify(taskService).markIncomplete(memberId, scheduleSample.getTaskId());
+    }
+
+    @Test
+    void cancelSchedule_withoutTask_doesNotTouchTask() {
+        scheduleSample = getNotStartedSchedule(scheduleId, memberId, null, "t", "d", ENROLLED_TIME);
+        stubFind();
+        scheduleStateChangeService.startSchedule(memberId, scheduleId, now);
+        scheduleStateChangeService.cancelSchedule(memberId, scheduleId);
+        verify(taskService, never()).markIncomplete(anyLong(), anyLong());
     }
 
     @Test
     void startSchedule_previousNotCompleted_throws() {
         stubFind();
         Long prevId = 99L;
-        when(dependencyService.getPreviousScheduleIds(memberId, scheduleId)).thenReturn(List.of(prevId));
-        Schedule prev = getInProgressSchedule(prevId); // not completed
-        when(scheduleService.findSchedulesByIds(memberId, List.of(prevId))).thenReturn(List.of(prev));
+        when(dependencyService.getPreviousTaskIds(memberId, scheduleSample.getTaskId())).thenReturn(List.of(prevId));
+        Task prevTask = TaskUtils.newTask(memberId, prevId);
+        when(taskService.findTasksByIds(memberId, List.of(prevId))).thenReturn(List.of(prevTask));
         Assertions.assertThatThrownBy(() -> scheduleStateChangeService.startSchedule(memberId, scheduleId, now))
                 .isInstanceOf(IllegalStateException.class);
         verify(memberService, never()).setNowRunningSchedule(anyLong(), anyLong());
@@ -118,4 +133,3 @@ class ScheduleStateChangeServiceTest {
         verify(memberService, never()).setNowRunningSchedule(anyLong(), anyLong());
     }
 }
-

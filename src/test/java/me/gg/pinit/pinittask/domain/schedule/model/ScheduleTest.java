@@ -2,15 +2,14 @@ package me.gg.pinit.pinittask.domain.schedule.model;
 
 import me.gg.pinit.pinittask.domain.schedule.exception.IllegalDescriptionException;
 import me.gg.pinit.pinittask.domain.schedule.exception.IllegalTitleException;
-import me.gg.pinit.pinittask.domain.schedule.exception.TimeOrderReversedException;
 import me.gg.pinit.pinittask.domain.schedule.patch.SchedulePatch;
-import me.gg.pinit.pinittask.domain.schedule.vo.ImportanceConstraint;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZonedDateTime;
 
-import static me.gg.pinit.pinittask.domain.schedule.model.ScheduleUtils.*;
+import static me.gg.pinit.pinittask.domain.schedule.model.ScheduleUtils.ENROLLED_TIME;
+import static me.gg.pinit.pinittask.domain.schedule.model.ScheduleUtils.getNotStartedSchedule;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ScheduleTest {
@@ -124,66 +123,31 @@ class ScheduleTest {
         //then
         Assertions.assertThat(schedule.getDesignatedStartTime()).isEqualTo(newDate);
     }
-    
     @Test
-    void setDate_데드라인_초과(){
-        //given
+    void setDate_null_throws() {
         Schedule schedule = getNotStartedSchedule();
-        ZonedDateTime invalidDate = ZonedDateTime.of(2100, 1, 1, 0, 0, 0, 0, ZonedDateTime.now().getZone());
-
-        //when, then
-        assertThatThrownBy(() -> schedule.setDesignatedStartTime(invalidDate))
-                .isInstanceOf(TimeOrderReversedException.class)
-                .hasMessage("일정의 날짜는 데드라인을 초과할 수 없습니다.");
-    }
-
-    @Test
-    void changeDeadline_일정보다_늦은_데드라인() {
-        //given
-        Schedule schedule = getNotStartedSchedule();
-        //when
-        schedule.changeDeadline(DEADLINE_TIME.plusDays(3));
-        //then
-        Assertions.assertThat(schedule.getTemporalConstraint().getDeadline()).isEqualTo(DEADLINE_TIME.plusDays(3));
-    }
-
-    @Test
-    void changeDeadline_일정보다_빠른_데드라인() {
-        //given
-        Schedule schedule = getNotStartedSchedule();
-        //when, then
-        Assertions.assertThatThrownBy(() -> schedule.changeDeadline(ENROLLED_TIME.minusDays(1)))
-                .isInstanceOf(TimeOrderReversedException.class)
-                .hasMessage("데드라인은 일정 등록 날짜보다 앞설 수 없습니다.");
-    }
-
-    @Test
-    void 작업_타입_변경() {
-        //given
-        Schedule notStartedSchedule = getNotStartedSchedule();
-        //when
-        notStartedSchedule.changeTaskType(TaskType.QUICK_TASK);
-        //then
-        Assertions.assertThat(notStartedSchedule.getTemporalConstraint().getTaskType()).isEqualTo(TaskType.QUICK_TASK);
+        assertThatThrownBy(() -> schedule.setDesignatedStartTime(null))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void Patch_수정() {
         //given
         Schedule schedule = getNotStartedSchedule();
-        ImportanceConstraint importanceConstraint = schedule.getImportanceConstraint();
-        String title = schedule.getTitle();
-        String description = schedule.getDescription();
+        ZonedDateTime changedDate = ENROLLED_TIME.plusDays(1);
+        String newTitle = "Patched title";
+        String newDesc = "patched desc";
 
         //when
-        SchedulePatch schedulePatch = new SchedulePatch().setDate(ENROLLED_TIME.plusDays(1)).setTaskType(TaskType.QUICK_TASK);
+        SchedulePatch schedulePatch = new SchedulePatch()
+                .setDesignatedStartTime(changedDate)
+                .setTitle(newTitle)
+                .setDescription(newDesc);
         schedule.patch(schedulePatch);
 
         //then
-        Assertions.assertThat(schedule.getDesignatedStartTime()).isEqualTo(ENROLLED_TIME.plusDays(1));
-        Assertions.assertThat(schedule.getTemporalConstraint().getTaskType()).isEqualTo(TaskType.QUICK_TASK);
-        Assertions.assertThat(schedule.getImportanceConstraint()).isEqualTo(importanceConstraint);
-        Assertions.assertThat(schedule.getTitle()).isEqualTo(title);
-        Assertions.assertThat(schedule.getDescription()).isEqualTo(description);
+        Assertions.assertThat(schedule.getDesignatedStartTime()).isEqualTo(changedDate);
+        Assertions.assertThat(schedule.getTitle()).isEqualTo(newTitle);
+        Assertions.assertThat(schedule.getDescription()).isEqualTo(newDesc);
     }
 }

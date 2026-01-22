@@ -1,11 +1,10 @@
-package me.gg.pinit.pinittask.domain.schedule.model;
+package me.gg.pinit.pinittask.domain.task.model;
 
 import me.gg.pinit.pinittask.domain.statistics.model.Statistics;
 
 import java.time.Duration;
 
 public interface Recorder {
-
     /**
      * 특정 사용자의 특정 주차 통계에 경과 시간 추가
      * 통계는 반드시 완료된 일정에 대해서만 기록되어야 함

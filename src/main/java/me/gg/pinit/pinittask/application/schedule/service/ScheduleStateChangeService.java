@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import me.gg.pinit.pinittask.application.dependency.service.DependencyService;
 import me.gg.pinit.pinittask.application.events.DomainEventPublisher;
 import me.gg.pinit.pinittask.application.member.service.MemberService;
+import me.gg.pinit.pinittask.application.task.service.TaskService;
 import me.gg.pinit.pinittask.domain.dependency.exception.ScheduleNotFoundException;
 import me.gg.pinit.pinittask.domain.events.DomainEvent;
 import me.gg.pinit.pinittask.domain.events.DomainEvents;
@@ -23,14 +24,14 @@ public class ScheduleStateChangeService {
     private final MemberService memberService;
     private final DomainEventPublisher domainEventPublisher;
     private final DependencyService dependencyService;
-    private final ScheduleService scheduleService;
+    private final TaskService taskService;
 
     @Transactional
     public void startSchedule(Long memberId, Long scheduleId, ZonedDateTime now) {
         Schedule findSchedule = scheduleRepository.findByIdForUpdate(scheduleId)
                 .orElseThrow(() -> new ScheduleNotFoundException("해당 일정을 찾을 수 없습니다."));
         validateOwner(memberId, findSchedule);
-        checkBeforeScheduleIsCompleted(memberId, scheduleId);
+        checkDependenciesForTask(memberId, findSchedule);
 
         memberService.setNowRunningSchedule(memberId, scheduleId);
 
@@ -43,8 +44,11 @@ public class ScheduleStateChangeService {
         Schedule findSchedule = scheduleRepository.findByIdForUpdate(scheduleId)
                 .orElseThrow(() -> new ScheduleNotFoundException("해당 일정을 찾을 수 없습니다."));
         validateOwner(memberId, findSchedule);
-        if(!findSchedule.isNotStarted())memberService.clearNowRunningSchedule(memberId);
+        if (!findSchedule.isNotStarted()) {
+            memberService.clearNowRunningSchedule(memberId);
+        }
         findSchedule.finish(now);
+        syncTaskCompletionIfLinked(memberId, findSchedule);
         publishEvent();
     }
 
@@ -64,6 +68,7 @@ public class ScheduleStateChangeService {
         validateOwner(memberId, findSchedule);
         if (findSchedule.isInProgress() || findSchedule.isSuspended()) memberService.clearNowRunningSchedule(memberId);
         findSchedule.cancel();
+        syncTaskCancellationIfLinked(memberId, findSchedule);
         publishEvent();
     }
 
@@ -78,12 +83,29 @@ public class ScheduleStateChangeService {
         queue.forEach(domainEventPublisher::publish);
     }
 
-    private void checkBeforeScheduleIsCompleted(Long memberId, Long scheduleId) {
-        List<Long> previousScheduleIds = dependencyService.getPreviousScheduleIds(memberId, scheduleId);
-        scheduleService.findSchedulesByIds(memberId, previousScheduleIds).forEach(schedule -> {
-            if (!schedule.isCompleted()) {
-                throw new IllegalStateException("이전 일정이 완료되지 않아 해당 일정을 시작할 수 없습니다.");
+    private void checkDependenciesForTask(Long memberId, Schedule schedule) {
+        if (schedule.getTaskId() == null) {
+            return;
+        }
+        List<Long> previousTaskIds = dependencyService.getPreviousTaskIds(memberId, schedule.getTaskId());
+        taskService.findTasksByIds(memberId, previousTaskIds).forEach(task -> {
+            if (!task.isCompleted()) {
+                throw new IllegalStateException("이전 작업이 완료되지 않아 해당 일정을 시작할 수 없습니다.");
             }
         });
+    }
+
+    private void syncTaskCompletionIfLinked(Long memberId, Schedule schedule) {
+        if (schedule.getTaskId() == null || !schedule.isCompleted()) {
+            return;
+        }
+        taskService.markCompleted(memberId, schedule.getTaskId());
+    }
+
+    private void syncTaskCancellationIfLinked(Long memberId, Schedule schedule) {
+        if (schedule.getTaskId() == null || schedule.isCompleted()) {
+            return;
+        }
+        taskService.markIncomplete(memberId, schedule.getTaskId());
     }
 }

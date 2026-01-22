@@ -3,6 +3,9 @@ info:
   title: Pinit task events over RabbitMQ
   version: '1.0.0'
   description: 핀잇의 task 서버가 발행/구독 하는 이벤트 정리
+  x-notes: |
+    Task/Schedule 분리 이후로 일정 이벤트는 V1 스케줄(작업과 독립)에서도 발행됩니다.
+    Task 연동 여부와 무관하게 일정 상태 이벤트는 동일한 라우팅 키를 사용합니다.
 
 servers:
   rabbitmq:
@@ -75,6 +78,32 @@ channels:
         is: routingKey
         exchange:
           name: task.schedule.direct
+          type: direct
+          durable: true
+          autoDelete: false
+  task.completed:
+    address: task.completed
+    messages:
+      taskCompleted:
+        $ref: '#/components/messages/TaskCompleted'
+    bindings:
+      amqp:
+        is: routingKey
+        exchange:
+          name: task.task.direct
+          type: direct
+          durable: true
+          autoDelete: false
+  task.canceled:
+    address: task.canceled
+    messages:
+      taskCanceled:
+        $ref: '#/components/messages/TaskCanceled'
+    bindings:
+      amqp:
+        is: routingKey
+        exchange:
+          name: task.task.direct
           type: direct
           durable: true
           autoDelete: false
@@ -160,6 +189,38 @@ operations:
     messages:
       - $ref: '#/channels/schedule.state.completed/messages/scheduleStateCompleted'
 
+  publishTaskCompleted:
+    action: send
+    channel:
+      $ref: '#/channels/task.completed'
+    summary: 작업 완료 이벤트 발행
+    messages:
+      - $ref: '#/channels/task.completed/messages/taskCompleted'
+
+  subscribeTaskCompleted:
+    action: receive
+    channel:
+      $ref: '#/channels/task.completed'
+    summary: 작업 완료 이벤트 구독
+    messages:
+      - $ref: '#/channels/task.completed/messages/taskCompleted'
+
+  publishTaskCanceled:
+    action: send
+    channel:
+      $ref: '#/channels/task.canceled'
+    summary: 작업 취소 이벤트 발행
+    messages:
+      - $ref: '#/channels/task.canceled/messages/taskCanceled'
+
+  subscribeTaskCanceled:
+    action: receive
+    channel:
+      $ref: '#/channels/task.canceled'
+    summary: 작업 취소 이벤트 구독
+    messages:
+      - $ref: '#/channels/task.canceled/messages/taskCanceled'
+
 components:
   messages:
     ScheduleTimeUpcomingState:
@@ -176,10 +237,10 @@ components:
             format: int64
           newUpcomingTime:
             type: string
-            format: date-time
+            format: designatedStartTime-time
           occurredAt:
             type: string
-            format: date-time
+            format: designatedStartTime-time
           idempotentKey:
             type: string
         required: [ ownerId, scheduleId, newUpcomingTime, occurredAt, idempotentKey ]
@@ -197,7 +258,7 @@ components:
             format: int64
           occurredAt:
             type: string
-            format: date-time
+            format: designatedStartTime-time
           idempotentKey:
             type: string
         required: [ ownerId, scheduleId, occurredAt, idempotentKey ]
@@ -218,7 +279,43 @@ components:
             description: 상태 전환 전 상태
           occurredAt:
             type: string
-            format: date-time
+            format: designatedStartTime-time
           idempotentKey:
             type: string
         required: [ ownerId, scheduleId, beforeState, occurredAt, idempotentKey ]
+    TaskCompleted:
+      name: TaskCompleted
+      title: 작업 완료 정보
+      payload:
+        type: object
+        properties:
+          ownerId:
+            type: integer
+            format: int64
+          taskId:
+            type: integer
+            format: int64
+          occurredAt:
+            type: string
+            format: designatedStartTime-time
+          idempotentKey:
+            type: string
+        required: [ ownerId, taskId, occurredAt, idempotentKey ]
+    TaskCanceled:
+      name: TaskCanceled
+      title: 작업 취소 정보(미완료로 되돌림 포함)
+      payload:
+        type: object
+        properties:
+          ownerId:
+            type: integer
+            format: int64
+          taskId:
+            type: integer
+            format: int64
+          occurredAt:
+            type: string
+            format: designatedStartTime-time
+          idempotentKey:
+            type: string
+        required: [ ownerId, taskId, occurredAt, idempotentKey ]

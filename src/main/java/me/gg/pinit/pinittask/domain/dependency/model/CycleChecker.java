@@ -32,7 +32,7 @@ public class CycleChecker {
 
         Map<Long, Integer> indegreeMap = new HashMap<>();
         for (GraphNode node : nodeMap.values()) {
-            indegreeMap.put(node.getScheduleId(), node.getIndegree());
+            indegreeMap.put(node.getTaskId(), node.getIndegree());
         }
         Queue<Long> q = initializeZeroIndegreeQueue(indegreeMap);
         return checkCycle(q, indegreeMap);
@@ -54,7 +54,7 @@ public class CycleChecker {
         while (!q.isEmpty()) {
             long u = q.poll();
             removed++;
-            for (long v : nodeMap.get(u).getNextSchedules()) {
+            for (long v : nodeMap.get(u).getNextTasks()) {
                 if (indegreeMap.merge(v, -1, Integer::sum) == 0) q.add(v);
             }
         }
@@ -69,4 +69,3 @@ public class CycleChecker {
  * <p>
  * 어디가 null이 될지 모름 -> 예외 처리가 빡세다.
  */
-

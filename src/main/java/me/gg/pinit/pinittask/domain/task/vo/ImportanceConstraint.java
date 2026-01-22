@@ -1,4 +1,4 @@
-package me.gg.pinit.pinittask.domain.schedule.vo;
+package me.gg.pinit.pinittask.domain.task.vo;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
@@ -18,7 +18,8 @@ public class ImportanceConstraint {
     @Column(name = "difficulty_level")
     private int difficulty;
 
-    protected ImportanceConstraint() {}
+    protected ImportanceConstraint() {
+    }
 
     public ImportanceConstraint(int importance, int difficulty) {
         validateImportanceLevel(importance);
@@ -37,6 +38,9 @@ public class ImportanceConstraint {
         return new ImportanceConstraint(this.importance, difficulty);
     }
 
+    public ImportanceConstraint changeDifficulty(int difficulty) {
+        return changeDifficultyLevel(difficulty);
+    }
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;

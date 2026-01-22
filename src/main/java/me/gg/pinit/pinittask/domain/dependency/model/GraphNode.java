@@ -6,12 +6,12 @@ import java.util.*;
 
 public class GraphNode {
     @Getter
-    private Long scheduleId;
-    private Set<GraphNode> next = new HashSet<>();
-    private Set<GraphNode> previous = new HashSet<>();
+    private final Long taskId;
+    private final Set<GraphNode> next = new HashSet<>();
+    private final Set<GraphNode> previous = new HashSet<>();
 
-    public GraphNode(Long scheduleId) {
-        this.scheduleId = scheduleId;
+    public GraphNode(Long taskId) {
+        this.taskId = taskId;
     }
 
     public void addNext(GraphNode next) {
@@ -30,18 +30,18 @@ public class GraphNode {
         this.previous.remove(previous);
     }
 
-    public List<Long> getNextSchedules() {
+    public List<Long> getNextTasks() {
         List<Long> result = new ArrayList<>();
         for (GraphNode node : next) {
-            result.add(node.getScheduleId());
+            result.add(node.getTaskId());
         }
         return result;
     }
 
-    public List<Long> getPreviousSchedules() {
+    public List<Long> getPreviousTasks() {
         List<Long> result = new ArrayList<>();
         for (GraphNode node : previous) {
-            result.add(node.getScheduleId());
+            result.add(node.getTaskId());
         }
         return result;
     }
@@ -55,12 +55,12 @@ public class GraphNode {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         GraphNode node = (GraphNode) o;
-        return Objects.equals(scheduleId, node.scheduleId);
+        return Objects.equals(taskId, node.taskId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(scheduleId);
+        return Objects.hashCode(taskId);
     }
 
 }

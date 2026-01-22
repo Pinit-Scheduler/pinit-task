@@ -30,7 +30,8 @@ public class ScheduleControllerAdvice {
             ObjectiveNotPositiveException.class,
             ObjectiveNotNullException.class,
             DuplicatedScheduleRunningException.class,
-            IllegalArgumentException.class
+            IllegalArgumentException.class,
+            IllegalStateException.class
     })
     public ResponseEntity<ErrorResponse> handleBadRequest(RuntimeException ex, WebRequest request) {
         log.warn("Client error: {}", ex.getMessage());

@@ -3,9 +3,9 @@ package me.gg.pinit.pinittask.application.statistics.service;
 import lombok.extern.slf4j.Slf4j;
 import me.gg.pinit.pinittask.application.datetime.DateTimeUtils;
 import me.gg.pinit.pinittask.application.member.service.MemberService;
-import me.gg.pinit.pinittask.domain.schedule.model.TaskType;
 import me.gg.pinit.pinittask.domain.statistics.model.Statistics;
 import me.gg.pinit.pinittask.domain.statistics.repository.StatisticsRepository;
+import me.gg.pinit.pinittask.domain.task.model.TaskType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

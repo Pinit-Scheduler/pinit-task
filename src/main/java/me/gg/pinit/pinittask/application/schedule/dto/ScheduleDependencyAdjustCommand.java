@@ -3,10 +3,12 @@ package me.gg.pinit.pinittask.application.schedule.dto;
 import lombok.Getter;
 import me.gg.pinit.pinittask.domain.dependency.model.Dependency;
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
-import me.gg.pinit.pinittask.domain.schedule.model.TaskType;
 import me.gg.pinit.pinittask.domain.schedule.patch.SchedulePatch;
-import me.gg.pinit.pinittask.domain.schedule.vo.ImportanceConstraint;
-import me.gg.pinit.pinittask.domain.schedule.vo.TemporalConstraint;
+import me.gg.pinit.pinittask.domain.task.model.Task;
+import me.gg.pinit.pinittask.domain.task.model.TaskType;
+import me.gg.pinit.pinittask.domain.task.patch.TaskPatch;
+import me.gg.pinit.pinittask.domain.task.vo.ImportanceConstraint;
+import me.gg.pinit.pinittask.domain.task.vo.TemporalConstraint;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
@@ -15,6 +17,7 @@ import java.util.Objects;
 
 public class ScheduleDependencyAdjustCommand {
     private final Long scheduleId;
+    private final Long taskId;
     @Getter
     private final Long ownerId;
     @Getter
@@ -34,9 +37,10 @@ public class ScheduleDependencyAdjustCommand {
     private final List<DependencyDto> removeDependencies;
     private final List<DependencyDto> addDependencies;
 
-    public ScheduleDependencyAdjustCommand(Long scheduleId, Long ownerId, String title, String description, ZonedDateTime deadline, Integer importance, Integer difficulty, TaskType taskType, ZonedDateTime date, List<DependencyDto> removeDependencies, List<DependencyDto> addDependencies) {
+    public ScheduleDependencyAdjustCommand(Long scheduleId, Long ownerId, Long taskId, String title, String description, ZonedDateTime deadline, Integer importance, Integer difficulty, TaskType taskType, ZonedDateTime date, List<DependencyDto> removeDependencies, List<DependencyDto> addDependencies) {
         this.scheduleId = scheduleId;
         this.ownerId = ownerId;
+        this.taskId = taskId;
         this.title = title;
         this.description = description;
         this.deadline = deadline;
@@ -52,14 +56,31 @@ public class ScheduleDependencyAdjustCommand {
         return Objects.requireNonNullElse(scheduleId, 0L);
     }
 
-    public Schedule getTemporalSchedule() {
-        return new Schedule(
+    public Long getTaskId() {
+        return taskId;
+    }
+
+    public boolean hasTaskId() {
+        return taskId != null;
+    }
+
+    public Task buildTask() {
+        return new Task(
                 ownerId,
                 title,
                 description,
-                date,
                 new TemporalConstraint(deadline, Duration.ZERO, taskType),
                 new ImportanceConstraint(importance, difficulty)
+        );
+    }
+
+    public Schedule buildSchedule(Long taskId) {
+        return new Schedule(
+                ownerId,
+                taskId,
+                title,
+                description,
+                date
         );
     }
 
@@ -67,18 +88,30 @@ public class ScheduleDependencyAdjustCommand {
         return new SchedulePatch()
                 .setTitle(title)
                 .setDescription(description)
-                .setDeadline(deadline)
+                .setDesignatedStartTime(date);
+    }
+
+    public TaskPatch getTaskPatch() {
+        return new TaskPatch()
+                .setTitle(title)
+                .setDescription(description)
+                .setDueDate(deadline)
                 .setImportance(importance)
                 .setDifficulty(difficulty)
-                .setTaskType(taskType)
-                .setDate(date);
+                .setTaskType(taskType);
     }
 
     public List<Dependency> getRemoveDependencies() {
-        return removeDependencies.stream().map(d -> new Dependency(d.getFromId(), d.getToId())).toList();
+        return (removeDependencies == null ? List.<DependencyDto>of() : removeDependencies)
+                .stream()
+                .map(d -> new Dependency(ownerId, d.getFromId(), d.getToId()))
+                .toList();
     }
 
     public List<Dependency> getAddDependencies() {
-        return addDependencies.stream().map(d -> new Dependency(d.getFromId(), d.getToId())).toList();
+        return (addDependencies == null ? List.<DependencyDto>of() : addDependencies)
+                .stream()
+                .map(d -> new Dependency(ownerId, d.getFromId(), d.getToId()))
+                .toList();
     }
 }

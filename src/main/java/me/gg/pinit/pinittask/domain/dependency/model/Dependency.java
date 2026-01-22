@@ -31,11 +31,19 @@ public class Dependency {
     protected Dependency() {
     }
 
-    public Dependency(Long fromId, Long toId) {
+    public Dependency(Long ownerId, Long fromId, Long toId) {
+        validateOwner(ownerId);
         validateNotNull(fromId, toId);
         validateFromAndTo(fromId, toId);
+        this.ownerId = ownerId;
         this.fromId = fromId;
         this.toId = toId;
+    }
+
+    private void validateOwner(Long ownerId) {
+        if (ownerId == null) {
+            throw new IllegalArgumentException("ownerId는 null일 수 없습니다.");
+        }
     }
 
     private void validateNotNull(Long fromId, Long toId) {
@@ -72,4 +80,3 @@ public class Dependency {
  * 다음 일정 시작 시점보다 반드시 앞에 있어야 하는가?
  *
  */
-

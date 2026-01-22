@@ -3,10 +3,11 @@ package me.gg.pinit.pinittask.application.schedule.service;
 import me.gg.pinit.pinittask.application.dependency.service.DependencyService;
 import me.gg.pinit.pinittask.application.schedule.dto.DependencyDto;
 import me.gg.pinit.pinittask.application.schedule.dto.ScheduleDependencyAdjustCommand;
-import me.gg.pinit.pinittask.domain.dependency.model.Dependency;
+import me.gg.pinit.pinittask.application.task.service.TaskService;
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
-import me.gg.pinit.pinittask.domain.schedule.model.TaskType;
 import me.gg.pinit.pinittask.domain.schedule.patch.SchedulePatch;
+import me.gg.pinit.pinittask.domain.task.model.Task;
+import me.gg.pinit.pinittask.domain.task.model.TaskType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,7 +21,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -30,17 +31,20 @@ class ScheduleAdjustmentServiceTest {
     DependencyService dependencyService;
     @Mock
     ScheduleService scheduleService;
+    @Mock
+    TaskService taskService;
     @InjectMocks
     ScheduleAdjustmentService scheduleAdjustmentService;
 
     @Test
-    @DisplayName("createSchedule: 사이클 체크 후 일정 추가 및 의존 저장")
+    @DisplayName("createSchedule: 작업 없이 일정만 생성")
     void createSchedule() {
         Long memberId = 1L;
         ZonedDateTime now = ZonedDateTime.now();
         ScheduleDependencyAdjustCommand command = new ScheduleDependencyAdjustCommand(
                 null,
                 memberId,
+                null,
                 "TITLE",
                 "DESC",
                 now.plusHours(4),
@@ -49,21 +53,11 @@ class ScheduleAdjustmentServiceTest {
                 TaskType.DEEP_WORK,
                 now,
                 Collections.emptyList(),
-                List.of(new DependencyDto(null, 10L, 11L), new DependencyDto(null, 11L, 12L))
+                Collections.emptyList()
         );
-        when(dependencyService.checkCycle(eq(memberId), anyList(), anyList())).thenReturn(false);
         when(scheduleService.addSchedule(any(Schedule.class))).thenAnswer(inv -> inv.getArgument(0));
 
         scheduleAdjustmentService.createSchedule(memberId, command);
-
-        ArgumentCaptor<List> removedCap = ArgumentCaptor.forClass(List.class);
-        ArgumentCaptor<List> addedCap = ArgumentCaptor.forClass(List.class);
-        verify(dependencyService).checkCycle(eq(memberId), removedCap.capture(), addedCap.capture());
-        assertTrue(removedCap.getValue().isEmpty());
-        assertEquals(2, addedCap.getValue().size());
-        Dependency firstAdded = (Dependency) addedCap.getValue().get(0);
-        assertEquals(10L, firstAdded.getFromId());
-        assertEquals(11L, firstAdded.getToId());
 
         ArgumentCaptor<Schedule> scheduleCap = ArgumentCaptor.forClass(Schedule.class);
         verify(scheduleService).addSchedule(scheduleCap.capture());
@@ -72,12 +66,65 @@ class ScheduleAdjustmentServiceTest {
         assertEquals("DESC", saved.getDescription());
         assertEquals(memberId, saved.getOwnerId());
 
-        ArgumentCaptor<List> saveCap = ArgumentCaptor.forClass(List.class);
-        verify(dependencyService).saveAll(saveCap.capture());
-        assertEquals(2, saveCap.getValue().size());
-
-        verify(dependencyService, never()).deleteAll(anyList());
+        verifyNoInteractions(taskService);
+        verifyNoInteractions(dependencyService);
         verify(scheduleService, never()).updateSchedule(anyLong(), anyLong(), any(SchedulePatch.class));
+    }
+
+    @Test
+    @DisplayName("createScheduleLegacy: Task와 의존관계 함께 생성 (V0)")
+    void createScheduleLegacy_withTaskAndDependencies() {
+        Long memberId = 4L;
+        ZonedDateTime now = ZonedDateTime.now();
+        ScheduleDependencyAdjustCommand command = new ScheduleDependencyAdjustCommand(
+                null,
+                memberId,
+                null,
+                "TITLE",
+                "DESC",
+                now.plusHours(2),
+                3,
+                5,
+                TaskType.DEEP_WORK,
+                now,
+                Collections.emptyList(),
+                List.of(new DependencyDto(null, 10L, 11L))
+        );
+        Task newTask = mock(Task.class);
+        when(newTask.getId()).thenReturn(999L);
+        when(taskService.createTask(any(Task.class))).thenReturn(newTask);
+        when(scheduleService.addSchedule(any(Schedule.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        scheduleAdjustmentService.createScheduleLegacy(memberId, command);
+
+        verify(dependencyService).checkCycle(eq(memberId), anyList(), anyList());
+        verify(taskService).createTask(any(Task.class));
+        verify(scheduleService).addSchedule(any(Schedule.class));
+        verify(dependencyService).saveAll(anyList());
+    }
+
+    @Test
+    @DisplayName("createSchedule: 의존 관계 요청 시 예외")
+    void createScheduleWithDependenciesThrows() {
+        Long memberId = 9L;
+        ZonedDateTime now = ZonedDateTime.now();
+        ScheduleDependencyAdjustCommand command = new ScheduleDependencyAdjustCommand(
+                null,
+                memberId,
+                null,
+                "TITLE",
+                "DESC",
+                now.plusHours(4),
+                5,
+                5,
+                TaskType.DEEP_WORK,
+                now,
+                List.of(new DependencyDto(null, 1L, 2L)),
+                Collections.emptyList()
+        );
+
+        assertThrows(IllegalArgumentException.class, () -> scheduleAdjustmentService.createSchedule(memberId, command));
+        verifyNoInteractions(scheduleService);
     }
 
     @Test
@@ -89,6 +136,7 @@ class ScheduleAdjustmentServiceTest {
         ScheduleDependencyAdjustCommand command = new ScheduleDependencyAdjustCommand(
                 scheduleId,
                 memberId,
+                null,
                 "NEW_TITLE",
                 "NEW_DESC",
                 now.plusHours(8),
@@ -99,6 +147,9 @@ class ScheduleAdjustmentServiceTest {
                 List.of(new DependencyDto(1L, 200L, 201L), new DependencyDto(2L, 201L, 202L)),
                 List.of(new DependencyDto(3L, 300L, 301L))
         );
+        Schedule current = mock(Schedule.class);
+        when(current.getTaskId()).thenReturn(10L);
+        when(scheduleService.getSchedule(memberId, scheduleId)).thenReturn(current);
         when(dependencyService.checkCycle(eq(memberId), anyList(), anyList())).thenReturn(false);
         when(scheduleService.updateSchedule(eq(memberId), eq(scheduleId), any(SchedulePatch.class))).thenReturn(mock(Schedule.class));
 
@@ -115,12 +166,35 @@ class ScheduleAdjustmentServiceTest {
         SchedulePatch patch = patchCap.getValue();
         assertEquals("NEW_TITLE", patch.title().orElse(null));
         assertEquals("NEW_DESC", patch.description().orElse(null));
-        assertEquals(9, patch.importance().orElse(-1));
-        assertEquals(3, patch.difficulty().orElse(-1));
-        assertEquals(TaskType.QUICK_TASK, patch.taskType().orElse(null));
+        assertEquals(now.plusMinutes(30), patch.designatedStartTime().orElse(null));
 
         verify(dependencyService).deleteAll(anyList());
         verify(dependencyService).saveAll(anyList());
+        verify(scheduleService, never()).addSchedule(any(Schedule.class));
+    }
+
+    @Test
+    @DisplayName("createSchedule: 작업 ID가 포함되면 예외 발생")
+    void createScheduleWithExistingTask() {
+        Long memberId = 3L;
+        Long taskId = 901L;
+        ZonedDateTime now = ZonedDateTime.now();
+        ScheduleDependencyAdjustCommand command = new ScheduleDependencyAdjustCommand(
+                null,
+                memberId,
+                taskId,
+                "TITLE",
+                "DESC",
+                now.plusHours(2),
+                4,
+                8,
+                TaskType.ADMIN_TASK,
+                now,
+                Collections.emptyList(),
+                Collections.emptyList()
+        );
+        assertThrows(IllegalArgumentException.class, () -> scheduleAdjustmentService.createSchedule(memberId, command));
+        verifyNoInteractions(taskService);
         verify(scheduleService, never()).addSchedule(any(Schedule.class));
     }
 }

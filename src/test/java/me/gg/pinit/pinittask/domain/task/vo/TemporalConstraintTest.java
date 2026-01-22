@@ -1,6 +1,6 @@
-package me.gg.pinit.pinittask.domain.schedule.vo;
+package me.gg.pinit.pinittask.domain.task.vo;
 
-import me.gg.pinit.pinittask.domain.schedule.model.TaskType;
+import me.gg.pinit.pinittask.domain.task.model.TaskType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,7 +9,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.*;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -18,13 +19,13 @@ class TemporalConstraintTest {
     Clock clock;
 
     @BeforeEach
-    void setup(){
+    void setup() {
         when(clock.getZone()).thenReturn(ZoneId.systemDefault());
         when(clock.instant()).thenReturn(Instant.parse("2025-01-01T10:00:00Z"));
     }
 
     @Test
-    void Equals_서로_같은_경우(){
+    void Equals_서로_같은_경우() {
         //when
         TemporalConstraint tc = new TemporalConstraint(ZonedDateTime.now(clock), Duration.ofHours(3), TaskType.DEEP_WORK);
         TemporalConstraint sameTc = new TemporalConstraint(ZonedDateTime.now(clock), Duration.ofHours(3), TaskType.DEEP_WORK);
@@ -35,7 +36,7 @@ class TemporalConstraintTest {
     }
 
     @Test
-    void Equals_Duration_불일치(){
+    void Equals_Duration_불일치() {
         //when
         TemporalConstraint tc = new TemporalConstraint(ZonedDateTime.now(clock), Duration.ofHours(3), TaskType.DEEP_WORK);
         TemporalConstraint diffTc = new TemporalConstraint(ZonedDateTime.now(clock), Duration.ofHours(4), TaskType.DEEP_WORK);
@@ -45,7 +46,7 @@ class TemporalConstraintTest {
     }
 
     @Test
-    void Equals_시각_불일치(){
+    void Equals_시각_불일치() {
         //when
         TemporalConstraint tc = new TemporalConstraint(ZonedDateTime.now(clock), Duration.ofHours(3), TaskType.DEEP_WORK);
         TemporalConstraint diffTc = new TemporalConstraint(ZonedDateTime.now(clock).plusHours(3), Duration.ofHours(3), TaskType.DEEP_WORK);
@@ -55,7 +56,7 @@ class TemporalConstraintTest {
     }
 
     @Test
-    void Equals_일정_타입_불일치(){
+    void Equals_일정_타입_불일치() {
         //when
         TemporalConstraint tc = new TemporalConstraint(ZonedDateTime.now(clock), Duration.ofHours(3), TaskType.DEEP_WORK);
         TemporalConstraint diffTc = new TemporalConstraint(ZonedDateTime.now(clock), Duration.ofHours(3), TaskType.ADMIN_TASK);
