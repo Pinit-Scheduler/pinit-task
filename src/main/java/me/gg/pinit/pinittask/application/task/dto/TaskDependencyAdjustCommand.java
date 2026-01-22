@@ -71,10 +71,10 @@ public class TaskDependencyAdjustCommand {
     }
 
     public List<Dependency> getRemoveDependencies() {
-        return removeDependencies.stream().map(d -> new Dependency(d.getFromId(), d.getToId())).toList();
+        return removeDependencies.stream().map(d -> new Dependency(ownerId, d.getFromId(), d.getToId())).toList();
     }
 
     public List<Dependency> getAddDependencies() {
-        return addDependencies.stream().map(d -> new Dependency(d.getFromId(), d.getToId())).toList();
+        return addDependencies.stream().map(d -> new Dependency(ownerId, d.getFromId(), d.getToId())).toList();
     }
 }

@@ -104,14 +104,14 @@ public class ScheduleDependencyAdjustCommand {
     public List<Dependency> getRemoveDependencies() {
         return (removeDependencies == null ? List.<DependencyDto>of() : removeDependencies)
                 .stream()
-                .map(d -> new Dependency(d.getFromId(), d.getToId()))
+                .map(d -> new Dependency(ownerId, d.getFromId(), d.getToId()))
                 .toList();
     }
 
     public List<Dependency> getAddDependencies() {
         return (addDependencies == null ? List.<DependencyDto>of() : addDependencies)
                 .stream()
-                .map(d -> new Dependency(d.getFromId(), d.getToId()))
+                .map(d -> new Dependency(ownerId, d.getFromId(), d.getToId()))
                 .toList();
     }
 }
