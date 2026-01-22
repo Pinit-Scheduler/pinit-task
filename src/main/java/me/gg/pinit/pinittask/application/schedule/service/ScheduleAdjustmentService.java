@@ -5,6 +5,7 @@ import me.gg.pinit.pinittask.application.schedule.dto.ScheduleDependencyAdjustCo
 import me.gg.pinit.pinittask.application.task.service.TaskService;
 import me.gg.pinit.pinittask.domain.dependency.model.Dependency;
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
+import me.gg.pinit.pinittask.domain.task.model.Task;
 import me.gg.pinit.pinittask.domain.task.patch.TaskPatch;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +34,22 @@ public class ScheduleAdjustmentService {
             throw new IllegalArgumentException("작업이 없는 일정에는 의존 관계를 설정할 수 없습니다.");
         }
         return scheduleService.addSchedule(command.buildSchedule(null));
+    }
+
+    /**
+     * V0 레거시: 일정 생성 시 Task를 함께 생성/연결하고 의존관계도 저장.
+     */
+    @Transactional
+    public Schedule createScheduleLegacy(Long memberId, ScheduleDependencyAdjustCommand command) {
+        List<Dependency> addedDependencies = command.getAddDependencies();
+        dependencyService.checkCycle(memberId, List.of(), addedDependencies);
+
+        Task task = command.hasTaskId()
+                ? taskService.getTask(memberId, command.getTaskId())
+                : taskService.createTask(command.buildTask());
+        Schedule saved = scheduleService.addSchedule(command.buildSchedule(task.getId()));
+        dependencyService.saveAll(addedDependencies);
+        return saved;
     }
 
     @Transactional

@@ -6,6 +6,7 @@ import me.gg.pinit.pinittask.application.schedule.dto.ScheduleDependencyAdjustCo
 import me.gg.pinit.pinittask.application.task.service.TaskService;
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
 import me.gg.pinit.pinittask.domain.schedule.patch.SchedulePatch;
+import me.gg.pinit.pinittask.domain.task.model.Task;
 import me.gg.pinit.pinittask.domain.task.model.TaskType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -68,6 +69,38 @@ class ScheduleAdjustmentServiceTest {
         verifyNoInteractions(taskService);
         verifyNoInteractions(dependencyService);
         verify(scheduleService, never()).updateSchedule(anyLong(), anyLong(), any(SchedulePatch.class));
+    }
+
+    @Test
+    @DisplayName("createScheduleLegacy: Task와 의존관계 함께 생성 (V0)")
+    void createScheduleLegacy_withTaskAndDependencies() {
+        Long memberId = 4L;
+        ZonedDateTime now = ZonedDateTime.now();
+        ScheduleDependencyAdjustCommand command = new ScheduleDependencyAdjustCommand(
+                null,
+                memberId,
+                null,
+                "TITLE",
+                "DESC",
+                now.plusHours(2),
+                3,
+                5,
+                TaskType.DEEP_WORK,
+                now,
+                Collections.emptyList(),
+                List.of(new DependencyDto(null, 10L, 11L))
+        );
+        Task newTask = mock(Task.class);
+        when(newTask.getId()).thenReturn(999L);
+        when(taskService.createTask(any(Task.class))).thenReturn(newTask);
+        when(scheduleService.addSchedule(any(Schedule.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        scheduleAdjustmentService.createScheduleLegacy(memberId, command);
+
+        verify(dependencyService).checkCycle(eq(memberId), anyList(), anyList());
+        verify(taskService).createTask(any(Task.class));
+        verify(scheduleService).addSchedule(any(Schedule.class));
+        verify(dependencyService).saveAll(anyList());
     }
 
     @Test
