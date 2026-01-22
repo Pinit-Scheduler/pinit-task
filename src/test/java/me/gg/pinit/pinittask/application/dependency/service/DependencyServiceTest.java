@@ -55,8 +55,7 @@ class DependencyServiceTest {
         when(dependencyRepository.findAllByOwnerId(memberId)).thenReturn(existing);
         List<Dependency> removed = Collections.emptyList();
         List<Dependency> added = List.of(new Dependency(memberId, 3L, 1L));
-        boolean hasCycle = dependencyService.checkCycle(memberId, removed, added);
-        assertTrue(hasCycle);
+        assertThrows(IllegalStateException.class, () -> dependencyService.assertNoCycle(memberId, removed, added));
     }
 
     @Test
@@ -70,8 +69,7 @@ class DependencyServiceTest {
         when(dependencyRepository.findAllByOwnerId(memberId)).thenReturn(existing);
         List<Dependency> removed = Collections.emptyList();
         List<Dependency> added = List.of(new Dependency(memberId, 4L, 1L));
-        boolean hasCycle = dependencyService.checkCycle(memberId, removed, added);
-        assertFalse(hasCycle);
+        assertDoesNotThrow(() -> dependencyService.assertNoCycle(memberId, removed, added));
     }
 
     @Test
@@ -87,8 +85,7 @@ class DependencyServiceTest {
         when(dependencyRepository.findAllByOwnerId(memberId)).thenReturn(existing);
         List<Dependency> removed = List.of(cycleEdge);
         List<Dependency> added = Collections.emptyList();
-        boolean hasCycle = dependencyService.checkCycle(memberId, removed, added);
-        assertFalse(hasCycle);
+        assertDoesNotThrow(() -> dependencyService.assertNoCycle(memberId, removed, added));
     }
 
     @Test
