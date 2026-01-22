@@ -34,6 +34,7 @@
     - isCompleted
     - ImportanceConstraint
     - TemporalConstraint
+  - inboundTaskCount
     - createdAt
     - updatedAt
 
