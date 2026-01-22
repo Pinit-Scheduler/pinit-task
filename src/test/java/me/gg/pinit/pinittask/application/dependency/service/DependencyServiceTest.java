@@ -4,7 +4,6 @@ import me.gg.pinit.pinittask.domain.dependency.model.Dependency;
 import me.gg.pinit.pinittask.domain.dependency.repository.DependencyRepository;
 import me.gg.pinit.pinittask.domain.dependency.repository.FromToPair;
 import me.gg.pinit.pinittask.domain.task.model.Task;
-import me.gg.pinit.pinittask.domain.task.model.TaskType;
 import me.gg.pinit.pinittask.domain.task.model.TaskUtils;
 import me.gg.pinit.pinittask.domain.task.repository.TaskRepository;
 import me.gg.pinit.pinittask.domain.task.vo.ImportanceConstraint;
@@ -211,7 +210,7 @@ class DependencyServiceTest {
     }
 
     private Task buildTaskWithId(Long id) {
-        Task task = new Task(1L, "title", "desc", new TemporalConstraint(TaskUtils.DEADLINE_TIME, Duration.ZERO, TaskType.DEEP_WORK), new ImportanceConstraint(5, 5));
+        Task task = new Task(1L, "title", "desc", new TemporalConstraint(TaskUtils.DEADLINE_TIME, Duration.ZERO), new ImportanceConstraint(5, 5));
         ReflectionTestUtils.setField(task, "id", id);
         return task;
     }
