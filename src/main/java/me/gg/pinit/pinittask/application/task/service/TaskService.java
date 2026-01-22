@@ -62,7 +62,10 @@ public class TaskService {
         );
         boolean hasNext = tasks.size() == size;
         String nextCursor = hasNext ? encodeCursor(tasks.getLast()) : null;
-        List<TaskResponse> data = tasks.stream().map(TaskResponse::from).toList();
+        var dependencyInfoMap = dependencyService.getDependencyInfoForTasks(ownerId, tasks.stream().map(Task::getId).toList());
+        List<TaskResponse> data = tasks.stream()
+                .map(task -> TaskResponse.from(task, dependencyInfoMap.get(task.getId())))
+                .toList();
         return TaskCursorPageResponse.of(data, nextCursor, hasNext);
     }
 
