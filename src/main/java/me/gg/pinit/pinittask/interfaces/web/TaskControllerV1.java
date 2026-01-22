@@ -21,11 +21,13 @@ import me.gg.pinit.pinittask.interfaces.dto.TaskResponse;
 import me.gg.pinit.pinittask.interfaces.dto.TaskScheduleRequest;
 import me.gg.pinit.pinittask.interfaces.exception.ErrorResponse;
 import me.gg.pinit.pinittask.interfaces.utils.MemberId;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/v1/tasks")
@@ -61,11 +63,14 @@ public class TaskControllerV1 {
     }
 
     @GetMapping
-    @Operation(summary = "작업 목록 조회", description = "회원의 작업 목록을 조회합니다.")
-    public List<TaskResponse> getTasks(@Parameter(hidden = true) @MemberId Long memberId) {
-        return taskService.getTasks(memberId).stream()
-                .map(TaskResponse::from)
-                .toList();
+    @Operation(summary = "작업 목록 조회", description = "회원의 작업 목록을 조회합니다. page/size로 데드라인 순 페이지네이션, readyOnly로 선행 작업 없는 항목만 필터링합니다.")
+    public Page<TaskResponse> getTasks(@Parameter(hidden = true) @MemberId Long memberId,
+                                       @RequestParam(defaultValue = "0") int page,
+                                       @RequestParam(defaultValue = "20") int size,
+                                       @RequestParam(defaultValue = "false") boolean readyOnly) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Order.asc("temporalConstraint.deadline.dateTime")));
+        return taskService.getTasks(memberId, pageable, readyOnly)
+                .map(TaskResponse::from);
     }
 
     @GetMapping("/{taskId}")
