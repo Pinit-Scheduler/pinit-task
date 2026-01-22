@@ -7,6 +7,7 @@ import java.time.Clock;
 import java.time.ZonedDateTime;
 
 public class ScheduleUtils {
+    private static final ScheduleType DEFAULT_TYPE = ScheduleType.DEEP_WORK;
     public static ZonedDateTime ENROLLED_TIME = ZonedDateTime.of(2025, 10, 1, 10, 0, 0, 0, Clock.systemDefaultZone().getZone());
     public static ZonedDateTime START_TIME = ZonedDateTime.of(2025, 10, 1, 11, 0, 0, 0, Clock.systemDefaultZone().getZone());
     public static ZonedDateTime SUSPEND_TIME = ZonedDateTime.of(2025, 10, 1, 12, 0, 0, 0, Clock.systemDefaultZone().getZone());
@@ -22,7 +23,7 @@ public class ScheduleUtils {
 
 
     public static Schedule getNotStartedSchedule() {
-        Schedule schedule = new Schedule(1L, 1L, "Sample Schedule", "sample description", ENROLLED_TIME);
+        Schedule schedule = new Schedule(1L, 1L, "Sample Schedule", "sample description", ENROLLED_TIME, DEFAULT_TYPE);
         DomainEvents.getEventsAndClear();
         return schedule;
     }
@@ -35,7 +36,7 @@ public class ScheduleUtils {
             String description,
             ZonedDateTime enrolledTime
     ) {
-        Schedule schedule = new Schedule(ownerId, taskId, title, description, enrolledTime);
+        Schedule schedule = new Schedule(ownerId, taskId, title, description, enrolledTime, DEFAULT_TYPE);
         setScheduleId(schedule, id);
         return schedule;
     }
@@ -54,7 +55,7 @@ public class ScheduleUtils {
             String description,
             ZonedDateTime enrolledTime
     ) {
-        Schedule schedule = new Schedule(ownerId, taskId, title, description, enrolledTime);
+        Schedule schedule = new Schedule(ownerId, taskId, title, description, enrolledTime, DEFAULT_TYPE);
         setScheduleId(schedule, id);
         schedule.start(START_TIME);
         return schedule;
@@ -62,7 +63,7 @@ public class ScheduleUtils {
 
 
     public static Schedule getInProgressSchedule() {
-        Schedule schedule = new Schedule(1L, 1L, "Sample Schedule", "sample description", ENROLLED_TIME);
+        Schedule schedule = new Schedule(1L, 1L, "Sample Schedule", "sample description", ENROLLED_TIME, DEFAULT_TYPE);
         schedule.start(START_TIME);
         DomainEvents.getEventsAndClear();
         return schedule;
@@ -82,7 +83,7 @@ public class ScheduleUtils {
             String description,
             ZonedDateTime enrolledTime
     ) {
-        Schedule schedule = new Schedule(ownerId, taskId, title, description, enrolledTime);
+        Schedule schedule = new Schedule(ownerId, taskId, title, description, enrolledTime, DEFAULT_TYPE);
         setScheduleId(schedule, id);
         schedule.start(START_TIME);
         schedule.suspend(SUSPEND_TIME);
@@ -98,7 +99,7 @@ public class ScheduleUtils {
     }
 
     public static Schedule getSuspendedSchedule() {
-        Schedule schedule = new Schedule(1L, 1L, "Sample Schedule", "sample description", ENROLLED_TIME);
+        Schedule schedule = new Schedule(1L, 1L, "Sample Schedule", "sample description", ENROLLED_TIME, DEFAULT_TYPE);
         schedule.start(START_TIME);
         schedule.suspend(SUSPEND_TIME);
         DomainEvents.getEventsAndClear();
@@ -113,7 +114,7 @@ public class ScheduleUtils {
             String description,
             ZonedDateTime enrolledTime
     ) {
-        Schedule schedule = new Schedule(ownerId, taskId, title, description, enrolledTime);
+        Schedule schedule = new Schedule(ownerId, taskId, title, description, enrolledTime, DEFAULT_TYPE);
         setScheduleId(schedule, id);
         schedule.start(START_TIME);
         schedule.finish(FINISH_TIME);
@@ -122,7 +123,7 @@ public class ScheduleUtils {
     }
 
     public static Schedule getCompletedSchedule() {
-        Schedule schedule = new Schedule(1L, 1L, "Sample Schedule", "sample description", ENROLLED_TIME);
+        Schedule schedule = new Schedule(1L, 1L, "Sample Schedule", "sample description", ENROLLED_TIME, DEFAULT_TYPE);
         schedule.start(START_TIME);
         schedule.finish(FINISH_TIME);
         DomainEvents.getEventsAndClear();
