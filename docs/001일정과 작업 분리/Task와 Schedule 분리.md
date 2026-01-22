@@ -43,6 +43,7 @@
     - title
     - description
     - designatedStartTime
+  - scheduleType (기존 TaskType)
     - state (예: 예정, 진행 중, 일시 정지, 완료)
     - ScheduleHistory
     - createdAt
