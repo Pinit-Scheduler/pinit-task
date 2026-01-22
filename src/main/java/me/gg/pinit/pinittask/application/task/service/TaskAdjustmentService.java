@@ -18,21 +18,24 @@ public class TaskAdjustmentService {
 
     @Transactional
     public Task createTask(Long memberId, TaskDependencyAdjustCommand command) {
-        List<Dependency> addedDependencies = command.getAddDependencies();
-        dependencyService.checkCycle(memberId, List.of(), addedDependencies);
-
         Task saved = taskService.createTask(command.buildTask());
+        List<Dependency> addedDependencies = command.getAddDependencies(saved.getId());
+        dependencyService.assertNoCycle(memberId, List.of(), addedDependencies);
         dependencyService.saveAll(addedDependencies);
         return saved;
     }
 
     @Transactional
     public Task updateTask(Long memberId, TaskDependencyAdjustCommand command) {
-        List<Dependency> removedDependencies = command.getRemoveDependencies();
-        List<Dependency> addedDependencies = command.getAddDependencies();
-        dependencyService.checkCycle(memberId, removedDependencies, addedDependencies);
+        Long taskId = command.getTaskId();
+        if (taskId == null) {
+            throw new IllegalArgumentException("taskId는 null일 수 없습니다.");
+        }
+        List<Dependency> removedDependencies = command.getRemoveDependencies(taskId);
+        List<Dependency> addedDependencies = command.getAddDependencies(taskId);
+        dependencyService.assertNoCycle(memberId, removedDependencies, addedDependencies);
 
-        Task updated = taskService.updateTask(memberId, command.getTaskId(), command.getTaskPatch());
+        Task updated = taskService.updateTask(memberId, taskId, command.getTaskPatch());
         dependencyService.deleteAll(removedDependencies);
         dependencyService.saveAll(addedDependencies);
         return updated;

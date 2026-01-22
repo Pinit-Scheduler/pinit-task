@@ -74,9 +74,9 @@ class TaskAdjustmentServiceTest {
         ArgumentCaptor<Task> createdTaskCaptor = ArgumentCaptor.forClass(Task.class);
         ArgumentCaptor<List<Dependency>> savedDependenciesCaptor = dependencyListCaptor();
 
-        InOrder inOrder = inOrder(dependencyService, taskService);
-        inOrder.verify(dependencyService).checkCycle(eq(memberId), eq(List.of()), addedDependenciesCaptor.capture());
+        InOrder inOrder = inOrder(taskService, dependencyService);
         inOrder.verify(taskService).createTask(createdTaskCaptor.capture());
+        inOrder.verify(dependencyService).assertNoCycle(eq(memberId), eq(List.of()), addedDependenciesCaptor.capture());
         inOrder.verify(dependencyService).saveAll(savedDependenciesCaptor.capture());
 
         Task createdTask = createdTaskCaptor.getValue();
@@ -139,7 +139,7 @@ class TaskAdjustmentServiceTest {
         ArgumentCaptor<List<Dependency>> savedDependenciesCaptor = dependencyListCaptor();
 
         InOrder inOrder = inOrder(dependencyService, taskService);
-        inOrder.verify(dependencyService).checkCycle(eq(memberId), removedDependenciesCaptor.capture(), addedDependenciesCaptor.capture());
+        inOrder.verify(dependencyService).assertNoCycle(eq(memberId), removedDependenciesCaptor.capture(), addedDependenciesCaptor.capture());
         inOrder.verify(taskService).updateTask(eq(memberId), eq(taskId), patchCaptor.capture());
         inOrder.verify(dependencyService).deleteAll(deletedDependenciesCaptor.capture());
         inOrder.verify(dependencyService).saveAll(savedDependenciesCaptor.capture());
