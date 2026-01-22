@@ -53,7 +53,7 @@ public class ScheduleDependencyAdjustCommand {
     }
 
     public Long getScheduleId() {
-        return Objects.requireNonNullElse(scheduleId, 0L);
+        return Objects.requireNonNull(scheduleId);
     }
 
     public Long getTaskId() {

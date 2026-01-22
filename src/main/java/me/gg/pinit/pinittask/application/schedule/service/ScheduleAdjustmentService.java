@@ -42,7 +42,7 @@ public class ScheduleAdjustmentService {
     @Transactional
     public Schedule createScheduleLegacy(Long memberId, ScheduleDependencyAdjustCommand command) {
         List<Dependency> addedDependencies = command.getAddDependencies();
-        dependencyService.checkCycle(memberId, List.of(), addedDependencies);
+        dependencyService.assertNoCycle(memberId, List.of(), addedDependencies);
 
         Task task = command.hasTaskId()
                 ? taskService.getTask(memberId, command.getTaskId())
@@ -60,7 +60,7 @@ public class ScheduleAdjustmentService {
         }
         List<Dependency> removedDependencies = command.getRemoveDependencies();
         List<Dependency> addedDependencies = command.getAddDependencies();
-        dependencyService.checkCycle(memberId, removedDependencies, addedDependencies);
+        dependencyService.assertNoCycle(memberId, removedDependencies, addedDependencies);
 
         TaskPatch taskPatch = command.getTaskPatch();
         if (current.getTaskId() != null) {

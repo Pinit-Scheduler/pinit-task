@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import me.gg.pinit.pinittask.application.member.service.MemberService;
 import me.gg.pinit.pinittask.interfaces.utils.MemberId;
 import org.springframework.http.ResponseEntity;
@@ -14,16 +15,18 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Deprecated
 @RestController
-@RequestMapping("/v0")
-@Tag(name = "Member", description = "회원 관련 정보 API")
-public class MemberControllerV0 {
-    private final MemberService memberService;
+@RequestMapping("/v1/members")
+@Tag(name = "MemberV1", description = "회원 관련 정보 API (v1)")
+@ApiResponses({
+        @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content(schema = @Schema(implementation = String.class))),
+        @ApiResponse(responseCode = "404", description = "대상을 찾을 수 없습니다.", content = @Content(schema = @Schema(implementation = String.class))),
+        @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content(schema = @Schema(implementation = String.class)))
+})
+@RequiredArgsConstructor
+public class MemberControllerV1 {
 
-    public MemberControllerV0(MemberService memberService) {
-        this.memberService = memberService;
-    }
+    private final MemberService memberService;
 
     @GetMapping("/now")
     @Operation(summary = "현재 진행 중인 일정 ID 조회", description = "사용자의 현재 진행 중인 일정 ID를 조회합니다.")

@@ -3,6 +3,7 @@ package me.gg.pinit.pinittask.interfaces.web;
 import me.gg.pinit.pinittask.application.datetime.DateTimeUtils;
 import me.gg.pinit.pinittask.application.schedule.service.ScheduleService;
 import me.gg.pinit.pinittask.application.schedule.service.ScheduleStateChangeService;
+import me.gg.pinit.pinittask.application.task.service.TaskService;
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
 import me.gg.pinit.pinittask.domain.schedule.model.ScheduleType;
 import me.gg.pinit.pinittask.interfaces.dto.DateTimeWithZone;
@@ -34,6 +35,8 @@ class ScheduleControllerV1Test {
     ScheduleService scheduleService;
     @Mock
     ScheduleStateChangeService scheduleStateChangeService;
+    @Mock
+    TaskService taskService;
     DateTimeUtils dateTimeUtils = new DateTimeUtils();
 
     @InjectMocks
@@ -44,7 +47,7 @@ class ScheduleControllerV1Test {
     @BeforeEach
     void setUp() {
         memberId = 1L;
-        controller = new ScheduleControllerV1(dateTimeUtils, scheduleService, scheduleStateChangeService);
+        controller = new ScheduleControllerV1(dateTimeUtils, scheduleService, scheduleStateChangeService, taskService);
     }
 
     @Test

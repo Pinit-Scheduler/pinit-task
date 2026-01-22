@@ -1,6 +1,7 @@
 package me.gg.pinit.pinittask.interfaces.web;
 
 import me.gg.pinit.pinittask.application.datetime.DateTimeUtils;
+import me.gg.pinit.pinittask.application.dependency.service.DependencyService;
 import me.gg.pinit.pinittask.application.schedule.service.ScheduleService;
 import me.gg.pinit.pinittask.application.task.service.TaskAdjustmentService;
 import me.gg.pinit.pinittask.application.task.service.TaskService;
@@ -45,6 +46,8 @@ class TaskControllerV1Test {
     TaskService taskService;
     @Mock
     ScheduleService scheduleService;
+    @Mock
+    DependencyService dependencyService;
 
     @InjectMocks
     TaskControllerV1 controller;

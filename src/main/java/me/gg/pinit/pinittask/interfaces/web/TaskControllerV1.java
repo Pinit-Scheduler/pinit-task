@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import me.gg.pinit.pinittask.application.datetime.DateTimeUtils;
+import me.gg.pinit.pinittask.application.dependency.service.DependencyService;
 import me.gg.pinit.pinittask.application.schedule.service.ScheduleService;
 import me.gg.pinit.pinittask.application.task.service.TaskAdjustmentService;
 import me.gg.pinit.pinittask.application.task.service.TaskService;
@@ -38,6 +39,7 @@ import org.springframework.web.bind.annotation.*;
 })
 public class TaskControllerV1 {
     private final DateTimeUtils dateTimeUtils;
+    private final DependencyService dependencyService;
     private final TaskAdjustmentService taskAdjustmentService;
     private final TaskService taskService;
     private final ScheduleService scheduleService;
@@ -66,8 +68,9 @@ public class TaskControllerV1 {
                                        @RequestParam(defaultValue = "20") int size,
                                        @RequestParam(defaultValue = "false") boolean readyOnly) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Order.asc("temporalConstraint.deadline.dateTime")));
-        return taskService.getTasks(memberId, pageable, readyOnly)
-                .map(TaskResponse::from);
+        Page<Task> tasks = taskService.getTasks(memberId, pageable, readyOnly);
+        var dependencyMap = dependencyService.getDependencyInfoForTasks(memberId, tasks.getContent().stream().map(Task::getId).toList());
+        return tasks.map(task -> TaskResponse.from(task, dependencyMap.get(task.getId())));
     }
 
     @GetMapping("/cursor")
@@ -83,7 +86,8 @@ public class TaskControllerV1 {
     @Operation(summary = "작업 단건 조회", description = "특정 작업의 상세 정보를 조회합니다.")
     public TaskResponse getTask(@Parameter(hidden = true) @MemberId Long memberId, @PathVariable Long taskId) {
         Task task = taskService.getTask(memberId, taskId);
-        return TaskResponse.from(task);
+        var dependencyInfo = dependencyService.getDependencyInfo(memberId, taskId);
+        return TaskResponse.from(task, dependencyInfo);
     }
 
     @PostMapping("/{taskId}/complete")
