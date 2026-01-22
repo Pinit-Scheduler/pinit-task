@@ -23,11 +23,17 @@ public class DependencyService {
         this.taskRepository = taskRepository;
     }
 
+    /**
+     * 그래프에 변경사항을 반영했을 때 사이클이 발생하는지 검사한다.
+     * 사이클이 존재하면 IllegalStateException을 던져 요청을 막는다.
+     */
     @Transactional(readOnly = true)
-    public boolean checkCycle(Long memberId, List<Dependency> removedDependencies, List<Dependency> addedDependencies) {
+    public void assertNoCycle(Long memberId, List<Dependency> removedDependencies, List<Dependency> addedDependencies) {
         List<Dependency> allByOwnerId = dependencyRepository.findAllByOwnerId(memberId);
         Graph graph = Graph.of(allByOwnerId);
-        return graph.hasCycle(removedDependencies, addedDependencies);
+        if (graph.hasCycle(removedDependencies, addedDependencies)) {
+            throw new IllegalStateException("의존 관계에 사이클이 존재합니다.");
+        }
     }
 
 
@@ -65,6 +71,33 @@ public class DependencyService {
         List<Dependency> outgoing = dependencyRepository.findAllByFromId(taskId);
         updateInboundCount(outgoing, -1);
         dependencyRepository.deleteAllRelatedToTask(taskId);
+    }
+
+    @Transactional(readOnly = true)
+    public TaskDependencyInfo getDependencyInfo(Long memberId, Long taskId) {
+        List<Dependency> allByOwnerId = dependencyRepository.findAllByOwnerId(memberId);
+        Graph graph = Graph.of(allByOwnerId);
+        return new TaskDependencyInfo(
+                graph.getPreviousTaskIds(taskId),
+                graph.getNextTaskIds(taskId)
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Long, TaskDependencyInfo> getDependencyInfoForTasks(Long memberId, List<Long> taskIds) {
+        List<Dependency> allByOwnerId = dependencyRepository.findAllByOwnerId(memberId);
+        Graph graph = Graph.of(allByOwnerId);
+        return taskIds.stream()
+                .collect(Collectors.toMap(
+                        id -> id,
+                        id -> new TaskDependencyInfo(
+                                graph.getPreviousTaskIds(id),
+                                graph.getNextTaskIds(id)
+                        )
+                ));
+    }
+
+    public record TaskDependencyInfo(List<Long> previousTaskIds, List<Long> nextTaskIds) {
     }
 
     /**
