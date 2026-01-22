@@ -10,6 +10,7 @@ import me.gg.pinit.pinittask.domain.task.model.TaskType;
 import me.gg.pinit.pinittask.domain.task.vo.ImportanceConstraint;
 import me.gg.pinit.pinittask.domain.task.vo.TemporalConstraint;
 import me.gg.pinit.pinittask.interfaces.dto.DateTimeWithZone;
+import me.gg.pinit.pinittask.interfaces.dto.TaskCursorPageResponse;
 import me.gg.pinit.pinittask.interfaces.dto.TaskScheduleRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -89,6 +91,17 @@ class TaskControllerV1Test {
         Schedule schedule = scheduleCaptor.getValue();
         assertThat(schedule.getTaskId()).isEqualTo(taskId);
         assertThat(schedule.getDesignatedStartTime()).isEqualTo(targetTime);
+    }
+
+    @Test
+    void getTasksByCursor_delegatesToServiceAndReturnsBody() {
+        TaskCursorPageResponse expected = TaskCursorPageResponse.of(List.of(), "next", true);
+        when(taskService.getTasksByCursor(memberId, 15, "c1", true)).thenReturn(expected);
+
+        TaskCursorPageResponse resp = controller.getTasksByCursor(memberId, 15, "c1", true);
+
+        assertThat(resp).isSameAs(expected);
+        verify(taskService).getTasksByCursor(memberId, 15, "c1", true);
     }
 
     private Task buildTask(Long ownerId) {
