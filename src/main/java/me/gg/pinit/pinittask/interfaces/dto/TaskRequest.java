@@ -9,7 +9,6 @@ import jakarta.validation.constraints.NotNull;
 import me.gg.pinit.pinittask.application.datetime.DateTimeUtils;
 import me.gg.pinit.pinittask.application.schedule.dto.DependencyDto;
 import me.gg.pinit.pinittask.application.task.dto.TaskDependencyAdjustCommand;
-import me.gg.pinit.pinittask.domain.task.model.TaskType;
 import me.gg.pinit.pinittask.interfaces.utils.FibonacciDifficulty;
 
 import java.util.ArrayList;
@@ -36,9 +35,6 @@ public record TaskRequest(
         @FibonacciDifficulty
         @Schema(description = "난이도 (피보나치 수: 1,2,3,5,8,13,21)", example = "5")
         Integer difficulty,
-        @NotNull
-        @Schema(description = "작업 유형", example = "TASK")
-        TaskType taskType,
         @Schema(description = "제거할 의존 관계 목록")
         List<@Valid DependencyRequest> removeDependencies,
         @Schema(description = "추가할 의존 관계 목록")
@@ -55,7 +51,6 @@ public record TaskRequest(
                 dateTimeUtils.toZonedDateTime(dueDate.dateTime(), dueDate.zoneId()),
                 importance,
                 difficulty,
-                taskType,
                 remove,
                 add
         );

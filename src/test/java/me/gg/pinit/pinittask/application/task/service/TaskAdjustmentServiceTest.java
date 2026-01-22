@@ -5,7 +5,6 @@ import me.gg.pinit.pinittask.application.schedule.dto.DependencyDto;
 import me.gg.pinit.pinittask.application.task.dto.TaskDependencyAdjustCommand;
 import me.gg.pinit.pinittask.domain.dependency.model.Dependency;
 import me.gg.pinit.pinittask.domain.task.model.Task;
-import me.gg.pinit.pinittask.domain.task.model.TaskType;
 import me.gg.pinit.pinittask.domain.task.patch.TaskPatch;
 import me.gg.pinit.pinittask.domain.task.vo.ImportanceConstraint;
 import me.gg.pinit.pinittask.domain.task.vo.TemporalConstraint;
@@ -52,7 +51,6 @@ class TaskAdjustmentServiceTest {
                 dueDate,
                 5,
                 5,
-                TaskType.DEEP_WORK,
                 List.of(),
                 List.of(
                         new DependencyDto(null, 1L, 2L),
@@ -63,7 +61,7 @@ class TaskAdjustmentServiceTest {
                 memberId,
                 "new task",
                 "new description",
-                new TemporalConstraint(dueDate, Duration.ZERO, TaskType.DEEP_WORK),
+                new TemporalConstraint(dueDate, Duration.ZERO),
                 new ImportanceConstraint(5, 5)
         );
         when(taskService.createTask(any(Task.class))).thenReturn(savedTask);
@@ -86,7 +84,6 @@ class TaskAdjustmentServiceTest {
         assertThat(createdTask.getTitle()).isEqualTo("new task");
         assertThat(createdTask.getDescription()).isEqualTo("new description");
         assertThat(createdTask.getDueDate()).isEqualTo(dueDate);
-        assertThat(createdTask.getTemporalConstraint().getTaskType()).isEqualTo(TaskType.DEEP_WORK);
         assertThat(createdTask.getImportanceConstraint().getImportance()).isEqualTo(5);
         assertThat(createdTask.getImportanceConstraint().getDifficulty()).isEqualTo(5);
 
@@ -114,7 +111,6 @@ class TaskAdjustmentServiceTest {
                 dueDate,
                 7,
                 8,
-                TaskType.ADMIN_TASK,
                 List.of(
                         new DependencyDto(1L, 5L, 6L)
                 ),
@@ -127,7 +123,7 @@ class TaskAdjustmentServiceTest {
                 memberId,
                 "updated title",
                 "updated description",
-                new TemporalConstraint(dueDate, Duration.ZERO, TaskType.ADMIN_TASK),
+                new TemporalConstraint(dueDate, Duration.ZERO),
                 new ImportanceConstraint(7, 8)
         );
         when(taskService.updateTask(anyLong(), anyLong(), any(TaskPatch.class))).thenReturn(updatedTask);
@@ -154,7 +150,6 @@ class TaskAdjustmentServiceTest {
         assertThat(patch.dueDate()).contains(dueDate);
         assertThat(patch.importance()).contains(7);
         assertThat(patch.difficulty()).contains(8);
-        assertThat(patch.taskType()).contains(TaskType.ADMIN_TASK);
 
         List<Dependency> removedDependencies = removedDependenciesCaptor.getValue();
         assertThat(removedDependencies)
