@@ -15,4 +15,8 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long>, Sched
     Optional<Schedule> findByIdForUpdate(Long scheduleId);
 
     List<Schedule> findAllByTaskId(Long taskId);
+
+    Optional<Schedule> findByTaskId(Long taskId);
+
+    boolean existsByTaskId(Long taskId);
 }
