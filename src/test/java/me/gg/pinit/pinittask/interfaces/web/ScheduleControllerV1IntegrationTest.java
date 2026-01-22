@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -131,5 +132,29 @@ class ScheduleControllerV1IntegrationTest {
                         .header("X-Member-Id", MEMBER_ID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.state").value("COMPLETED"));
+    }
+
+    @Test
+    void createSchedule_validationErrors_returnDetailedErrors() throws Exception {
+        String payload = """
+                {
+                  "title": " ",
+                  "description": "",
+                  "date": null,
+                  "scheduleType": null
+                }
+                """;
+
+        mockMvc.perform(post("/v1/schedules")
+                        .header("X-Member-Id", MEMBER_ID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Validation failed for 4 field(s)"))
+                .andExpect(jsonPath("$.errors", hasSize(4)))
+                .andExpect(jsonPath("$.errors[?(@.field=='title')].reason", hasItem(containsString("must not be blank"))))
+                .andExpect(jsonPath("$.errors[?(@.field=='description')].reason", hasItem(containsString("must not be blank"))))
+                .andExpect(jsonPath("$.errors[?(@.field=='date')].reason", hasItem(containsString("must not be null"))))
+                .andExpect(jsonPath("$.errors[?(@.field=='scheduleType')].reason", hasItem(containsString("must not be null"))));
     }
 }
