@@ -23,6 +23,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.when;
@@ -166,6 +167,26 @@ class TaskAdjustmentServiceTest {
 
         assertThat(deletedDependenciesCaptor.getValue()).isSameAs(removedDependencies);
         assertThat(savedDependenciesCaptor.getValue()).isSameAs(addedDependencies);
+    }
+
+    @Test
+    @DisplayName("updateTask에서 0 플레이스홀더 사용 시 예외")
+    void updateTask_rejectsPlaceholderZero() {
+        Long memberId = 1L;
+        Long taskId = 10L;
+        TaskDependencyAdjustCommand command = new TaskDependencyAdjustCommand(
+                taskId,
+                memberId,
+                "title",
+                "desc",
+                ZonedDateTime.now(),
+                5,
+                5,
+                List.of(),
+                List.of(new DependencyDto(null, 0L, 2L))
+        );
+
+        assertThrows(IllegalArgumentException.class, () -> taskAdjustmentService.updateTask(memberId, command));
     }
 
     @SuppressWarnings("unchecked")
