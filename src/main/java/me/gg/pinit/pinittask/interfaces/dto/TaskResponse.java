@@ -26,6 +26,8 @@ public record TaskResponse(
         String taskType,
         @Schema(description = "완료 여부")
         boolean completed,
+        @Schema(description = "들어오는 의존 관계 수")
+        int inboundDependencyCount,
         @Schema(description = "생성 시각")
         Instant createdAt,
         @Schema(description = "수정 시각")
@@ -44,6 +46,7 @@ public record TaskResponse(
                 importanceConstraint.getDifficulty(),
                 temporal.getTaskType().name(),
                 task.isCompleted(),
+                task.getInboundDependencyCount(),
                 task.getCreatedAt(),
                 task.getUpdatedAt()
         );
