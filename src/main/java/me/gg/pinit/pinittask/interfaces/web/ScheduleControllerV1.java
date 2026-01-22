@@ -2,6 +2,7 @@ package me.gg.pinit.pinittask.interfaces.web;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -50,6 +51,10 @@ public class ScheduleControllerV1 {
 
     @PostMapping
     @Operation(summary = "일정 생성 (작업 없이)", description = "작업과 연결하지 않는 단순 일정을 등록합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "일정이 생성되었습니다.", content = @Content(schema = @Schema(implementation = ScheduleSimpleResponse.class))),
+            @ApiResponse(responseCode = "400", description = "요청 값 검증에 실패했습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     public ResponseEntity<ScheduleSimpleResponse> createSchedule(@Parameter(hidden = true) @MemberId Long memberId,
                                                                  @Valid @RequestBody ScheduleSimpleRequest request) {
         Schedule saved = scheduleService.addSchedule(request.toSchedule(memberId, dateTimeUtils));
@@ -58,6 +63,10 @@ public class ScheduleControllerV1 {
 
     @GetMapping
     @Operation(summary = "일정 목록 조회 (작업 없이)", description = "지정한 날짜의 일정을 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "일정 목록 조회 성공", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ScheduleSimpleResponse.class)))),
+            @ApiResponse(responseCode = "400", description = "날짜 형식이 올바르지 않습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     public List<ScheduleSimpleResponse> getSchedules(@Parameter(hidden = true) @MemberId Long memberId,
                                                      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime time,
                                                      @RequestParam ZoneId zoneId) {
@@ -75,6 +84,10 @@ public class ScheduleControllerV1 {
 
     @GetMapping("/week")
     @Operation(summary = "주간 일정 조회 (작업 없이)", description = "주어진 날짜가 포함된 주간의 일정을 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "주간 일정 조회 성공", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ScheduleSimpleResponse.class)))),
+            @ApiResponse(responseCode = "400", description = "날짜 형식이 올바르지 않습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     public List<ScheduleSimpleResponse> getWeeklySchedules(@Parameter(hidden = true) @MemberId Long memberId,
                                                            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime time,
                                                            @RequestParam ZoneId zoneId) {
@@ -92,6 +105,10 @@ public class ScheduleControllerV1 {
 
     @GetMapping("/{scheduleId}")
     @Operation(summary = "일정 단건 조회 (작업 없이)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "일정 단건 조회 성공", content = @Content(schema = @Schema(implementation = ScheduleSimpleResponse.class))),
+            @ApiResponse(responseCode = "404", description = "일정을 찾을 수 없습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     public ScheduleSimpleResponse getSchedule(@Parameter(hidden = true) @MemberId Long memberId, @PathVariable Long scheduleId) {
         Schedule schedule = scheduleService.getSchedule(memberId, scheduleId);
         Task task = null;
@@ -103,6 +120,12 @@ public class ScheduleControllerV1 {
 
     @PatchMapping("/{scheduleId}")
     @Operation(summary = "일정 수정 (작업 없이)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "일정이 수정되었습니다.", content = @Content(schema = @Schema(implementation = ScheduleSimpleResponse.class))),
+            @ApiResponse(responseCode = "400", description = "요청 값 검증에 실패했습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "일정을 찾을 수 없습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "409", description = "현재 상태와 충돌했습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     public ResponseEntity<ScheduleSimpleResponse> updateSchedule(@Parameter(hidden = true) @MemberId Long memberId,
                                                                  @PathVariable Long scheduleId,
                                                                  @RequestBody @Valid ScheduleSimplePatchRequest request) {
@@ -112,6 +135,11 @@ public class ScheduleControllerV1 {
 
     @PostMapping("/{scheduleId}/start")
     @Operation(summary = "일정 시작 (작업 없이)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "일정이 시작되었습니다."),
+            @ApiResponse(responseCode = "404", description = "일정을 찾을 수 없습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "409", description = "잘못된 상태 전환입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     public ResponseEntity<Void> startSchedule(@Parameter(hidden = true) @MemberId Long memberId, @PathVariable Long scheduleId,
                                               @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime time,
                                               @RequestParam ZoneId zoneId) {
@@ -121,6 +149,11 @@ public class ScheduleControllerV1 {
 
     @PostMapping("/{scheduleId}/complete")
     @Operation(summary = "일정 완료 (작업 없이)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "일정이 완료되었습니다."),
+            @ApiResponse(responseCode = "404", description = "일정을 찾을 수 없습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "409", description = "잘못된 상태 전환입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     public ResponseEntity<Void> completeSchedule(@Parameter(hidden = true) @MemberId Long memberId, @PathVariable Long scheduleId,
                                                  @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime time,
                                                  @RequestParam ZoneId zoneId) {
@@ -130,6 +163,11 @@ public class ScheduleControllerV1 {
 
     @PostMapping("/{scheduleId}/suspend")
     @Operation(summary = "일정 일시중지 (작업 없이)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "일정이 일시중지되었습니다."),
+            @ApiResponse(responseCode = "404", description = "일정을 찾을 수 없습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "409", description = "잘못된 상태 전환입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     public ResponseEntity<Void> suspendSchedule(@Parameter(hidden = true) @MemberId Long memberId, @PathVariable Long scheduleId,
                                                 @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime time,
                                                 @RequestParam ZoneId zoneId) {
@@ -139,6 +177,11 @@ public class ScheduleControllerV1 {
 
     @PostMapping("/{scheduleId}/cancel")
     @Operation(summary = "일정 취소 (작업 없이)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "일정이 취소되었습니다."),
+            @ApiResponse(responseCode = "404", description = "일정을 찾을 수 없습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "409", description = "잘못된 상태 전환입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     public ResponseEntity<Void> cancelSchedule(@Parameter(hidden = true) @MemberId Long memberId, @PathVariable Long scheduleId) {
         scheduleStateChangeService.cancelSchedule(memberId, scheduleId);
         return ResponseEntity.noContent().build();
@@ -146,6 +189,11 @@ public class ScheduleControllerV1 {
 
     @DeleteMapping("/{scheduleId}")
     @Operation(summary = "일정 삭제 (작업 없이)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "일정이 삭제되었습니다."),
+            @ApiResponse(responseCode = "404", description = "일정을 찾을 수 없습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "409", description = "잘못된 상태 전환입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     public ResponseEntity<Void> deleteSchedule(@Parameter(hidden = true) @MemberId Long memberId,
                                                @PathVariable Long scheduleId) {
         scheduleService.deleteSchedule(memberId, scheduleId);
