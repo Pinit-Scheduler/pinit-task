@@ -15,6 +15,7 @@ import me.gg.pinit.pinittask.domain.task.model.TaskType;
 import me.gg.pinit.pinittask.domain.task.repository.TaskRepository;
 import me.gg.pinit.pinittask.domain.task.vo.ImportanceConstraint;
 import me.gg.pinit.pinittask.domain.task.vo.TemporalConstraint;
+import me.gg.pinit.pinittask.interfaces.dto.TaskCursorPageResponse;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -197,6 +198,37 @@ class TaskServiceTest {
 
         verify(taskRepository).findAllByOwnerId(ownerId, pageable);
         verify(taskRepository, never()).findAllByOwnerIdAndInboundDependencyCountAndCompletedFalse(anyLong(), anyInt(), any());
+    }
+
+    @Test
+    void getTasksByCursor_returnsNextCursorWhenPageFull() {
+        Long ownerId = 50L;
+        Task t1 = buildTask(ownerId);
+        ReflectionTestUtils.setField(t1, "id", 1L);
+        Task t2 = buildTask(ownerId);
+        ReflectionTestUtils.setField(t2, "id", 2L);
+        when(taskRepository.findNextByCursor(eq(ownerId), eq(true), any(), any(), any()))
+                .thenReturn(List.of(t1, t2));
+
+        TaskCursorPageResponse resp = taskService.getTasksByCursor(ownerId, 2, null, true);
+
+        Assertions.assertThat(resp.hasNext()).isTrue();
+        Assertions.assertThat(resp.nextCursor()).contains("|2");
+        verify(taskRepository).findNextByCursor(eq(ownerId), eq(true), any(), any(), any());
+    }
+
+    @Test
+    void getTasksByCursor_noNextWhenSmallerThanSize() {
+        Long ownerId = 51L;
+        Task t1 = buildTask(ownerId);
+        ReflectionTestUtils.setField(t1, "id", 5L);
+        when(taskRepository.findNextByCursor(eq(ownerId), eq(false), any(), any(), any()))
+                .thenReturn(List.of(t1));
+
+        TaskCursorPageResponse resp = taskService.getTasksByCursor(ownerId, 2, null, false);
+
+        Assertions.assertThat(resp.hasNext()).isFalse();
+        Assertions.assertThat(resp.nextCursor()).isNull();
     }
 
     @Test
