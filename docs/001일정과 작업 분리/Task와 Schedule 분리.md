@@ -27,27 +27,27 @@
 ## Task와 Schedule 의 도메인 상태 분리
 
 - Task
-    - id
-    - title
-    - description
-    - dueDate
-    - isCompleted
-    - ImportanceConstraint
-    - TemporalConstraint
+  - id
+  - title
+  - description
+  - dueDate
+  - isCompleted
+  - ImportanceConstraint
+  - TemporalConstraint
   - inboundTaskCount
-    - createdAt
-    - updatedAt
+  - createdAt
+  - updatedAt
 
 - Schedule
-    - id
-    - title
-    - description
-    - designatedStartTime
+  - id
+  - title
+  - description
+  - designatedStartTime
   - scheduleType (기존 TaskType)
-    - state (예: 예정, 진행 중, 일시 정지, 완료)
-    - ScheduleHistory
-    - createdAt
-    - updatedAt
+  - state (예: 예정, 진행 중, 일시 정지, 완료)
+  - ScheduleHistory
+  - createdAt
+  - updatedAt
 
 > Dependency는 Task 기반으로 각 작업의 우선순위를 정하는 데 사용
 
