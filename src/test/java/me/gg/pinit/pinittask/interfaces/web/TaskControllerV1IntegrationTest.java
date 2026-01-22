@@ -4,10 +4,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.gg.pinit.pinittask.domain.member.model.Member;
 import me.gg.pinit.pinittask.domain.member.repository.MemberRepository;
-import me.gg.pinit.pinittask.domain.task.model.TaskType;
+import me.gg.pinit.pinittask.domain.schedule.model.ScheduleType;
 import me.gg.pinit.pinittask.infrastructure.events.RabbitEventPublisher;
 import me.gg.pinit.pinittask.interfaces.dto.DateTimeWithZone;
 import me.gg.pinit.pinittask.interfaces.dto.TaskRequest;
+import me.gg.pinit.pinittask.interfaces.dto.TaskScheduleRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,7 +64,6 @@ class TaskControllerV1IntegrationTest {
                 new DateTimeWithZone(LocalDateTime.of(2024, 4, 1, 18, 0), MEMBER_ZONE),
                 5,
                 3,
-                TaskType.QUICK_TASK,
                 List.of(),
                 List.of()
         );
@@ -84,12 +84,27 @@ class TaskControllerV1IntegrationTest {
         long taskId = created.get("id").asLong();
         assertThat(taskId).isPositive();
 
+        // 작업을 일정으로 등록
+        var scheduleResult = mockMvc.perform(post("/v1/tasks/{taskId}/schedules", taskId)
+                        .header("X-Member-Id", MEMBER_ID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                new TaskScheduleRequest(
+                                        null,
+                                        null,
+                                        new DateTimeWithZone(LocalDateTime.of(2024, 3, 30, 9, 0), MEMBER_ZONE),
+                                        ScheduleType.QUICK_TASK
+                                )
+                        )))
+                .andExpect(status().isCreated())
+                .andReturn();
+        long scheduleId = objectMapper.readTree(scheduleResult.getResponse().getContentAsString()).get("id").asLong();
+
         mockMvc.perform(get("/v1/tasks/{taskId}", taskId)
                         .header("X-Member-Id", MEMBER_ID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(taskId))
-                .andExpect(jsonPath("$.title").value("리포트 작성"))
-                .andExpect(jsonPath("$.taskType").value("QUICK_TASK"));
+                .andExpect(jsonPath("$.title").value("리포트 작성"));
 
         mockMvc.perform(get("/v1/tasks")
                         .header("X-Member-Id", MEMBER_ID)
@@ -117,9 +132,25 @@ class TaskControllerV1IntegrationTest {
                         .header("X-Member-Id", MEMBER_ID))
                 .andExpect(status().isNoContent());
 
+        mockMvc.perform(get("/v1/tasks/{taskId}", taskId)
+                        .header("X-Member-Id", MEMBER_ID))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.completed").value(true));
+
+        mockMvc.perform(get("/v1/schedules/{scheduleId}", scheduleId)
+                        .header("X-Member-Id", MEMBER_ID))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.scheduleType").value("QUICK_TASK"))
+                .andExpect(jsonPath("$.state").value("COMPLETED"));
+
         mockMvc.perform(post("/v1/tasks/{taskId}/reopen", taskId)
                         .header("X-Member-Id", MEMBER_ID))
                 .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/v1/tasks/{taskId}", taskId)
+                        .header("X-Member-Id", MEMBER_ID))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.completed").value(false));
 
         mockMvc.perform(delete("/v1/tasks/{taskId}", taskId)
                         .header("X-Member-Id", MEMBER_ID)

@@ -4,7 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.gg.pinit.pinittask.domain.member.model.Member;
 import me.gg.pinit.pinittask.domain.member.repository.MemberRepository;
-import me.gg.pinit.pinittask.domain.task.model.TaskType;
+import me.gg.pinit.pinittask.domain.schedule.model.ScheduleType;
+import me.gg.pinit.pinittask.domain.task.repository.TaskRepository;
 import me.gg.pinit.pinittask.infrastructure.events.RabbitEventPublisher;
 import me.gg.pinit.pinittask.interfaces.dto.DateTimeWithZone;
 import me.gg.pinit.pinittask.interfaces.dto.ScheduleRequest;
@@ -45,6 +46,8 @@ class ScheduleControllerV0IntegrationTest {
     ObjectMapper objectMapper;
     @Autowired
     MemberRepository memberRepository;
+    @Autowired
+    TaskRepository taskRepository;
 
     @MockitoBean
     RabbitEventPublisher rabbitEventPublisher;
@@ -65,7 +68,7 @@ class ScheduleControllerV0IntegrationTest {
                 new DateTimeWithZone(LocalDateTime.of(2024, 3, 1, 18, 0), MEMBER_ZONE),
                 5,
                 3,
-                TaskType.QUICK_TASK,
+                ScheduleType.QUICK_TASK,
                 new DateTimeWithZone(LocalDateTime.of(2024, 2, 28, 9, 0), MEMBER_ZONE),
                 List.of(),
                 List.of()
@@ -98,5 +101,62 @@ class ScheduleControllerV0IntegrationTest {
                 .andExpect(jsonPath("$[0].taskId").isNumber())
                 .andExpect(jsonPath("$[0].importance").value(5))
                 .andExpect(jsonPath("$[0].date.dateTime").value("2024-02-28T00:00:00"));
+    }
+
+    @Test
+    void startAndCompleteSchedule_marksTaskCompleted_andClearsRunning() throws Exception {
+        ScheduleRequest request = new ScheduleRequest(
+                "코딩",
+                "레거시 일정 생성",
+                null,
+                new DateTimeWithZone(LocalDateTime.of(2024, 4, 1, 9, 0), MEMBER_ZONE),
+                6,
+                5,
+                ScheduleType.DEEP_WORK,
+                new DateTimeWithZone(LocalDateTime.of(2024, 3, 31, 10, 0), MEMBER_ZONE),
+                List.of(),
+                List.of()
+        );
+
+        JsonNode created = objectMapper.readTree(
+                mockMvc.perform(post("/v0/schedules")
+                                .header("X-Member-Id", MEMBER_ID)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                        .andExpect(status().isCreated())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString()
+        );
+        long scheduleId = created.get("id").asLong();
+        long taskId = created.get("taskId").asLong();
+
+        mockMvc.perform(post("/v0/schedules/{scheduleId}/start", scheduleId)
+                        .header("X-Member-Id", MEMBER_ID)
+                        .param("time", "2024-03-31T10:00:00")
+                        .param("zoneId", MEMBER_ZONE.getId()))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/v0/schedules/{scheduleId}", scheduleId)
+                        .header("X-Member-Id", MEMBER_ID))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.state").value("IN_PROGRESS"));
+
+        mockMvc.perform(post("/v0/schedules/{scheduleId}/complete", scheduleId)
+                        .header("X-Member-Id", MEMBER_ID)
+                        .param("time", "2024-03-31T12:00:00")
+                        .param("zoneId", MEMBER_ZONE.getId()))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/v0/schedules/{scheduleId}", scheduleId)
+                        .header("X-Member-Id", MEMBER_ID))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.state").value("COMPLETED"));
+
+        boolean taskCompleted = taskRepository.findById(taskId).orElseThrow().isCompleted();
+        assertThat(taskCompleted).isTrue();
+
+        Long nowRunning = memberRepository.findById(MEMBER_ID).orElseThrow().getNowRunningScheduleId();
+        assertThat(nowRunning).isNull();
     }
 }

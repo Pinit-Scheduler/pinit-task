@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.gg.pinit.pinittask.domain.member.model.Member;
 import me.gg.pinit.pinittask.domain.member.repository.MemberRepository;
+import me.gg.pinit.pinittask.domain.schedule.model.ScheduleType;
 import me.gg.pinit.pinittask.infrastructure.events.RabbitEventPublisher;
 import me.gg.pinit.pinittask.interfaces.dto.DateTimeWithZone;
 import me.gg.pinit.pinittask.interfaces.dto.ScheduleSimpleRequest;
@@ -59,7 +60,8 @@ class ScheduleControllerV1IntegrationTest {
         ScheduleSimpleRequest request = new ScheduleSimpleRequest(
                 "팀 회의",
                 "주간 회의",
-                new DateTimeWithZone(LocalDateTime.of(2024, 1, 1, 9, 0), MEMBER_ZONE)
+                new DateTimeWithZone(LocalDateTime.of(2024, 1, 1, 9, 0), MEMBER_ZONE),
+                ScheduleType.DEEP_WORK
         );
 
         MvcResult createResult = mockMvc.perform(post("/v1/schedules")
@@ -71,6 +73,7 @@ class ScheduleControllerV1IntegrationTest {
                 .andExpect(jsonPath("$.ownerId").value(MEMBER_ID))
                 .andExpect(jsonPath("$.title").value("팀 회의"))
                 .andExpect(jsonPath("$.date.dateTime").value("2024-01-01T00:00:00"))
+                .andExpect(jsonPath("$.scheduleType").value("DEEP_WORK"))
                 .andExpect(jsonPath("$.state").value("NOT_STARTED"))
                 .andReturn();
 
@@ -83,7 +86,8 @@ class ScheduleControllerV1IntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(scheduleId))
                 .andExpect(jsonPath("$.title").value("팀 회의"))
-                .andExpect(jsonPath("$.ownerId").value(MEMBER_ID));
+                .andExpect(jsonPath("$.ownerId").value(MEMBER_ID))
+                .andExpect(jsonPath("$.scheduleType").value("DEEP_WORK"));
 
         mockMvc.perform(get("/v1/schedules")
                         .header("X-Member-Id", MEMBER_ID)
@@ -92,6 +96,40 @@ class ScheduleControllerV1IntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(scheduleId))
                 .andExpect(jsonPath("$[0].title").value("팀 회의"))
-                .andExpect(jsonPath("$[0].date.dateTime").value("2024-01-01T00:00:00"));
+                .andExpect(jsonPath("$[0].date.dateTime").value("2024-01-01T00:00:00"))
+                .andExpect(jsonPath("$[0].scheduleType").value("DEEP_WORK"));
+    }
+
+    @Test
+    void completeSchedule_updatesStateToCompleted() throws Exception {
+        ScheduleSimpleRequest request = new ScheduleSimpleRequest(
+                "운동",
+                "아침 러닝",
+                new DateTimeWithZone(LocalDateTime.of(2024, 1, 2, 7, 0), MEMBER_ZONE),
+                ScheduleType.QUICK_TASK
+        );
+
+        JsonNode created = objectMapper.readTree(
+                mockMvc.perform(post("/v1/schedules")
+                                .header("X-Member-Id", MEMBER_ID)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                        .andExpect(status().isCreated())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString()
+        );
+        long scheduleId = created.get("id").asLong();
+
+        mockMvc.perform(post("/v1/schedules/{scheduleId}/complete", scheduleId)
+                        .header("X-Member-Id", MEMBER_ID)
+                        .param("time", "2024-01-02T07:00:00")
+                        .param("zoneId", MEMBER_ZONE.getId()))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/v1/schedules/{scheduleId}", scheduleId)
+                        .header("X-Member-Id", MEMBER_ID))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.state").value("COMPLETED"));
     }
 }
