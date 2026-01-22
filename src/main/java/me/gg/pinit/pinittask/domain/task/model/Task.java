@@ -76,7 +76,6 @@ public class Task {
         patch.dueDate().ifPresent(this::changeDeadline);
         patch.importance().ifPresent(this::changeImportance);
         patch.difficulty().ifPresent(this::changeDifficulty);
-        patch.taskType().ifPresent(this::changeTaskType);
     }
 
     public void markCompleted() {
@@ -95,10 +94,6 @@ public class Task {
 
     public void changeDeadline(ZonedDateTime newDeadline) {
         this.temporalConstraint = this.temporalConstraint.changeDeadline(newDeadline);
-    }
-
-    public void changeTaskType(TaskType newTaskType) {
-        this.temporalConstraint = this.temporalConstraint.changeTaskType(newTaskType);
     }
 
     public void changeImportance(int newImportance) {
