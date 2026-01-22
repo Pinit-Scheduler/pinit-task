@@ -75,7 +75,11 @@ Task 간 “선후 관계”를 관리합니다.
 ### API 버전 정책 (Task/Schedule 분리)
 
 * **V0**: 기존 호환용. 일정 생성/수정 시 Task를 함께 생성하거나 수정하며, 요청/응답에 작업 속성(마감일, 중요도/난이도[Fibonacci: 1,2,3,5,8,13,21])이 포함됩니다.
-* **V1**: 분리 권장. 일정 단독 CRUD/상태 전환만 다루며 Task 정보를 노출하지 않습니다.
+* **V1**: 분리 권장. 일정 단독 CRUD/상태 전환만 다루며 Task 정보를 노출하지 않습니다. 추가로 다음 엔드포인트를 제공합니다.
+    * `GET /v1/schedules/week` 주간 일정 조회
+    * `GET /v1/members/now` 현재 진행 중인 일정 ID
+    * `GET /v1/statistics` 주간 통계 조회
+    * Task 응답에 의존성 메타(`previousTaskIds`,`nextTaskIds`) 포함
 * **작업 → 일정 복사**: `POST /v1/tasks/{taskId}/schedules`로 기존 작업을 지정 시각에 일정으로 등록할 수 있습니다.
 * **삭제 플래그**: `DELETE /v1/tasks/{taskId}?deleteSchedules=` 혹은 `DELETE /v0|v1/schedules/{scheduleId}?deleteTaskAlso=` 로
   연관 삭제 여부를 선택합니다(미설정 시 연관만 해제).
