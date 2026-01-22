@@ -3,8 +3,10 @@ package me.gg.pinit.pinittask.application.task.service;
 import me.gg.pinit.pinittask.application.dependency.service.DependencyService;
 import me.gg.pinit.pinittask.application.events.DomainEventPublisher;
 import me.gg.pinit.pinittask.application.schedule.service.ScheduleService;
+import me.gg.pinit.pinittask.application.schedule.service.ScheduleStateChangeService;
 import me.gg.pinit.pinittask.domain.events.DomainEvent;
 import me.gg.pinit.pinittask.domain.events.DomainEvents;
+import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
 import me.gg.pinit.pinittask.domain.task.event.TaskCanceledEvent;
 import me.gg.pinit.pinittask.domain.task.event.TaskCompletedEvent;
 import me.gg.pinit.pinittask.domain.task.exception.TaskNotFoundException;
@@ -18,16 +20,22 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -39,6 +47,8 @@ class TaskServiceTest {
     DependencyService dependencyService;
     @Mock
     ScheduleService scheduleService;
+    @Mock
+    ScheduleStateChangeService scheduleStateChangeService;
     @Mock
     DomainEventPublisher domainEventPublisher;
     @InjectMocks
@@ -112,6 +122,7 @@ class TaskServiceTest {
         Task task = buildTask(ownerId);
         ReflectionTestUtils.setField(task, "id", taskId);
         when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
+        when(scheduleService.findByTaskId(taskId)).thenReturn(Optional.empty());
 
         taskService.markCompleted(ownerId, taskId);
 
@@ -122,6 +133,70 @@ class TaskServiceTest {
         TaskCompletedEvent event = (TaskCompletedEvent) domainEventCaptor.getValue();
         Assertions.assertThat(event.taskId()).isEqualTo(taskId);
         Assertions.assertThat(event.ownerId()).isEqualTo(ownerId);
+    }
+
+    @Test
+    void markCompleted_throwsWhenLinkedScheduleInProgress() {
+        Long ownerId = 7L;
+        Long taskId = 70L;
+        Task task = buildTask(ownerId);
+        ReflectionTestUtils.setField(task, "id", taskId);
+        Schedule schedule = mock(Schedule.class);
+        when(schedule.getOwnerId()).thenReturn(ownerId);
+        when(schedule.isInProgress()).thenReturn(true);
+        when(scheduleService.findByTaskId(taskId)).thenReturn(Optional.of(schedule));
+        when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
+
+        Assertions.assertThatThrownBy(() -> taskService.markCompleted(ownerId, taskId))
+                .isInstanceOf(IllegalStateException.class);
+
+        verifyNoInteractions(scheduleStateChangeService);
+    }
+
+    @Test
+    void markCompleted_finishesLinkedScheduleWhenNotCompleted() {
+        Long ownerId = 8L;
+        Long taskId = 80L;
+        Task task = buildTask(ownerId);
+        ReflectionTestUtils.setField(task, "id", taskId);
+        Schedule schedule = mock(Schedule.class);
+        when(schedule.getOwnerId()).thenReturn(ownerId);
+        when(schedule.isInProgress()).thenReturn(false);
+        when(schedule.isSuspended()).thenReturn(false);
+        when(schedule.isCompleted()).thenReturn(false);
+        when(schedule.getDesignatedStartTime()).thenReturn(ZonedDateTime.now());
+        when(scheduleService.findByTaskId(taskId)).thenReturn(Optional.of(schedule));
+        when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
+
+        taskService.markCompleted(ownerId, taskId);
+
+        verify(schedule).finish(ArgumentMatchers.any());
+    }
+
+    @Test
+    void getTasks_readyOnlyUsesInboundFilter() {
+        Long ownerId = 9L;
+        PageRequest pageable = PageRequest.of(0, 5);
+        when(taskRepository.findAllByOwnerIdAndInboundDependencyCountAndCompletedFalse(ownerId, 0, pageable))
+                .thenReturn(new PageImpl<>(List.of()));
+
+        Page<Task> result = taskService.getTasks(ownerId, pageable, true);
+
+        Assertions.assertThat(result.getContent()).isEmpty();
+        verify(taskRepository).findAllByOwnerIdAndInboundDependencyCountAndCompletedFalse(ownerId, 0, pageable);
+        verify(taskRepository, never()).findAllByOwnerId(ownerId, pageable);
+    }
+
+    @Test
+    void getTasks_returnsAllWhenNotReadyOnly() {
+        Long ownerId = 10L;
+        PageRequest pageable = PageRequest.of(1, 3);
+        when(taskRepository.findAllByOwnerId(ownerId, pageable)).thenReturn(new PageImpl<>(List.of()));
+
+        taskService.getTasks(ownerId, pageable, false);
+
+        verify(taskRepository).findAllByOwnerId(ownerId, pageable);
+        verify(taskRepository, never()).findAllByOwnerIdAndInboundDependencyCountAndCompletedFalse(anyLong(), anyInt(), any());
     }
 
     @Test
