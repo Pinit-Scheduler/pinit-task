@@ -46,6 +46,11 @@ public class TaskControllerV1 {
 
     @PostMapping
     @Operation(summary = "작업 생성", description = "새 작업과 의존 관계를 등록합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "작업이 생성되었습니다.", content = @Content(schema = @Schema(implementation = TaskResponse.class))),
+            @ApiResponse(responseCode = "400", description = "요청 값 검증에 실패했습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "409", description = "현재 상태와 충돌했습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     public ResponseEntity<TaskResponse> createTask(@Parameter(hidden = true) @MemberId Long memberId,
                                                    @Valid @RequestBody TaskCreateRequest request) {
         Task saved = taskAdjustmentService.createTask(memberId, request.toCommand(null, memberId, dateTimeUtils));
@@ -54,6 +59,12 @@ public class TaskControllerV1 {
 
     @PatchMapping("/{taskId}")
     @Operation(summary = "작업 수정", description = "작업 본문과 의존 관계를 함께 수정합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "작업이 수정되었습니다.", content = @Content(schema = @Schema(implementation = TaskResponse.class))),
+            @ApiResponse(responseCode = "400", description = "요청 값 검증에 실패했습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "작업을 찾을 수 없습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "409", description = "현재 상태와 충돌했습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     public ResponseEntity<TaskResponse> updateTask(@Parameter(hidden = true) @MemberId Long memberId,
                                                    @PathVariable Long taskId,
                                                    @Valid @RequestBody TaskUpdateRequest request) {
@@ -63,6 +74,9 @@ public class TaskControllerV1 {
 
     @GetMapping
     @Operation(summary = "작업 목록 조회", description = "회원의 작업 목록을 조회합니다. page/size로 데드라인 순 페이지네이션, readyOnly로 선행 작업 없는 항목만 필터링합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "작업 목록 조회 성공")
+    })
     public Page<TaskResponse> getTasks(@Parameter(hidden = true) @MemberId Long memberId,
                                        @RequestParam(defaultValue = "0") int page,
                                        @RequestParam(defaultValue = "20") int size,
@@ -75,6 +89,10 @@ public class TaskControllerV1 {
 
     @GetMapping("/cursor")
     @Operation(summary = "작업 목록 커서 조회", description = "deadline asc, id asc 커서 기반 페이지네이션. cursor는 'YYYY-MM-DDTHH:MM:SS|taskId' 형식, 더 이상 데이터가 없으면 nextCursor=null.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "커서 기반 작업 목록 조회 성공", content = @Content(schema = @Schema(implementation = TaskCursorPageResponse.class))),
+            @ApiResponse(responseCode = "400", description = "커서 형식이 올바르지 않습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     public TaskCursorPageResponse getTasksByCursor(@Parameter(hidden = true) @MemberId Long memberId,
                                                    @RequestParam(defaultValue = "20") int size,
                                                    @RequestParam(required = false) String cursor,
@@ -84,6 +102,10 @@ public class TaskControllerV1 {
 
     @GetMapping("/{taskId}")
     @Operation(summary = "작업 단건 조회", description = "특정 작업의 상세 정보를 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "작업 단건 조회 성공", content = @Content(schema = @Schema(implementation = TaskResponse.class))),
+            @ApiResponse(responseCode = "404", description = "작업을 찾을 수 없습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     public TaskResponse getTask(@Parameter(hidden = true) @MemberId Long memberId, @PathVariable Long taskId) {
         Task task = taskService.getTask(memberId, taskId);
         var dependencyInfo = dependencyService.getDependencyInfo(memberId, taskId);
@@ -92,6 +114,11 @@ public class TaskControllerV1 {
 
     @PostMapping("/{taskId}/complete")
     @Operation(summary = "작업 완료", description = "작업을 완료 상태로 변경합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "작업이 완료되었습니다."),
+            @ApiResponse(responseCode = "404", description = "작업을 찾을 수 없습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "409", description = "잘못된 상태 전환입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     public ResponseEntity<Void> completeTask(@Parameter(hidden = true) @MemberId Long memberId, @PathVariable Long taskId) {
         taskService.markCompleted(memberId, taskId);
         return ResponseEntity.noContent().build();
@@ -99,6 +126,11 @@ public class TaskControllerV1 {
 
     @PostMapping("/{taskId}/reopen")
     @Operation(summary = "작업 되돌리기", description = "작업을 미완료 상태로 되돌립니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "작업이 되돌려졌습니다."),
+            @ApiResponse(responseCode = "404", description = "작업을 찾을 수 없습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "409", description = "잘못된 상태 전환입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     public ResponseEntity<Void> reopenTask(@Parameter(hidden = true) @MemberId Long memberId, @PathVariable Long taskId) {
         taskService.markIncomplete(memberId, taskId);
         return ResponseEntity.noContent().build();
@@ -106,6 +138,10 @@ public class TaskControllerV1 {
 
     @DeleteMapping("/{taskId}")
     @Operation(summary = "작업 삭제", description = "작업과 그 작업에 관련된 의존 관계를 삭제합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "작업이 삭제되었습니다."),
+            @ApiResponse(responseCode = "404", description = "작업을 찾을 수 없습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     public ResponseEntity<Void> deleteTask(@Parameter(hidden = true) @MemberId Long memberId,
                                            @PathVariable Long taskId,
                                            @RequestParam(defaultValue = "false") boolean deleteSchedules) {
@@ -115,6 +151,11 @@ public class TaskControllerV1 {
 
     @PostMapping("/{taskId}/schedules")
     @Operation(summary = "작업을 일정으로 등록", description = "기존 작업을 지정한 시간의 일정으로 복사합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "작업이 일정으로 등록되었습니다.", content = @Content(schema = @Schema(implementation = ScheduleSimpleResponse.class))),
+            @ApiResponse(responseCode = "400", description = "요청 값 검증에 실패했습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "작업을 찾을 수 없습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     public ResponseEntity<ScheduleSimpleResponse> createScheduleFromTask(@Parameter(hidden = true) @MemberId Long memberId,
                                                                          @PathVariable Long taskId,
                                                                          @Valid @RequestBody TaskScheduleRequest request) {
