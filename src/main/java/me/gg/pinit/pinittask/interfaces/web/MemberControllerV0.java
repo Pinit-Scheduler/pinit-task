@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Deprecated
 @RestController
 @RequestMapping("/v0")
 @Tag(name = "Member", description = "회원 관련 정보 API")

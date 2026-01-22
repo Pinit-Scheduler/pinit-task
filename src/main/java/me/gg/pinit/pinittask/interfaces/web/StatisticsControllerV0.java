@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
+@Deprecated
 @RestController
 @RequestMapping("/v0/statistics")
 @Tag(name = "Statistics", description = "통계 조회 API")
