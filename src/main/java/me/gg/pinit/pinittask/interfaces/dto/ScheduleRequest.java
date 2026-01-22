@@ -9,7 +9,7 @@ import jakarta.validation.constraints.NotNull;
 import me.gg.pinit.pinittask.application.datetime.DateTimeUtils;
 import me.gg.pinit.pinittask.application.schedule.dto.DependencyDto;
 import me.gg.pinit.pinittask.application.schedule.dto.ScheduleDependencyAdjustCommand;
-import me.gg.pinit.pinittask.domain.task.model.TaskType;
+import me.gg.pinit.pinittask.domain.schedule.model.ScheduleType;
 import me.gg.pinit.pinittask.interfaces.utils.FibonacciDifficulty;
 
 import java.util.ArrayList;
@@ -39,8 +39,8 @@ public record ScheduleRequest(
         @Schema(description = "난이도 (피보나치 수: 1,2,3,5,8,13,21) - V0 legacy", example = "3", deprecated = true)
         Integer difficulty,
         @NotNull
-        @Schema(description = "작업 유형", example = "TASK")
-        TaskType taskType,
+        @Schema(description = "일정 유형", example = "DEEP_WORK")
+        ScheduleType scheduleType,
         @NotNull
         @Schema(description = "일정 시작 예정 시각", example = "{\"dateTime\":\"2024-02-28T09:00:00\",\"zoneId\":\"Asia/Seoul\"}")
         @Valid
@@ -62,7 +62,7 @@ public record ScheduleRequest(
                 dateTimeUtils.toZonedDateTime(deadline.dateTime(), deadline.zoneId()),
                 importance,
                 difficulty,
-                taskType,
+                scheduleType,
                 dateTimeUtils.toZonedDateTime(date.dateTime(), date.zoneId()),
                 remove,
                 add

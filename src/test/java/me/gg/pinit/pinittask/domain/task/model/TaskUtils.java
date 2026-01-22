@@ -12,7 +12,7 @@ public class TaskUtils {
     public static ZonedDateTime DEADLINE_TIME = ZonedDateTime.of(2025, 10, 10, 0, 0, 0, 0, Clock.systemDefaultZone().getZone());
 
     public static TemporalConstraint getTemporalConstraintSample() {
-        return new TemporalConstraint(DEADLINE_TIME, Duration.ZERO, TaskType.DEEP_WORK);
+        return new TemporalConstraint(DEADLINE_TIME, Duration.ZERO);
     }
 
     public static ImportanceConstraint getImportanceConstraintSample() {

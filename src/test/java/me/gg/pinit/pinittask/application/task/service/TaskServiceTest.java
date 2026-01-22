@@ -11,7 +11,6 @@ import me.gg.pinit.pinittask.domain.task.event.TaskCanceledEvent;
 import me.gg.pinit.pinittask.domain.task.event.TaskCompletedEvent;
 import me.gg.pinit.pinittask.domain.task.exception.TaskNotFoundException;
 import me.gg.pinit.pinittask.domain.task.model.Task;
-import me.gg.pinit.pinittask.domain.task.model.TaskType;
 import me.gg.pinit.pinittask.domain.task.repository.TaskRepository;
 import me.gg.pinit.pinittask.domain.task.vo.ImportanceConstraint;
 import me.gg.pinit.pinittask.domain.task.vo.TemporalConstraint;
@@ -256,7 +255,7 @@ class TaskServiceTest {
                 ownerId,
                 "title",
                 "desc",
-                new TemporalConstraint(ZonedDateTime.now().plusDays(1), Duration.ZERO, TaskType.DEEP_WORK),
+                new TemporalConstraint(ZonedDateTime.now().plusDays(1), Duration.ZERO),
                 new ImportanceConstraint(5, 5)
         );
     }

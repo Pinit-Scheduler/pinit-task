@@ -2,9 +2,9 @@ package me.gg.pinit.pinittask.application.statistics.service;
 
 import me.gg.pinit.pinittask.application.datetime.DateTimeUtils;
 import me.gg.pinit.pinittask.application.member.service.MemberService;
+import me.gg.pinit.pinittask.domain.schedule.model.ScheduleType;
 import me.gg.pinit.pinittask.domain.statistics.model.Statistics;
 import me.gg.pinit.pinittask.domain.statistics.repository.StatisticsRepository;
-import me.gg.pinit.pinittask.domain.task.model.TaskType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -65,7 +65,7 @@ class StatisticsServiceTest {
         when(statisticsRepository.findByMemberIdAndStartOfWeekDate(memberId, mondayStart.toLocalDate(), mondayStart.getZone().getId())).thenReturn(Optional.of(stats));
 
         //when
-        statisticsService.removeElapsedTime(memberId, TaskType.DEEP_WORK, rollback, startTime);
+        statisticsService.removeElapsedTime(memberId, ScheduleType.DEEP_WORK, rollback, startTime);
 
         //then
         assertThat(stats.getDeepWorkElapsedTime()).isEqualTo(Duration.ofMinutes(25));
@@ -84,7 +84,7 @@ class StatisticsServiceTest {
         when(statisticsRepository.findByMemberIdAndStartOfWeekDate(memberId, mondayStart.toLocalDate(), mondayStart.getZone().getId())).thenReturn(Optional.empty());
 
         //when
-        statisticsService.addElapsedTime(memberId, TaskType.ADMIN_TASK, duration, startTime);
+        statisticsService.addElapsedTime(memberId, ScheduleType.ADMIN_TASK, duration, startTime);
 
         //then
         verify(statisticsRepository).save(argThat(saved -> {

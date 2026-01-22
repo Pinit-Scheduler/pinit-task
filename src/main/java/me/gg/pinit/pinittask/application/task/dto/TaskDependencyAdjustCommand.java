@@ -4,7 +4,6 @@ import lombok.Getter;
 import me.gg.pinit.pinittask.application.schedule.dto.DependencyDto;
 import me.gg.pinit.pinittask.domain.dependency.model.Dependency;
 import me.gg.pinit.pinittask.domain.task.model.Task;
-import me.gg.pinit.pinittask.domain.task.model.TaskType;
 import me.gg.pinit.pinittask.domain.task.patch.TaskPatch;
 import me.gg.pinit.pinittask.domain.task.vo.ImportanceConstraint;
 import me.gg.pinit.pinittask.domain.task.vo.TemporalConstraint;
@@ -28,12 +27,10 @@ public class TaskDependencyAdjustCommand {
     private final Integer importance;
     @Getter
     private final Integer difficulty;
-    @Getter
-    private final TaskType taskType;
     private final List<DependencyDto> removeDependencies;
     private final List<DependencyDto> addDependencies;
 
-    public TaskDependencyAdjustCommand(Long taskId, Long ownerId, String title, String description, ZonedDateTime dueDate, Integer importance, Integer difficulty, TaskType taskType, List<DependencyDto> removeDependencies, List<DependencyDto> addDependencies) {
+    public TaskDependencyAdjustCommand(Long taskId, Long ownerId, String title, String description, ZonedDateTime dueDate, Integer importance, Integer difficulty, List<DependencyDto> removeDependencies, List<DependencyDto> addDependencies) {
         this.taskId = taskId;
         this.ownerId = ownerId;
         this.title = title;
@@ -41,7 +38,6 @@ public class TaskDependencyAdjustCommand {
         this.dueDate = dueDate;
         this.importance = importance;
         this.difficulty = difficulty;
-        this.taskType = taskType;
         this.removeDependencies = removeDependencies;
         this.addDependencies = addDependencies;
     }
@@ -55,7 +51,7 @@ public class TaskDependencyAdjustCommand {
                 ownerId,
                 title,
                 description,
-                new TemporalConstraint(dueDate, Duration.ZERO, taskType),
+                new TemporalConstraint(dueDate, Duration.ZERO),
                 new ImportanceConstraint(importance, difficulty)
         );
     }
@@ -66,8 +62,7 @@ public class TaskDependencyAdjustCommand {
                 .setDescription(description)
                 .setDueDate(dueDate)
                 .setImportance(importance)
-                .setDifficulty(difficulty)
-                .setTaskType(taskType);
+                .setDifficulty(difficulty);
     }
 
     public List<Dependency> getRemoveDependencies() {

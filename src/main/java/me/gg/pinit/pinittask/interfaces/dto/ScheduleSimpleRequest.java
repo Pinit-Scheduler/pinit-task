@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import me.gg.pinit.pinittask.application.datetime.DateTimeUtils;
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
+import me.gg.pinit.pinittask.domain.schedule.model.ScheduleType;
 
 public record ScheduleSimpleRequest(
         @NotBlank
@@ -17,7 +18,10 @@ public record ScheduleSimpleRequest(
         @NotNull
         @Valid
         @Schema(description = "일정 시작 시각", example = "{\"dateTime\":\"2024-02-28T09:00:00\",\"zoneId\":\"Asia/Seoul\"}")
-        DateTimeWithZone date
+        DateTimeWithZone date,
+        @NotNull
+        @Schema(description = "일정 유형", example = "DEEP_WORK")
+        ScheduleType scheduleType
 ) {
     public Schedule toSchedule(Long ownerId, DateTimeUtils dateTimeUtils) {
         return new Schedule(
@@ -25,7 +29,8 @@ public record ScheduleSimpleRequest(
                 null,
                 title,
                 description,
-                dateTimeUtils.toZonedDateTime(this.date.dateTime(), this.date.zoneId())
+                dateTimeUtils.toZonedDateTime(this.date.dateTime(), this.date.zoneId()),
+                scheduleType
         );
     }
 }

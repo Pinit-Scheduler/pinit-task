@@ -4,6 +4,7 @@ import me.gg.pinit.pinittask.application.datetime.DateTimeUtils;
 import me.gg.pinit.pinittask.application.schedule.service.ScheduleService;
 import me.gg.pinit.pinittask.application.schedule.service.ScheduleStateChangeService;
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
+import me.gg.pinit.pinittask.domain.schedule.model.ScheduleType;
 import me.gg.pinit.pinittask.interfaces.dto.DateTimeWithZone;
 import me.gg.pinit.pinittask.interfaces.dto.ScheduleSimpleRequest;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,10 +52,12 @@ class ScheduleControllerV1Test {
         ScheduleSimpleRequest request = new ScheduleSimpleRequest(
                 "title",
                 "desc",
-                new DateTimeWithZone(LocalDateTime.of(2024, 1, 1, 9, 0), ZoneId.of("UTC"))
+                new DateTimeWithZone(LocalDateTime.of(2024, 1, 1, 9, 0), ZoneId.of("UTC")),
+                ScheduleType.DEEP_WORK
         );
         Schedule saved = new Schedule(memberId, null, request.title(), request.description(),
-                dateTimeUtils.toZonedDateTime(request.date().dateTime(), request.date().zoneId()));
+                dateTimeUtils.toZonedDateTime(request.date().dateTime(), request.date().zoneId()),
+                request.scheduleType());
         setScheduleId(saved, 99L);
         when(scheduleService.addSchedule(any(Schedule.class))).thenReturn(saved);
 
@@ -78,7 +81,7 @@ class ScheduleControllerV1Test {
     @Test
     void getSchedules_returnsScheduleList() {
         ZonedDateTime zdt = ZonedDateTime.of(LocalDateTime.of(2024, 1, 2, 9, 0), ZoneId.of("Asia/Seoul"));
-        Schedule schedule = new Schedule(memberId, null, "title", "desc", zdt);
+        Schedule schedule = new Schedule(memberId, null, "title", "desc", zdt, ScheduleType.DEEP_WORK);
         when(scheduleService.getScheduleList(eq(memberId), any())).thenReturn(List.of(schedule));
 
         var result = controller.getSchedules(memberId, zdt.toLocalDateTime(), zdt.getZone());

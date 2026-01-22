@@ -4,6 +4,7 @@ import me.gg.pinit.pinittask.application.events.DomainEventPublisher;
 import me.gg.pinit.pinittask.application.member.service.MemberService;
 import me.gg.pinit.pinittask.domain.dependency.exception.ScheduleNotFoundException;
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
+import me.gg.pinit.pinittask.domain.schedule.model.ScheduleType;
 import me.gg.pinit.pinittask.domain.schedule.patch.SchedulePatch;
 import me.gg.pinit.pinittask.domain.schedule.repository.ScheduleRepository;
 import org.assertj.core.api.Assertions;
@@ -75,7 +76,7 @@ class ScheduleServiceTest {
     void addSchedule() {
         //given
         when(scheduleRepository.save(any(Schedule.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        Schedule newSchedule = new Schedule(memberId, 1L, "new title", "new description", ENROLLED_TIME);
+        Schedule newSchedule = new Schedule(memberId, 1L, "new title", "new description", ENROLLED_TIME, ScheduleType.DEEP_WORK);
 
         //when
         Schedule savedSchedule = scheduleService.addSchedule(newSchedule);
@@ -88,7 +89,7 @@ class ScheduleServiceTest {
 
     @Test
     void addSchedule_throwsWhenTaskAlreadyLinked() {
-        Schedule newSchedule = new Schedule(memberId, 1L, "new title", "new description", ENROLLED_TIME);
+        Schedule newSchedule = new Schedule(memberId, 1L, "new title", "new description", ENROLLED_TIME, ScheduleType.DEEP_WORK);
         when(scheduleRepository.existsByTaskId(1L)).thenReturn(true);
 
         assertThrows(IllegalStateException.class, () -> scheduleService.addSchedule(newSchedule));

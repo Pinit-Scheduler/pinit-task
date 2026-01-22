@@ -1,7 +1,5 @@
 package me.gg.pinit.pinittask.domain.task.patch;
 
-import me.gg.pinit.pinittask.domain.task.model.TaskType;
-
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
@@ -11,7 +9,6 @@ public final class TaskPatch {
     private ZonedDateTime dueDate;
     private Integer importance;
     private Integer difficulty;
-    private TaskType taskType;
 
     public TaskPatch setTitle(String v) {
         this.title = v;
@@ -38,11 +35,6 @@ public final class TaskPatch {
         return this;
     }
 
-    public TaskPatch setTaskType(TaskType v) {
-        this.taskType = v;
-        return this;
-    }
-
     public Optional<String> title() {
         return Optional.ofNullable(title);
     }
@@ -63,12 +55,8 @@ public final class TaskPatch {
         return Optional.ofNullable(difficulty);
     }
 
-    public Optional<TaskType> taskType() {
-        return Optional.ofNullable(taskType);
-    }
-
     public boolean isEmpty() {
         return title == null && description == null && dueDate == null
-                && importance == null && difficulty == null && taskType == null;
+                && importance == null && difficulty == null;
     }
 }

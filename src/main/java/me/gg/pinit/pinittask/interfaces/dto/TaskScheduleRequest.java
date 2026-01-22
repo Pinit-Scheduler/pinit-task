@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import me.gg.pinit.pinittask.application.datetime.DateTimeUtils;
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
+import me.gg.pinit.pinittask.domain.schedule.model.ScheduleType;
 import me.gg.pinit.pinittask.domain.task.model.Task;
 
 public record TaskScheduleRequest(
@@ -15,7 +16,10 @@ public record TaskScheduleRequest(
         @NotNull
         @Valid
         @Schema(description = "일정 시작 시각", example = "{\"dateTime\":\"2024-02-28T09:00:00\",\"zoneId\":\"Asia/Seoul\"}")
-        DateTimeWithZone date
+        DateTimeWithZone date,
+        @NotNull
+        @Schema(description = "일정 유형", example = "DEEP_WORK")
+        ScheduleType scheduleType
 ) {
     public Schedule toSchedule(Task task, Long ownerId, DateTimeUtils dateTimeUtils) {
         String scheduleTitle = title == null ? task.getTitle() : title;
@@ -25,7 +29,8 @@ public record TaskScheduleRequest(
                 task.getId(),
                 scheduleTitle,
                 scheduleDescription,
-                dateTimeUtils.toZonedDateTime(date.dateTime(), date.zoneId())
+                dateTimeUtils.toZonedDateTime(date.dateTime(), date.zoneId()),
+                scheduleType
         );
     }
 }

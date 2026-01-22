@@ -18,6 +18,8 @@ public record ScheduleSimpleResponse(
         String description,
         @Schema(description = "일정 시작 예정 시각")
         DateTimeWithZone date,
+        @Schema(description = "일정 유형")
+        String scheduleType,
         @Schema(description = "누적 작업 시간")
         Duration duration,
         @Schema(description = "현재 상태")
@@ -35,6 +37,7 @@ public record ScheduleSimpleResponse(
                 schedule.getTitle(),
                 schedule.getDescription(),
                 DateTimeWithZone.from(schedule.getDesignatedStartTime()),
+                schedule.getScheduleType().name(),
                 history.getElapsedTime(),
                 schedule.getState(),
                 schedule.getCreatedAt(),

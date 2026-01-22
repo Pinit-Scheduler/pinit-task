@@ -47,6 +47,11 @@ public class Schedule {
     @Getter
     private String description;
 
+    @Getter
+    @Enumerated(EnumType.STRING)
+    @Column(name = "schedule_type", nullable = false)
+    private ScheduleType scheduleType;
+
     @Column(name = "designated_start_time_utc", columnDefinition = "DATETIME(6)", nullable = false)
     @Convert(converter = InstantToDatetime6UtcConverter.class)
     private Instant designatedStartTime;
@@ -69,11 +74,12 @@ public class Schedule {
     protected Schedule() {
     }
 
-    public Schedule(Long ownerId, Long taskId, String title, String description, ZonedDateTime designatedStartTime) {
+    public Schedule(Long ownerId, Long taskId, String title, String description, ZonedDateTime designatedStartTime, ScheduleType scheduleType) {
         this.ownerId = ownerId;
         this.taskId = taskId;
         setTitle(title);
         setDescription(description);
+        setScheduleType(scheduleType);
         setDesignatedStartTime(designatedStartTime);
         this.history = ScheduleHistory.zero();
         this.state = new NotStartedState();
@@ -120,6 +126,7 @@ public class Schedule {
         patch.title().ifPresent(this::setTitle);
         patch.description().ifPresent(this::setDescription);
         patch.designatedStartTime().ifPresent(this::setDesignatedStartTime);
+        patch.scheduleType().ifPresent(this::setScheduleType);
     }
 
     public void deleteSchedule() {
@@ -147,6 +154,13 @@ public class Schedule {
     public void setDescription(String description) {
         validateDescription(description);
         this.description = description;
+    }
+
+    public void setScheduleType(ScheduleType scheduleType) {
+        if (scheduleType == null) {
+            throw new IllegalArgumentException("일정 유형은 null일 수 없습니다.");
+        }
+        this.scheduleType = scheduleType;
     }
 
     public String getState() {

@@ -22,8 +22,6 @@ public record TaskResponse(
         int importance,
         @Schema(description = "난이도")
         int difficulty,
-        @Schema(description = "작업 유형")
-        String taskType,
         @Schema(description = "완료 여부")
         boolean completed,
         @Schema(description = "들어오는 의존 관계 수")
@@ -44,7 +42,6 @@ public record TaskResponse(
                 DateTimeWithZone.from(temporal.getDeadline()),
                 importanceConstraint.getImportance(),
                 importanceConstraint.getDifficulty(),
-                temporal.getTaskType().name(),
                 task.isCompleted(),
                 task.getInboundDependencyCount(),
                 task.getCreatedAt(),

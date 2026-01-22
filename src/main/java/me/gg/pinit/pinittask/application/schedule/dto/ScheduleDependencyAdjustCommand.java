@@ -3,9 +3,9 @@ package me.gg.pinit.pinittask.application.schedule.dto;
 import lombok.Getter;
 import me.gg.pinit.pinittask.domain.dependency.model.Dependency;
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
+import me.gg.pinit.pinittask.domain.schedule.model.ScheduleType;
 import me.gg.pinit.pinittask.domain.schedule.patch.SchedulePatch;
 import me.gg.pinit.pinittask.domain.task.model.Task;
-import me.gg.pinit.pinittask.domain.task.model.TaskType;
 import me.gg.pinit.pinittask.domain.task.patch.TaskPatch;
 import me.gg.pinit.pinittask.domain.task.vo.ImportanceConstraint;
 import me.gg.pinit.pinittask.domain.task.vo.TemporalConstraint;
@@ -31,13 +31,13 @@ public class ScheduleDependencyAdjustCommand {
     @Getter
     private final Integer difficulty;
     @Getter
-    private final TaskType taskType;
+    private final ScheduleType scheduleType;
     @Getter
     private final ZonedDateTime date;
     private final List<DependencyDto> removeDependencies;
     private final List<DependencyDto> addDependencies;
 
-    public ScheduleDependencyAdjustCommand(Long scheduleId, Long ownerId, Long taskId, String title, String description, ZonedDateTime deadline, Integer importance, Integer difficulty, TaskType taskType, ZonedDateTime date, List<DependencyDto> removeDependencies, List<DependencyDto> addDependencies) {
+    public ScheduleDependencyAdjustCommand(Long scheduleId, Long ownerId, Long taskId, String title, String description, ZonedDateTime deadline, Integer importance, Integer difficulty, ScheduleType scheduleType, ZonedDateTime date, List<DependencyDto> removeDependencies, List<DependencyDto> addDependencies) {
         this.scheduleId = scheduleId;
         this.ownerId = ownerId;
         this.taskId = taskId;
@@ -46,7 +46,7 @@ public class ScheduleDependencyAdjustCommand {
         this.deadline = deadline;
         this.importance = importance;
         this.difficulty = difficulty;
-        this.taskType = taskType;
+        this.scheduleType = scheduleType;
         this.date = date;
         this.removeDependencies = removeDependencies;
         this.addDependencies = addDependencies;
@@ -69,7 +69,7 @@ public class ScheduleDependencyAdjustCommand {
                 ownerId,
                 title,
                 description,
-                new TemporalConstraint(deadline, Duration.ZERO, taskType),
+                new TemporalConstraint(deadline, Duration.ZERO),
                 new ImportanceConstraint(importance, difficulty)
         );
     }
@@ -80,7 +80,8 @@ public class ScheduleDependencyAdjustCommand {
                 taskId,
                 title,
                 description,
-                date
+                date,
+                scheduleType
         );
     }
 
@@ -88,7 +89,8 @@ public class ScheduleDependencyAdjustCommand {
         return new SchedulePatch()
                 .setTitle(title)
                 .setDescription(description)
-                .setDesignatedStartTime(date);
+                .setDesignatedStartTime(date)
+                .setScheduleType(scheduleType);
     }
 
     public TaskPatch getTaskPatch() {
@@ -97,8 +99,7 @@ public class ScheduleDependencyAdjustCommand {
                 .setDescription(description)
                 .setDueDate(deadline)
                 .setImportance(importance)
-                .setDifficulty(difficulty)
-                .setTaskType(taskType);
+                .setDifficulty(difficulty);
     }
 
     public List<Dependency> getRemoveDependencies() {

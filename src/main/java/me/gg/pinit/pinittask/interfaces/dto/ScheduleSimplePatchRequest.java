@@ -3,6 +3,7 @@ package me.gg.pinit.pinittask.interfaces.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import me.gg.pinit.pinittask.application.datetime.DateTimeUtils;
+import me.gg.pinit.pinittask.domain.schedule.model.ScheduleType;
 import me.gg.pinit.pinittask.domain.schedule.patch.SchedulePatch;
 
 public record ScheduleSimplePatchRequest(
@@ -12,7 +13,9 @@ public record ScheduleSimplePatchRequest(
         String description,
         @Valid
         @Schema(description = "일정 시작 시각", example = "{\"dateTime\":\"2024-02-28T09:00:00\",\"zoneId\":\"Asia/Seoul\"}")
-        DateTimeWithZone date
+        DateTimeWithZone date,
+        @Schema(description = "일정 유형", example = "DEEP_WORK")
+        ScheduleType scheduleType
 ) {
     public SchedulePatch toPatch(DateTimeUtils dateTimeUtils) {
         SchedulePatch patch = new SchedulePatch();
@@ -21,6 +24,7 @@ public record ScheduleSimplePatchRequest(
         if (date != null) {
             patch.setDesignatedStartTime(dateTimeUtils.toZonedDateTime(this.date.dateTime(), this.date.zoneId()));
         }
+        patch.setScheduleType(scheduleType);
         return patch;
     }
 }
