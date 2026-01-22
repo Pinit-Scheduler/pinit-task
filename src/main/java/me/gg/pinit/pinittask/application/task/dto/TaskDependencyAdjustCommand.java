@@ -11,7 +11,6 @@ import me.gg.pinit.pinittask.domain.task.vo.TemporalConstraint;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Objects;
 
 public class TaskDependencyAdjustCommand {
     private final Long taskId;
@@ -43,7 +42,7 @@ public class TaskDependencyAdjustCommand {
     }
 
     public Long getTaskId() {
-        return Objects.requireNonNullElse(taskId, 0L);
+        return taskId;
     }
 
     public Task buildTask() {
@@ -65,11 +64,25 @@ public class TaskDependencyAdjustCommand {
                 .setDifficulty(difficulty);
     }
 
-    public List<Dependency> getRemoveDependencies() {
-        return removeDependencies.stream().map(d -> new Dependency(ownerId, d.getFromId(), d.getToId())).toList();
+    public List<Dependency> getRemoveDependencies(Long selfId) {
+        return removeDependencies.stream()
+                .map(d -> new Dependency(ownerId, resolveId(d.getFromId(), selfId), resolveId(d.getToId(), selfId)))
+                .toList();
     }
 
-    public List<Dependency> getAddDependencies() {
-        return addDependencies.stream().map(d -> new Dependency(ownerId, d.getFromId(), d.getToId())).toList();
+    public List<Dependency> getAddDependencies(Long selfId) {
+        return addDependencies.stream()
+                .map(d -> new Dependency(ownerId, resolveId(d.getFromId(), selfId), resolveId(d.getToId(), selfId)))
+                .toList();
+    }
+
+    private Long resolveId(Long rawId, Long selfId) {
+        if (rawId == null) {
+            return selfId;
+        }
+        if (rawId == 0L) {
+            return selfId;
+        }
+        return rawId;
     }
 }
