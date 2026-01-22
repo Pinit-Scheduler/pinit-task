@@ -97,7 +97,7 @@ class ScheduleAdjustmentServiceTest {
 
         scheduleAdjustmentService.createScheduleLegacy(memberId, command);
 
-        verify(dependencyService).checkCycle(eq(memberId), anyList(), anyList());
+        verify(dependencyService).assertNoCycle(eq(memberId), anyList(), anyList());
         verify(taskService).createTask(any(Task.class));
         verify(scheduleService).addSchedule(any(Schedule.class));
         verify(dependencyService).saveAll(anyList());
@@ -150,14 +150,14 @@ class ScheduleAdjustmentServiceTest {
         Schedule current = mock(Schedule.class);
         when(current.getTaskId()).thenReturn(10L);
         when(scheduleService.getSchedule(memberId, scheduleId)).thenReturn(current);
-        when(dependencyService.checkCycle(eq(memberId), anyList(), anyList())).thenReturn(false);
+        doNothing().when(dependencyService).assertNoCycle(eq(memberId), anyList(), anyList());
         when(scheduleService.updateSchedule(eq(memberId), eq(scheduleId), any(SchedulePatch.class))).thenReturn(mock(Schedule.class));
 
         scheduleAdjustmentService.adjustSchedule(memberId, command);
 
         ArgumentCaptor<List> removedCap = ArgumentCaptor.forClass(List.class);
         ArgumentCaptor<List> addedCap = ArgumentCaptor.forClass(List.class);
-        verify(dependencyService).checkCycle(eq(memberId), removedCap.capture(), addedCap.capture());
+        verify(dependencyService).assertNoCycle(eq(memberId), removedCap.capture(), addedCap.capture());
         assertEquals(2, removedCap.getValue().size());
         assertEquals(1, addedCap.getValue().size());
 
