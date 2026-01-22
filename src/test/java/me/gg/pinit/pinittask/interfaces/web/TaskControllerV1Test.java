@@ -5,8 +5,8 @@ import me.gg.pinit.pinittask.application.schedule.service.ScheduleService;
 import me.gg.pinit.pinittask.application.task.service.TaskAdjustmentService;
 import me.gg.pinit.pinittask.application.task.service.TaskService;
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
+import me.gg.pinit.pinittask.domain.schedule.model.ScheduleType;
 import me.gg.pinit.pinittask.domain.task.model.Task;
-import me.gg.pinit.pinittask.domain.task.model.TaskType;
 import me.gg.pinit.pinittask.domain.task.vo.ImportanceConstraint;
 import me.gg.pinit.pinittask.domain.task.vo.TemporalConstraint;
 import me.gg.pinit.pinittask.interfaces.dto.DateTimeWithZone;
@@ -74,12 +74,13 @@ class TaskControllerV1Test {
         TaskScheduleRequest request = new TaskScheduleRequest(
                 null,
                 null,
-                new DateTimeWithZone(LocalDateTime.of(2024, 1, 1, 10, 0), ZoneId.of("UTC"))
+                new DateTimeWithZone(LocalDateTime.of(2024, 1, 1, 10, 0), ZoneId.of("UTC")),
+                ScheduleType.DEEP_WORK
         );
         ZonedDateTime targetTime = ZonedDateTime.of(request.date().dateTime(), request.date().zoneId());
         when(taskService.getTask(memberId, taskId)).thenReturn(task);
         when(dateTimeUtils.toZonedDateTime(request.date().dateTime(), request.date().zoneId())).thenReturn(targetTime);
-        Schedule saved = new Schedule(memberId, taskId, task.getTitle(), task.getDescription(), targetTime);
+        Schedule saved = new Schedule(memberId, taskId, task.getTitle(), task.getDescription(), targetTime, ScheduleType.DEEP_WORK);
         when(scheduleService.addSchedule(any(Schedule.class))).thenReturn(saved);
 
         ResponseEntity<?> response = controller.createScheduleFromTask(memberId, taskId, request);
@@ -109,7 +110,7 @@ class TaskControllerV1Test {
                 ownerId,
                 "title",
                 "desc",
-                new TemporalConstraint(ZonedDateTime.now().plusDays(1), Duration.ZERO, TaskType.DEEP_WORK),
+                new TemporalConstraint(ZonedDateTime.now().plusDays(1), Duration.ZERO),
                 new ImportanceConstraint(5, 5)
         );
     }

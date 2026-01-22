@@ -5,9 +5,9 @@ import me.gg.pinit.pinittask.application.schedule.dto.DependencyDto;
 import me.gg.pinit.pinittask.application.schedule.dto.ScheduleDependencyAdjustCommand;
 import me.gg.pinit.pinittask.application.task.service.TaskService;
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
+import me.gg.pinit.pinittask.domain.schedule.model.ScheduleType;
 import me.gg.pinit.pinittask.domain.schedule.patch.SchedulePatch;
 import me.gg.pinit.pinittask.domain.task.model.Task;
-import me.gg.pinit.pinittask.domain.task.model.TaskType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,7 +50,7 @@ class ScheduleAdjustmentServiceTest {
                 now.plusHours(4),
                 5,
                 5,
-                TaskType.DEEP_WORK,
+                ScheduleType.DEEP_WORK,
                 now,
                 Collections.emptyList(),
                 Collections.emptyList()
@@ -85,7 +85,7 @@ class ScheduleAdjustmentServiceTest {
                 now.plusHours(2),
                 3,
                 5,
-                TaskType.DEEP_WORK,
+                ScheduleType.DEEP_WORK,
                 now,
                 Collections.emptyList(),
                 List.of(new DependencyDto(null, 10L, 11L))
@@ -117,7 +117,7 @@ class ScheduleAdjustmentServiceTest {
                 now.plusHours(4),
                 5,
                 5,
-                TaskType.DEEP_WORK,
+                ScheduleType.DEEP_WORK,
                 now,
                 List.of(new DependencyDto(null, 1L, 2L)),
                 Collections.emptyList()
@@ -142,7 +142,7 @@ class ScheduleAdjustmentServiceTest {
                 now.plusHours(8),
                 9,
                 3,
-                TaskType.QUICK_TASK,
+                ScheduleType.QUICK_TASK,
                 now.plusMinutes(30),
                 List.of(new DependencyDto(1L, 200L, 201L), new DependencyDto(2L, 201L, 202L)),
                 List.of(new DependencyDto(3L, 300L, 301L))
@@ -167,6 +167,7 @@ class ScheduleAdjustmentServiceTest {
         assertEquals("NEW_TITLE", patch.title().orElse(null));
         assertEquals("NEW_DESC", patch.description().orElse(null));
         assertEquals(now.plusMinutes(30), patch.designatedStartTime().orElse(null));
+        assertEquals(ScheduleType.QUICK_TASK, patch.scheduleType().orElse(null));
 
         verify(dependencyService).deleteAll(anyList());
         verify(dependencyService).saveAll(anyList());
@@ -188,7 +189,7 @@ class ScheduleAdjustmentServiceTest {
                 now.plusHours(2),
                 4,
                 8,
-                TaskType.ADMIN_TASK,
+                ScheduleType.ADMIN_TASK,
                 now,
                 Collections.emptyList(),
                 Collections.emptyList()

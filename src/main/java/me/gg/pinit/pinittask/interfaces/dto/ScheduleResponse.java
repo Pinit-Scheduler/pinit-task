@@ -22,6 +22,8 @@ public record ScheduleResponse(
         String description,
         @Schema(description = "일정 시작 예정 시각")
         DateTimeWithZone date,
+        @Schema(description = "일정 유형")
+        String scheduleType,
         @Schema(description = "마감 기한 (V0 legacy)", deprecated = true)
         DateTimeWithZone deadline,
         @Schema(description = "중요도 (V0 legacy)", deprecated = true)
@@ -44,6 +46,7 @@ public record ScheduleResponse(
                 schedule.getTitle(),
                 schedule.getDescription(),
                 DateTimeWithZone.from(schedule.getDesignatedStartTime()),
+                schedule.getScheduleType().name(),
                 temporal == null ? null : DateTimeWithZone.from(temporal.getDeadline()),
                 importanceConstraint == null ? null : importanceConstraint.getImportance(),
                 importanceConstraint == null ? null : importanceConstraint.getDifficulty(),

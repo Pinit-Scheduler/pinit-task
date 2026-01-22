@@ -3,9 +3,9 @@ package me.gg.pinit.pinittask.application.statistics.service;
 import lombok.extern.slf4j.Slf4j;
 import me.gg.pinit.pinittask.application.datetime.DateTimeUtils;
 import me.gg.pinit.pinittask.application.member.service.MemberService;
+import me.gg.pinit.pinittask.domain.schedule.model.ScheduleType;
 import me.gg.pinit.pinittask.domain.statistics.model.Statistics;
 import me.gg.pinit.pinittask.domain.statistics.repository.StatisticsRepository;
-import me.gg.pinit.pinittask.domain.task.model.TaskType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,22 +36,22 @@ public class StatisticsService {
     }
 
     @Transactional
-    public void removeElapsedTime(Long ownerId, TaskType taskType, Duration duration, ZonedDateTime startTime) {
+    public void removeElapsedTime(Long ownerId, ScheduleType scheduleType, Duration duration, ZonedDateTime startTime) {
         ZoneOffset zoneOffsetOfMember = memberService.findZoneOffsetOfMember(ownerId);
         ZonedDateTime dateTime = dateTimeUtils.lastMondayStart(startTime, zoneOffsetOfMember);
         Statistics statistics = statisticsRepository.findByMemberIdAndStartOfWeekDate(ownerId, dateTime.toLocalDate(), dateTime.getZone().getId())
                 .orElseGet(() -> new Statistics(ownerId, dateTime));
-        taskType.rollback(statistics, duration);
+        scheduleType.rollback(statistics, duration);
         statisticsRepository.save(statistics);
     }
 
     @Transactional
-    public void addElapsedTime(Long ownerId, TaskType taskType, Duration duration, ZonedDateTime startTime) {
+    public void addElapsedTime(Long ownerId, ScheduleType scheduleType, Duration duration, ZonedDateTime startTime) {
         ZoneOffset zoneOffsetOfMember = memberService.findZoneOffsetOfMember(ownerId);
         ZonedDateTime dateTime = dateTimeUtils.lastMondayStart(startTime, zoneOffsetOfMember);
         Statistics statistics = statisticsRepository.findByMemberIdAndStartOfWeekDate(ownerId, dateTime.toLocalDate(), dateTime.getZone().getId())
                 .orElseGet(() -> new Statistics(ownerId, dateTime));
-        taskType.record(statistics, duration);
+        scheduleType.record(statistics, duration);
         statisticsRepository.save(statistics);
     }
 }
