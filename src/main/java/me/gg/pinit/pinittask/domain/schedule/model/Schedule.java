@@ -20,6 +20,11 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 @Entity
+@Table(
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_schedule_task", columnNames = {"task_id"})
+        }
+)
 public class Schedule {
     @Id
     @Column(name = "schedule_id")
@@ -34,6 +39,7 @@ public class Schedule {
     private Long ownerId;
 
     @Getter
+    @Column(name = "task_id")
     private Long taskId;
 
     @Getter
