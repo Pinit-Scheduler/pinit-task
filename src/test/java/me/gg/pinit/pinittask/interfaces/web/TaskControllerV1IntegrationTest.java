@@ -26,6 +26,7 @@ import java.time.ZoneId;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -156,5 +157,32 @@ class TaskControllerV1IntegrationTest {
                         .header("X-Member-Id", MEMBER_ID)
                         .param("deleteSchedules", "false"))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void createTask_validationErrors_returnDetailedErrors() throws Exception {
+        String payload = """
+                {
+                  "title": "",
+                  "description": "desc",
+                  "dueDate": null,
+                  "importance": 0,
+                  "difficulty": 4,
+                  "removeDependencies": [],
+                  "addDependencies": []
+                }
+                """;
+
+        mockMvc.perform(post("/v1/tasks")
+                        .header("X-Member-Id", MEMBER_ID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Validation failed for 4 field(s)"))
+                .andExpect(jsonPath("$.errors", hasSize(4)))
+                .andExpect(jsonPath("$.errors[?(@.field=='title')].reason", hasItem(containsString("must not be blank"))))
+                .andExpect(jsonPath("$.errors[?(@.field=='dueDate')].reason", hasItem(containsString("must not be null"))))
+                .andExpect(jsonPath("$.errors[?(@.field=='importance')].reason", hasItem(containsString("greater than or equal to 1"))))
+                .andExpect(jsonPath("$.errors[?(@.field=='difficulty')].reason", hasItem(containsString("난이도"))));
     }
 }
