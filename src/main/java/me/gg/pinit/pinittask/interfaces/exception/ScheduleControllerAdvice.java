@@ -10,12 +10,14 @@ import me.gg.pinit.pinittask.domain.member.exception.ObjectiveNotPositiveExcepti
 import me.gg.pinit.pinittask.domain.schedule.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
-import java.util.Objects;
 
 @Slf4j
 @RestControllerAdvice
@@ -52,9 +54,12 @@ public class ScheduleControllerAdvice {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex, WebRequest request) {
-        String message = Objects.requireNonNullElse(ex.getBindingResult().getFieldError(), ex.getBindingResult().getGlobalError())
-                .getDefaultMessage();
-        return buildResponse(HttpStatus.BAD_REQUEST, message, request);
+        BindingResult bindingResult = ex.getBindingResult();
+        var errors = bindingResult.getAllErrors().stream()
+                .map(this::toValidationError)
+                .toList();
+        String message = "Validation failed for %d field(s)".formatted(errors.size());
+        return buildResponse(HttpStatus.BAD_REQUEST, message, request, errors);
     }
 
     @ExceptionHandler(Exception.class)
@@ -64,7 +69,18 @@ public class ScheduleControllerAdvice {
     }
 
     private ResponseEntity<ErrorResponse> buildResponse(HttpStatus status, String message, WebRequest request) {
-        ErrorResponse body = ErrorResponse.of(status.value(), status.getReasonPhrase(), message, request.getDescription(false));
+        return buildResponse(status, message, request, null);
+    }
+
+    private ResponseEntity<ErrorResponse> buildResponse(HttpStatus status, String message, WebRequest request, java.util.List<ErrorResponse.ValidationError> errors) {
+        ErrorResponse body = ErrorResponse.of(status.value(), status.getReasonPhrase(), message, request.getDescription(false), errors);
         return ResponseEntity.status(status).body(body);
+    }
+
+    private ErrorResponse.ValidationError toValidationError(ObjectError error) {
+        if (error instanceof FieldError fieldError) {
+            return new ErrorResponse.ValidationError(fieldError.getField(), fieldError.getRejectedValue(), fieldError.getDefaultMessage());
+        }
+        return new ErrorResponse.ValidationError(error.getObjectName(), null, error.getDefaultMessage());
     }
 }
