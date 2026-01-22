@@ -3,7 +3,6 @@ package me.gg.pinit.pinittask.interfaces.web;
 import me.gg.pinit.pinittask.application.datetime.DateTimeUtils;
 import me.gg.pinit.pinittask.application.schedule.service.ScheduleService;
 import me.gg.pinit.pinittask.application.schedule.service.ScheduleStateChangeService;
-import me.gg.pinit.pinittask.application.task.service.TaskService;
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
 import me.gg.pinit.pinittask.interfaces.dto.DateTimeWithZone;
 import me.gg.pinit.pinittask.interfaces.dto.ScheduleSimpleRequest;
@@ -34,8 +33,6 @@ class ScheduleControllerV1Test {
     ScheduleService scheduleService;
     @Mock
     ScheduleStateChangeService scheduleStateChangeService;
-    @Mock
-    TaskService taskService;
     DateTimeUtils dateTimeUtils = new DateTimeUtils();
 
     @InjectMocks
@@ -46,7 +43,7 @@ class ScheduleControllerV1Test {
     @BeforeEach
     void setUp() {
         memberId = 1L;
-        controller = new ScheduleControllerV1(dateTimeUtils, scheduleService, scheduleStateChangeService, taskService);
+        controller = new ScheduleControllerV1(dateTimeUtils, scheduleService, scheduleStateChangeService);
     }
 
     @Test
@@ -69,18 +66,13 @@ class ScheduleControllerV1Test {
     }
 
     @Test
-    void deleteSchedule_deletesTaskWhenFlagTrue() throws Exception {
+    void deleteSchedule_deletesScheduleOnly() throws Exception {
         Long scheduleId = 77L;
-        Long taskId = 55L;
-        Schedule schedule = new Schedule(memberId, taskId, "t", "d", ZonedDateTime.now());
-        setScheduleId(schedule, scheduleId);
-        when(scheduleService.getSchedule(memberId, scheduleId)).thenReturn(schedule);
 
-        ResponseEntity<Void> response = controller.deleteSchedule(memberId, scheduleId, true);
+        ResponseEntity<Void> response = controller.deleteSchedule(memberId, scheduleId);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
         verify(scheduleService).deleteSchedule(memberId, scheduleId);
-        verify(taskService).deleteTask(memberId, taskId, false);
     }
 
     @Test
