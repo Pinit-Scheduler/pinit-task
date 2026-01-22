@@ -58,7 +58,7 @@ public class ScheduleControllerV0 {
     })
     public ResponseEntity<ScheduleResponse> createSchedule(@Parameter(hidden = true) @MemberId Long memberId,
                                                            @Valid @RequestBody ScheduleRequest request) {
-        Schedule saved = scheduleAdjustmentService.createSchedule(memberId, request.toCommand(null, memberId, dateTimeUtils));
+        Schedule saved = scheduleAdjustmentService.createScheduleLegacy(memberId, request.toCommand(null, memberId, dateTimeUtils));
         Task task = loadTask(saved);
         return ResponseEntity.status(HttpStatus.CREATED).body(ScheduleResponse.from(saved, task));
     }
@@ -178,13 +178,8 @@ public class ScheduleControllerV0 {
             @ApiResponse(responseCode = "409", description = "잘못된 상태 전환입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<Void> deleteSchedule(@Parameter(hidden = true) @MemberId Long memberId,
-                                               @PathVariable Long scheduleId,
-                                               @RequestParam(defaultValue = "false") boolean deleteTaskAlso) {
-        Schedule schedule = scheduleService.getSchedule(memberId, scheduleId);
+                                               @PathVariable Long scheduleId) {
         scheduleService.deleteSchedule(memberId, scheduleId);
-        if (deleteTaskAlso && schedule.getTaskId() != null) {
-            taskService.deleteTask(memberId, schedule.getTaskId(), false);
-        }
         return ResponseEntity.noContent().build();
     }
 
