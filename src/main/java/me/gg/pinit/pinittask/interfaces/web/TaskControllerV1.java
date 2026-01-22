@@ -47,7 +47,7 @@ public class TaskControllerV1 {
     @PostMapping
     @Operation(summary = "작업 생성", description = "새 작업과 의존 관계를 등록합니다.")
     public ResponseEntity<TaskResponse> createTask(@Parameter(hidden = true) @MemberId Long memberId,
-                                                   @Valid @RequestBody TaskRequest request) {
+                                                   @Valid @RequestBody TaskCreateRequest request) {
         Task saved = taskAdjustmentService.createTask(memberId, request.toCommand(null, memberId, dateTimeUtils));
         return ResponseEntity.status(HttpStatus.CREATED).body(TaskResponse.from(saved));
     }
@@ -56,7 +56,7 @@ public class TaskControllerV1 {
     @Operation(summary = "작업 수정", description = "작업 본문과 의존 관계를 함께 수정합니다.")
     public ResponseEntity<TaskResponse> updateTask(@Parameter(hidden = true) @MemberId Long memberId,
                                                    @PathVariable Long taskId,
-                                                   @Valid @RequestBody TaskRequest request) {
+                                                   @Valid @RequestBody TaskUpdateRequest request) {
         Task updated = taskAdjustmentService.updateTask(memberId, request.toCommand(taskId, memberId, dateTimeUtils));
         return ResponseEntity.ok(TaskResponse.from(updated));
     }
