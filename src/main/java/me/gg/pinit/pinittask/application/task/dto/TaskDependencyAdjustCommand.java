@@ -64,6 +64,21 @@ public class TaskDependencyAdjustCommand {
                 .setDifficulty(difficulty);
     }
 
+    /**
+     * 업데이트 요청에서는 0 플레이스홀더 사용을 금지한다.
+     * (0은 새 Task 생성 시 자기 자신을 의미하므로 create 전용)
+     */
+    public void validateNoPlaceholderForUpdate() {
+        if (taskId == null) {
+            return;
+        }
+        boolean hasPlaceholder = addDependencies.stream().anyMatch(this::hasPlaceholder)
+                || removeDependencies.stream().anyMatch(this::hasPlaceholder);
+        if (hasPlaceholder) {
+            throw new IllegalArgumentException("수정 요청에서는 fromId/toId에 0을 사용할 수 없습니다.");
+        }
+    }
+
     public List<Dependency> getRemoveDependencies(Long selfId) {
         return removeDependencies.stream()
                 .map(d -> new Dependency(ownerId, resolveId(d.getFromId(), selfId), resolveId(d.getToId(), selfId)))
@@ -77,9 +92,14 @@ public class TaskDependencyAdjustCommand {
     }
 
     private Long resolveId(Long rawId, Long selfId) {
-        if (rawId == null) {
+        if (rawId == 0L) {
             return selfId;
         }
         return rawId;
+    }
+
+    private boolean hasPlaceholder(DependencyDto dto) {
+        return dto.getFromId() != null && dto.getFromId() == 0L
+                || dto.getToId() != null && dto.getToId() == 0L;
     }
 }
