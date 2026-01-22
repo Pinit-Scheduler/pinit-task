@@ -18,8 +18,8 @@ class GraphTest {
         long after2 = 3L;
 
         List<Dependency> dependencies = new ArrayList<>();
-        dependencies.add(new Dependency(now, after1));
-        dependencies.add(new Dependency(now, after2));
+        dependencies.add(new Dependency(1L, now, after1));
+        dependencies.add(new Dependency(1L, now, after2));
 
         Graph graph = Graph.of(dependencies);
 
