@@ -24,7 +24,7 @@ public class ZonedDateAttribute {
 
     private ZonedDateAttribute(LocalDate date, String offsetId) {
         this.date = date;
-        this.offsetId = normalizeOffsetId(offsetId);
+        this.offsetId = offsetId;
     }
 
     public static ZonedDateAttribute from(ZonedDateTime zonedDateTime) {
@@ -49,28 +49,7 @@ public class ZonedDateAttribute {
 
     public ZoneOffset getOffset() {
         Objects.requireNonNull(offsetId, "offsetId must not be null");
-        return ZoneOffset.of(normalizeOffsetId(offsetId));
-    }
-
-    private String normalizeOffsetId(String raw) {
-        String trimmed = Objects.requireNonNull(raw, "offsetId must not be null").trim();
-        if (trimmed.isEmpty()) {
-            throw new IllegalArgumentException("offsetId must not be blank");
-        }
-        String upper = trimmed.toUpperCase();
-        // Common UTC variants
-        if (upper.equals("Z") || upper.equals("UTC") || upper.equals("UT") || upper.equals("GMT") || upper.equals("Z0") || upper.equals("UTC+0") || upper.equals("UTC+00:00") || upper.equals("UTC+0000")) {
-            return "Z";
-        }
-        // +0900 -> +09:00
-        if (upper.matches("[+-]\\d{4}")) {
-            return upper.substring(0, 3) + ":" + upper.substring(3);
-        }
-        // +09:00 already valid
-        if (upper.matches("[+-]\\d{2}:\\d{2}")) {
-            return upper;
-        }
-        throw new IllegalArgumentException("Invalid offsetId: " + raw);
+        return ZoneOffset.of(offsetId);
     }
 
     @Override
