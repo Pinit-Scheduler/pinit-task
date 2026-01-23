@@ -14,7 +14,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
 @Slf4j
-@RestControllerAdvice(assignableTypes = TaskControllerV2.class)
+@RestControllerAdvice(assignableTypes = {
+        TaskControllerV2.class,
+        TaskControllerV1.class
+})
 public class TaskControllerAdvice {
 
     @ExceptionHandler(TaskNotFoundException.class)
