@@ -16,17 +16,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Deprecated
 @RestController
-@RequestMapping("/v1/members")
-@Tag(name = "MemberV1", description = "회원 관련 정보 API (v1)")
+@RequestMapping("/v2/members")
+@Tag(name = "MemberV2", description = "회원 관련 정보 API (v1)")
 @ApiResponses({
         @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
         @ApiResponse(responseCode = "404", description = "대상을 찾을 수 없습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
 })
 @RequiredArgsConstructor
-public class MemberControllerV1 {
+public class MemberControllerV2 {
 
     private final MemberService memberService;
 

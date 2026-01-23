@@ -22,12 +22,11 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
-@Deprecated
 @RestController
-@RequestMapping("/v1/statistics")
-@Tag(name = "StatisticsV1", description = "통계 조회 API (v1)")
+@RequestMapping("/v2/statistics")
+@Tag(name = "StatisticsV2", description = "통계 조회 API")
 @RequiredArgsConstructor
-public class StatisticsControllerV1 {
+public class StatisticsControllerV2 {
 
     private final StatisticsService statisticsService;
     private final DateTimeUtils dateTimeUtils;

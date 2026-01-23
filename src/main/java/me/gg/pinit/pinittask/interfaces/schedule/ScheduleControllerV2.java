@@ -33,18 +33,17 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-@Deprecated
 @RestController
-@RequestMapping("/v1/schedules")
+@RequestMapping("/v2/schedules")
 @RequiredArgsConstructor
-@Tag(name = "ScheduleV1", description = "작업과 분리된 일정 관리 API")
+@Tag(name = "ScheduleV2", description = "일정 관리 API")
 @ApiResponses({
         @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
         @ApiResponse(responseCode = "404", description = "대상을 찾을 수 없습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
         @ApiResponse(responseCode = "409", description = "현재 상태와 충돌했습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
 })
-public class ScheduleControllerV1 {
+public class ScheduleControllerV2 {
     private final DateTimeUtils dateTimeUtils;
     private final ScheduleService scheduleService;
     private final ScheduleStateChangeService scheduleStateChangeService;
