@@ -1,8 +1,14 @@
-package me.gg.pinit.pinittask.interfaces.exception;
+package me.gg.pinit.pinittask.interfaces.schedule;
 
 import lombok.extern.slf4j.Slf4j;
-import me.gg.pinit.pinittask.domain.task.exception.TaskNotFoundException;
-import me.gg.pinit.pinittask.interfaces.task.TaskControllerV2;
+import me.gg.pinit.pinittask.domain.dependency.exception.ScheduleAlreadyRemovedException;
+import me.gg.pinit.pinittask.domain.dependency.exception.ScheduleNotFoundException;
+import me.gg.pinit.pinittask.domain.member.exception.DuplicatedScheduleRunningException;
+import me.gg.pinit.pinittask.domain.member.exception.MemberNotFoundException;
+import me.gg.pinit.pinittask.domain.member.exception.ObjectiveNotNullException;
+import me.gg.pinit.pinittask.domain.member.exception.ObjectiveNotPositiveException;
+import me.gg.pinit.pinittask.domain.schedule.exception.*;
+import me.gg.pinit.pinittask.interfaces.exception.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -13,20 +19,38 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
-@Slf4j
-@RestControllerAdvice(assignableTypes = TaskControllerV2.class)
-public class TaskControllerAdvice {
 
-    @ExceptionHandler(TaskNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNotFound(TaskNotFoundException ex, WebRequest request) {
-        log.warn("Task not found: {}", ex.getMessage());
+@Slf4j
+@RestControllerAdvice(assignableTypes = ScheduleControllerV2.class)
+public class ScheduleControllerAdvice {
+    @ExceptionHandler({
+            IllegalTitleException.class,
+            IllegalDescriptionException.class,
+            IllegalChangeException.class,
+            IllegalTransitionException.class,
+            TimeOrderReversedException.class,
+            StartNotRecordedException.class,
+            ObjectiveNotPositiveException.class,
+            ObjectiveNotNullException.class,
+            DuplicatedScheduleRunningException.class,
+            IllegalArgumentException.class,
+            IllegalStateException.class
+    })
+    public ResponseEntity<ErrorResponse> handleBadRequest(RuntimeException ex, WebRequest request) {
+        log.warn("Client error: {}", ex.getMessage());
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler({MemberNotFoundException.class, ScheduleNotFoundException.class})
+    public ResponseEntity<ErrorResponse> handleNotFound(RuntimeException ex, WebRequest request) {
+        log.warn("Not found: {}", ex.getMessage());
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request);
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponse> handleBadRequest(IllegalArgumentException ex, WebRequest request) {
-        log.warn("Invalid task request: {}", ex.getMessage());
-        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    @ExceptionHandler(ScheduleAlreadyRemovedException.class)
+    public ResponseEntity<ErrorResponse> handleConflict(RuntimeException ex, WebRequest request) {
+        log.warn("Conflict: {}", ex.getMessage());
+        return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), request);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -39,15 +63,9 @@ public class TaskControllerAdvice {
         return buildResponse(HttpStatus.BAD_REQUEST, message, request, errors);
     }
 
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<ErrorResponse> handleConflict(IllegalStateException ex, WebRequest request) {
-        log.warn("Task conflict: {}", ex.getMessage());
-        return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), request);
-    }
-
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleInternal(Exception ex, WebRequest request) {
-        log.error("Unexpected task error", ex);
+        log.error("Unexpected error", ex);
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error occurred.", request);
     }
 
