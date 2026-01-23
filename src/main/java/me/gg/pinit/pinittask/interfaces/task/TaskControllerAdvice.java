@@ -1,8 +1,8 @@
-package me.gg.pinit.pinittask.interfaces.exception;
+package me.gg.pinit.pinittask.interfaces.task;
 
 import lombok.extern.slf4j.Slf4j;
 import me.gg.pinit.pinittask.domain.task.exception.TaskNotFoundException;
-import me.gg.pinit.pinittask.interfaces.task.TaskControllerV1;
+import me.gg.pinit.pinittask.interfaces.exception.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -14,7 +14,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
 @Slf4j
-@RestControllerAdvice(assignableTypes = TaskControllerV1.class)
+@RestControllerAdvice(assignableTypes = {
+        TaskControllerV2.class,
+        TaskControllerV1.class
+})
 public class TaskControllerAdvice {
 
     @ExceptionHandler(TaskNotFoundException.class)

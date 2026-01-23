@@ -1,4 +1,4 @@
-package me.gg.pinit.pinittask.interfaces.exception;
+package me.gg.pinit.pinittask.interfaces.schedule;
 
 import lombok.extern.slf4j.Slf4j;
 import me.gg.pinit.pinittask.domain.dependency.exception.ScheduleAlreadyRemovedException;
@@ -8,6 +8,7 @@ import me.gg.pinit.pinittask.domain.member.exception.MemberNotFoundException;
 import me.gg.pinit.pinittask.domain.member.exception.ObjectiveNotNullException;
 import me.gg.pinit.pinittask.domain.member.exception.ObjectiveNotPositiveException;
 import me.gg.pinit.pinittask.domain.schedule.exception.*;
+import me.gg.pinit.pinittask.interfaces.exception.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -20,7 +21,9 @@ import org.springframework.web.context.request.WebRequest;
 
 
 @Slf4j
-@RestControllerAdvice
+@RestControllerAdvice(assignableTypes = {
+        ScheduleControllerV2.class, ScheduleControllerV1.class
+})
 public class ScheduleControllerAdvice {
     @ExceptionHandler({
             IllegalTitleException.class,

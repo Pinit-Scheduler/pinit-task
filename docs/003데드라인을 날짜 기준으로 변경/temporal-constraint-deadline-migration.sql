@@ -32,3 +32,9 @@ ALTER TABLE task
 -- - If needed, repopulate deadline_time from deadline_date using stored offset (time fixed at 00:00:00):
 -- UPDATE task SET deadline_time = CONVERT_TZ(CONCAT(deadline_date, ' 00:00:00'), '+00:00', deadline_offset_id);
 -- - Restore NOT NULL/column definitions accordingly.
+
+
+--- 잘못된 오프셋 대문자 Z로 정규화
+UPDATE task
+SET deadline_offset_id = 'Z'
+WHERE deadline_offset_id IN ('z:', 'z', 'Z:', 'Z0', 'z0', 'utc', 'UT', 'GMT', 'UTC+0', 'UTC+00:00', 'UTC+0000');
