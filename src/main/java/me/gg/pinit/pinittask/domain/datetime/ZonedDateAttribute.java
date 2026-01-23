@@ -29,16 +29,27 @@ public class ZonedDateAttribute {
 
     public static ZonedDateAttribute from(ZonedDateTime zonedDateTime) {
         Objects.requireNonNull(zonedDateTime, "zonedDateTime must not be null");
-        return new ZonedDateAttribute(zonedDateTime.toLocalDate(), zonedDateTime.getOffset().getId());
+        return of(zonedDateTime.toLocalDate(), zonedDateTime.getOffset());
+    }
+
+    public static ZonedDateAttribute of(LocalDate date, ZoneOffset offset) {
+        Objects.requireNonNull(date, "date must not be null");
+        Objects.requireNonNull(offset, "offset must not be null");
+        return new ZonedDateAttribute(date, offset.getId());
     }
 
     public ZonedDateTime toZonedDateTime() {
         Objects.requireNonNull(date, "dateTime must not be null");
         Objects.requireNonNull(offsetId, "offsetId must not be null");
 
-        ZoneOffset to = ZoneOffset.of(offsetId);
+        ZoneOffset to = getOffset();
 
         return date.atStartOfDay(to);
+    }
+
+    public ZoneOffset getOffset() {
+        Objects.requireNonNull(offsetId, "offsetId must not be null");
+        return ZoneOffset.of(offsetId);
     }
 
     @Override
