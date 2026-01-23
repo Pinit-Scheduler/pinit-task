@@ -19,7 +19,7 @@ public record TaskResponse(
         String title,
         @Schema(description = "작업 설명")
         String description,
-        @Schema(description = "마감 기한")
+        @Schema(description = "마감 기한 (00:00:00 고정, ZoneOffset 기반)")
         DateTimeWithZone dueDate,
         @Schema(description = "중요도")
         int importance,
