@@ -1,8 +1,9 @@
-package me.gg.pinit.pinittask.interfaces.dto;
+package me.gg.pinit.pinittask.interfaces.statistics.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import me.gg.pinit.pinittask.domain.statistics.model.Statistics;
+import me.gg.pinit.pinittask.interfaces.dto.DateTimeWithZone;
 
 import java.time.Duration;
 

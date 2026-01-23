@@ -2,7 +2,7 @@ package me.gg.pinit.pinittask.interfaces.exception;
 
 import lombok.extern.slf4j.Slf4j;
 import me.gg.pinit.pinittask.domain.task.exception.TaskNotFoundException;
-import me.gg.pinit.pinittask.interfaces.web.TaskControllerV1;
+import me.gg.pinit.pinittask.interfaces.task.TaskControllerV1;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;

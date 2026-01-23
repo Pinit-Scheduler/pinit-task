@@ -1,10 +1,11 @@
-package me.gg.pinit.pinittask.interfaces.dto;
+package me.gg.pinit.pinittask.interfaces.schedule.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import me.gg.pinit.pinittask.application.datetime.DateTimeUtils;
 import me.gg.pinit.pinittask.domain.schedule.model.ScheduleType;
 import me.gg.pinit.pinittask.domain.schedule.patch.SchedulePatch;
+import me.gg.pinit.pinittask.interfaces.dto.DateTimeWithZone;
 
 public record ScheduleSimplePatchRequest(
         @Schema(description = "일정 제목", example = "팀 회의")

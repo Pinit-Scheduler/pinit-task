@@ -8,7 +8,7 @@ import me.gg.pinit.pinittask.domain.schedule.model.ScheduleType;
 import me.gg.pinit.pinittask.domain.task.repository.TaskRepository;
 import me.gg.pinit.pinittask.infrastructure.events.RabbitEventPublisher;
 import me.gg.pinit.pinittask.interfaces.dto.DateTimeWithZone;
-import me.gg.pinit.pinittask.interfaces.dto.ScheduleRequest;
+import me.gg.pinit.pinittask.interfaces.schedule.dto.ScheduleRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

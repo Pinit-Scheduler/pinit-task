@@ -1,4 +1,4 @@
-package me.gg.pinit.pinittask.interfaces.dto;
+package me.gg.pinit.pinittask.interfaces.task.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
@@ -9,13 +9,14 @@ import jakarta.validation.constraints.NotNull;
 import me.gg.pinit.pinittask.application.datetime.DateTimeUtils;
 import me.gg.pinit.pinittask.application.schedule.dto.DependencyDto;
 import me.gg.pinit.pinittask.application.task.dto.TaskDependencyAdjustCommand;
+import me.gg.pinit.pinittask.interfaces.dto.DateWithOffset;
 import me.gg.pinit.pinittask.interfaces.utils.FibonacciDifficulty;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public record TaskCreateRequest(
+public record TaskCreateRequestV2(
         @NotBlank
         @Schema(description = "작업 제목", example = "스터디 준비")
         String title,
@@ -23,9 +24,9 @@ public record TaskCreateRequest(
         @Schema(description = "작업 설명", example = "다음 주 발표 자료 정리")
         String description,
         @NotNull
-        @Schema(description = "마감 기한", example = "{\"dateTime\":\"2024-03-01T18:00:00\",\"zoneId\":\"Asia/Seoul\"}")
+        @Schema(description = "마감 날짜(+오프셋)", example = "{\"date\":\"2024-03-01\",\"offset\":\"+09:00\"}")
         @Valid
-        DateTimeWithZone dueDate,
+        DateWithOffset dueDate,
         @NotNull
         @Min(1)
         @Max(9)
@@ -47,7 +48,7 @@ public record TaskCreateRequest(
                 ownerId,
                 title,
                 description,
-                dateTimeUtils.toZonedDateTime(dueDate.dateTime(), dueDate.zoneId()),
+                dateTimeUtils.toStartOfDay(dueDate.date(), dueDate.offset()),
                 importance,
                 difficulty,
                 remove,
@@ -73,4 +74,3 @@ public record TaskCreateRequest(
                 });
     }
 }
-

@@ -1,4 +1,4 @@
-package me.gg.pinit.pinittask.interfaces.web;
+package me.gg.pinit.pinittask.interfaces.member;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

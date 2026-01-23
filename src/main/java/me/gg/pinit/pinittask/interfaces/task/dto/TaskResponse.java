@@ -1,10 +1,11 @@
-package me.gg.pinit.pinittask.interfaces.dto;
+package me.gg.pinit.pinittask.interfaces.task.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import me.gg.pinit.pinittask.application.dependency.service.DependencyService.TaskDependencyInfo;
 import me.gg.pinit.pinittask.domain.task.model.Task;
 import me.gg.pinit.pinittask.domain.task.vo.ImportanceConstraint;
 import me.gg.pinit.pinittask.domain.task.vo.TemporalConstraint;
+import me.gg.pinit.pinittask.interfaces.dto.DateTimeWithZone;
 
 import java.time.Instant;
 import java.util.Collections;

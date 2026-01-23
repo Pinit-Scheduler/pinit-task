@@ -1,4 +1,4 @@
-package me.gg.pinit.pinittask.interfaces.dto;
+package me.gg.pinit.pinittask.interfaces.task.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
@@ -7,6 +7,7 @@ import me.gg.pinit.pinittask.application.datetime.DateTimeUtils;
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
 import me.gg.pinit.pinittask.domain.schedule.model.ScheduleType;
 import me.gg.pinit.pinittask.domain.task.model.Task;
+import me.gg.pinit.pinittask.interfaces.dto.DateTimeWithZone;
 
 public record TaskScheduleRequest(
         @Schema(description = "일정 제목(미입력 시 작업 제목 사용)", example = "오늘 할당된 작업")

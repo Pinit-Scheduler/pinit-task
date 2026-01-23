@@ -1,4 +1,4 @@
-package me.gg.pinit.pinittask.interfaces.web;
+package me.gg.pinit.pinittask.interfaces.task;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -16,8 +16,9 @@ import me.gg.pinit.pinittask.application.task.service.TaskAdjustmentService;
 import me.gg.pinit.pinittask.application.task.service.TaskService;
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
 import me.gg.pinit.pinittask.domain.task.model.Task;
-import me.gg.pinit.pinittask.interfaces.dto.*;
 import me.gg.pinit.pinittask.interfaces.exception.ErrorResponse;
+import me.gg.pinit.pinittask.interfaces.schedule.dto.ScheduleSimpleResponse;
+import me.gg.pinit.pinittask.interfaces.task.dto.*;
 import me.gg.pinit.pinittask.interfaces.utils.MemberId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

@@ -1,6 +1,8 @@
 package me.gg.pinit.pinittask.interfaces.dto;
 
 import me.gg.pinit.pinittask.application.datetime.DateTimeUtils;
+import me.gg.pinit.pinittask.interfaces.task.dto.DependencyRequest;
+import me.gg.pinit.pinittask.interfaces.task.dto.TaskCreateRequest;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;

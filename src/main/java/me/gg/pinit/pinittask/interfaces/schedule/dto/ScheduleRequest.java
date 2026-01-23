@@ -1,4 +1,4 @@
-package me.gg.pinit.pinittask.interfaces.dto;
+package me.gg.pinit.pinittask.interfaces.schedule.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
@@ -10,6 +10,8 @@ import me.gg.pinit.pinittask.application.datetime.DateTimeUtils;
 import me.gg.pinit.pinittask.application.schedule.dto.DependencyDto;
 import me.gg.pinit.pinittask.application.schedule.dto.ScheduleDependencyAdjustCommand;
 import me.gg.pinit.pinittask.domain.schedule.model.ScheduleType;
+import me.gg.pinit.pinittask.interfaces.dto.DateTimeWithZone;
+import me.gg.pinit.pinittask.interfaces.task.dto.DependencyRequest;
 import me.gg.pinit.pinittask.interfaces.utils.FibonacciDifficulty;
 
 import java.util.ArrayList;

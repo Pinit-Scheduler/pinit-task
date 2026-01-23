@@ -6,7 +6,7 @@ import me.gg.pinit.pinittask.domain.member.model.Member;
 import me.gg.pinit.pinittask.domain.member.repository.MemberRepository;
 import me.gg.pinit.pinittask.infrastructure.events.RabbitEventPublisher;
 import me.gg.pinit.pinittask.interfaces.dto.DateWithOffset;
-import me.gg.pinit.pinittask.interfaces.dto.TaskCreateRequestV2;
+import me.gg.pinit.pinittask.interfaces.task.dto.TaskCreateRequestV2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

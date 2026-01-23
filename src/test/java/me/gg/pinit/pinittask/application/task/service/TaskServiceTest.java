@@ -14,7 +14,7 @@ import me.gg.pinit.pinittask.domain.task.model.Task;
 import me.gg.pinit.pinittask.domain.task.repository.TaskRepository;
 import me.gg.pinit.pinittask.domain.task.vo.ImportanceConstraint;
 import me.gg.pinit.pinittask.domain.task.vo.TemporalConstraint;
-import me.gg.pinit.pinittask.interfaces.dto.TaskCursorPageResponse;
+import me.gg.pinit.pinittask.interfaces.task.dto.TaskCursorPageResponse;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
