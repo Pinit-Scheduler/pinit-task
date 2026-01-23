@@ -6,5 +6,5 @@ import java.time.Instant;
 import java.util.List;
 
 public interface ScheduleRepositoryCustom {
-    List<Schedule> findAllByOwnerIdAndDesignatedStartTimeInstantBetween(Long ownerId, Instant start, Instant end);
+    List<Schedule> findAllByOwnerIdAndDesignatedStartTimeBetween(Long ownerId, Instant start, Instant end);
 }
