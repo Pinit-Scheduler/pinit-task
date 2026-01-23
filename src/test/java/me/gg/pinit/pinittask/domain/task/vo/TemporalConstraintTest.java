@@ -14,7 +14,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class TemporalConstraintTest {
-    @Mock
+    @Mock(strictness = Mock.Strictness.LENIENT)
     Clock clock;
 
     @BeforeEach
@@ -26,7 +26,7 @@ class TemporalConstraintTest {
     @Test
     void Equals_서로_같은_경우() {
         TemporalConstraint tc = new TemporalConstraint(ZonedDateTime.now(clock), Duration.ofHours(3));
-        TemporalConstraint sameTc = new TemporalConstraint(ZonedDateTime.now(clock), Duration.ofHours(3));
+        TemporalConstraint sameTc = new TemporalConstraint(ZonedDateTime.now(clock).plusHours(2), Duration.ofHours(3));
 
         assertEquals(tc, sameTc, "TemporalConstraint 객체가 동일한 값으로 생성되었을 때 equals 메서드는 true를 반환해야 합니다.");
     }
@@ -40,10 +40,18 @@ class TemporalConstraintTest {
     }
 
     @Test
-    void Equals_시각_불일치() {
+    void Equals_날짜_불일치() {
         TemporalConstraint tc = new TemporalConstraint(ZonedDateTime.now(clock), Duration.ofHours(3));
-        TemporalConstraint diffTc = new TemporalConstraint(ZonedDateTime.now(clock).plusHours(3), Duration.ofHours(3));
+        TemporalConstraint diffTc = new TemporalConstraint(ZonedDateTime.now(clock).plusDays(1), Duration.ofHours(3));
 
         assertNotEquals(tc, diffTc, "TemporalConstraint 객체가 deadline 값이 다를 때 equals 메서드는 false를 반환해야 합니다.");
+    }
+
+    @Test
+    void Equals_오프셋_불일치() {
+        TemporalConstraint tc = new TemporalConstraint(ZonedDateTime.of(LocalDateTime.of(2025, 1, 1, 10, 0), ZoneId.of("+09:00")), Duration.ofHours(3));
+        TemporalConstraint diffTc = new TemporalConstraint(ZonedDateTime.of(LocalDateTime.of(2025, 1, 1, 10, 0), ZoneId.of("UTC")), Duration.ofHours(3));
+
+        assertNotEquals(tc, diffTc, "TemporalConstraint 객체가 오프셋이 다를 때 equals 메서드는 false를 반환해야 합니다.");
     }
 }
