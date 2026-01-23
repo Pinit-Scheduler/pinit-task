@@ -2,9 +2,11 @@ package me.gg.pinit.pinittask.domain.task.vo;
 
 import jakarta.persistence.*;
 import me.gg.pinit.pinittask.domain.converter.service.DurationConverter;
-import me.gg.pinit.pinittask.domain.datetime.ZonedDateTimeAttribute;
+import me.gg.pinit.pinittask.domain.datetime.ZonedDateAttribute;
 
 import java.time.Duration;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
@@ -12,10 +14,10 @@ import java.util.Objects;
 public class TemporalConstraint {
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name = "dateTime", column = @Column(name = "deadline_time")),
-            @AttributeOverride(name = "zoneId", column = @Column(name = "deadline_zone_id"))
+            @AttributeOverride(name = "date", column = @Column(name = "deadline_date")),
+            @AttributeOverride(name = "offsetId", column = @Column(name = "deadline_offset_id"))
     })
-    private ZonedDateTimeAttribute deadline;
+    private ZonedDateAttribute deadline;
     @Convert(converter = DurationConverter.class)
     @Column(name = "expected_duration")
     private Duration duration;
@@ -24,16 +26,40 @@ public class TemporalConstraint {
     }
 
     public TemporalConstraint(ZonedDateTime deadline, Duration duration) {
-        this.deadline = ZonedDateTimeAttribute.from(deadline);
-        this.duration = duration;
+        this(ZonedDateAttribute.from(deadline), duration);
+    }
+
+    public TemporalConstraint(LocalDate deadlineDate, ZoneOffset offset, Duration duration) {
+        this(ZonedDateAttribute.of(deadlineDate, offset), duration);
+    }
+
+    public TemporalConstraint(ZonedDateAttribute deadline, Duration duration) {
+        this.deadline = Objects.requireNonNull(deadline, "deadline must not be null");
+        this.duration = Objects.requireNonNull(duration, "duration must not be null");
     }
 
     public TemporalConstraint changeDeadline(ZonedDateTime newDeadline) {
         return new TemporalConstraint(newDeadline, this.duration);
     }
 
+    public TemporalConstraint changeDeadline(LocalDate newDeadlineDate, ZoneOffset offset) {
+        return new TemporalConstraint(newDeadlineDate, offset, this.duration);
+    }
+
+    /**
+     * Returns deadline at start-of-day using stored zone offset.
+     * Time component is always 00:00 and region ZoneId information is not preserved.
+     */
     public ZonedDateTime getDeadline() {
         return deadline.toZonedDateTime();
+    }
+
+    public LocalDate getDeadlineDate() {
+        return deadline.getDate();
+    }
+
+    public ZoneOffset getDeadlineOffset() {
+        return deadline.getOffset();
     }
 
     @Override
