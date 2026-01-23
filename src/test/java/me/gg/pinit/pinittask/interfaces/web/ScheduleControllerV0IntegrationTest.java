@@ -82,8 +82,8 @@ class ScheduleControllerV0IntegrationTest {
                 .andExpect(jsonPath("$.id").isNumber())
                 .andExpect(jsonPath("$.taskId").isNumber())
                 .andExpect(jsonPath("$.title").value("스터디 준비"))
-                .andExpect(jsonPath("$.deadline.dateTime").value("2024-03-01T18:00:00"))
-                .andExpect(jsonPath("$.deadline.zoneId").value(MEMBER_ZONE.getId()))
+                .andExpect(jsonPath("$.deadline.dateTime").value("2024-03-01T00:00:00"))
+                .andExpect(jsonPath("$.deadline.zoneId").value("+09:00"))
                 .andExpect(jsonPath("$.importance").value(5))
                 .andExpect(jsonPath("$.difficulty").value(3))
                 .andReturn();

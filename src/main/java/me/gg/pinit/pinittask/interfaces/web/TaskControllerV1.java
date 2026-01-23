@@ -37,6 +37,7 @@ import org.springframework.web.bind.annotation.*;
         @ApiResponse(responseCode = "409", description = "현재 상태와 충돌했습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
         @ApiResponse(responseCode = "500", description = "서버 내부 오류", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
 })
+@Deprecated
 public class TaskControllerV1 {
     private final DateTimeUtils dateTimeUtils;
     private final DependencyService dependencyService;
@@ -81,14 +82,14 @@ public class TaskControllerV1 {
                                        @RequestParam(defaultValue = "0") int page,
                                        @RequestParam(defaultValue = "20") int size,
                                        @RequestParam(defaultValue = "false") boolean readyOnly) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Order.asc("temporalConstraint.deadline.dateTime")));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Order.asc("temporalConstraint.deadline.date")));
         Page<Task> tasks = taskService.getTasks(memberId, pageable, readyOnly);
         var dependencyMap = dependencyService.getDependencyInfoForTasks(memberId, tasks.getContent().stream().map(Task::getId).toList());
         return tasks.map(task -> TaskResponse.from(task, dependencyMap.get(task.getId())));
     }
 
     @GetMapping("/cursor")
-    @Operation(summary = "작업 목록 커서 조회", description = "deadline asc, id asc 커서 기반 페이지네이션. cursor는 'YYYY-MM-DDTHH:MM:SS|taskId' 형식, 더 이상 데이터가 없으면 nextCursor=null.")
+    @Operation(summary = "작업 목록 커서 조회", description = "마감 날짜(자정 00:00:00) asc, id asc 커서 기반 페이지네이션. cursor는 'YYYY-MM-DDTHH:MM:SS|taskId' 형식이며 시간 부분은 00:00:00으로 고정됩니다. 더 이상 데이터가 없으면 nextCursor=null.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "커서 기반 작업 목록 조회 성공", content = @Content(schema = @Schema(implementation = TaskCursorPageResponse.class))),
             @ApiResponse(responseCode = "400", description = "커서 형식이 올바르지 않습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))

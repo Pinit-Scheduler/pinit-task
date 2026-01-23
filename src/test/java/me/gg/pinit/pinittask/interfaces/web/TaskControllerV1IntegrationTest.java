@@ -76,7 +76,7 @@ class TaskControllerV1IntegrationTest {
                 .andExpect(jsonPath("$.id").isNumber())
                 .andExpect(jsonPath("$.ownerId").value(MEMBER_ID))
                 .andExpect(jsonPath("$.title").value("리포트 작성"))
-                .andExpect(jsonPath("$.dueDate.dateTime").value("2024-04-01T18:00:00"))
+                .andExpect(jsonPath("$.dueDate.dateTime").value("2024-04-01T00:00:00"))
                 .andExpect(jsonPath("$.completed").value(false))
                 .andReturn();
 
