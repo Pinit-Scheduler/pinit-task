@@ -60,7 +60,7 @@ class ScheduleServiceTest {
     void getScheduleList() {
         //given
         when(memberService.findZoneIdOfMember(memberId)).thenReturn(ZoneId.of("Asia/Seoul"));
-        when(scheduleRepository.findAllByOwnerIdAndDesignatedStartTimeInstantBetween(eq(memberId), any(), any())).thenReturn(List.of(scheduleSample));
+        when(scheduleRepository.findAllByOwnerIdAndDesignatedStartTimeBetween(eq(memberId), any(), any())).thenReturn(List.of(scheduleSample));
 
         //when
         List<Schedule> scheduleList = scheduleService.getScheduleList(memberId, ZonedDateTime.of(2025, 10, 1, 0, 0, 0, 0, ZoneId.of("Asia/Seoul")));
@@ -69,7 +69,7 @@ class ScheduleServiceTest {
         assertNotNull(scheduleList);
         assertEquals(1, scheduleList.size());
         verify(memberService).findZoneIdOfMember(memberId);
-        verify(scheduleRepository).findAllByOwnerIdAndDesignatedStartTimeInstantBetween(eq(memberId), any(), any());
+        verify(scheduleRepository).findAllByOwnerIdAndDesignatedStartTimeBetween(eq(memberId), any(), any());
     }
 
     @Test

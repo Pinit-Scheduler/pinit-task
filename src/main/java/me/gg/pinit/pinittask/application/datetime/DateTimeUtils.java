@@ -22,4 +22,10 @@ public class DateTimeUtils {
         Objects.requireNonNull(zoneId, "zoneId must not be null");
         return ZonedDateTime.of(localDateTime, zoneId);
     }
+
+    public ZonedDateTime toStartOfDay(LocalDate date, ZoneOffset offset) {
+        Objects.requireNonNull(date, "date must not be null");
+        Objects.requireNonNull(offset, "offset must not be null");
+        return date.atStartOfDay(offset);
+    }
 }

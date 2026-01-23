@@ -1,4 +1,4 @@
-package me.gg.pinit.pinittask.interfaces.web;
+package me.gg.pinit.pinittask.interfaces.statistics;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -8,8 +8,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import me.gg.pinit.pinittask.application.datetime.DateTimeUtils;
 import me.gg.pinit.pinittask.application.statistics.service.StatisticsService;
-import me.gg.pinit.pinittask.interfaces.dto.StatisticsResponse;
 import me.gg.pinit.pinittask.interfaces.exception.ErrorResponse;
+import me.gg.pinit.pinittask.interfaces.statistics.dto.StatisticsResponse;
 import me.gg.pinit.pinittask.interfaces.utils.MemberId;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;

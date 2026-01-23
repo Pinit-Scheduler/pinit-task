@@ -1,4 +1,4 @@
-package me.gg.pinit.pinittask.interfaces.web;
+package me.gg.pinit.pinittask.interfaces.schedule;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -16,10 +16,10 @@ import me.gg.pinit.pinittask.application.schedule.service.ScheduleStateChangeSer
 import me.gg.pinit.pinittask.application.task.service.TaskService;
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
 import me.gg.pinit.pinittask.domain.task.model.Task;
-import me.gg.pinit.pinittask.interfaces.dto.ScheduleSimplePatchRequest;
-import me.gg.pinit.pinittask.interfaces.dto.ScheduleSimpleRequest;
-import me.gg.pinit.pinittask.interfaces.dto.ScheduleSimpleResponse;
 import me.gg.pinit.pinittask.interfaces.exception.ErrorResponse;
+import me.gg.pinit.pinittask.interfaces.schedule.dto.ScheduleSimplePatchRequest;
+import me.gg.pinit.pinittask.interfaces.schedule.dto.ScheduleSimpleRequest;
+import me.gg.pinit.pinittask.interfaces.schedule.dto.ScheduleSimpleResponse;
 import me.gg.pinit.pinittask.interfaces.utils.MemberId;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Deprecated
 @RestController
 @RequestMapping("/v1/schedules")
 @RequiredArgsConstructor

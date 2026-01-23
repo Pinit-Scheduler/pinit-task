@@ -14,7 +14,7 @@ import me.gg.pinit.pinittask.domain.task.model.Task;
 import me.gg.pinit.pinittask.domain.task.repository.TaskRepository;
 import me.gg.pinit.pinittask.domain.task.vo.ImportanceConstraint;
 import me.gg.pinit.pinittask.domain.task.vo.TemporalConstraint;
-import me.gg.pinit.pinittask.interfaces.dto.TaskCursorPageResponse;
+import me.gg.pinit.pinittask.interfaces.task.dto.TaskCursorPageResponse;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -30,6 +30,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -206,7 +207,7 @@ class TaskServiceTest {
         ReflectionTestUtils.setField(t1, "id", 1L);
         Task t2 = buildTask(ownerId);
         ReflectionTestUtils.setField(t2, "id", 2L);
-        when(taskRepository.findNextByCursor(eq(ownerId), eq(true), any(), any(), any()))
+        when(taskRepository.findNextByCursor(eq(ownerId), eq(true), any(LocalDate.class), anyLong(), any()))
                 .thenReturn(List.of(t1, t2));
 
         TaskCursorPageResponse resp = taskService.getTasksByCursor(ownerId, 2, null, true);
@@ -221,7 +222,7 @@ class TaskServiceTest {
         Long ownerId = 51L;
         Task t1 = buildTask(ownerId);
         ReflectionTestUtils.setField(t1, "id", 5L);
-        when(taskRepository.findNextByCursor(eq(ownerId), eq(false), any(), any(), any()))
+        when(taskRepository.findNextByCursor(eq(ownerId), eq(false), any(LocalDate.class), anyLong(), any()))
                 .thenReturn(List.of(t1));
 
         TaskCursorPageResponse resp = taskService.getTasksByCursor(ownerId, 2, null, false);

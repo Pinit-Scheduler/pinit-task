@@ -1,4 +1,4 @@
-package me.gg.pinit.pinittask.interfaces.dto;
+package me.gg.pinit.pinittask.interfaces.schedule.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
@@ -6,6 +6,7 @@ import me.gg.pinit.pinittask.domain.schedule.vo.ScheduleHistory;
 import me.gg.pinit.pinittask.domain.task.model.Task;
 import me.gg.pinit.pinittask.domain.task.vo.ImportanceConstraint;
 import me.gg.pinit.pinittask.domain.task.vo.TemporalConstraint;
+import me.gg.pinit.pinittask.interfaces.dto.DateTimeWithZone;
 
 import java.time.Duration;
 

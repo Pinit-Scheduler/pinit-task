@@ -22,7 +22,7 @@ public class ScheduleRepositoryImpl implements ScheduleRepositoryCustom {
 
     @Transactional(readOnly = true)
     @Override
-    public List<Schedule> findAllByOwnerIdAndDesignatedStartTimeInstantBetween(Long ownerId, Instant start, Instant end) {
+    public List<Schedule> findAllByOwnerIdAndDesignatedStartTimeBetween(Long ownerId, Instant start, Instant end) {
         return jpaQueryFactory.select(schedule)
                 .from(schedule)
                 .where(

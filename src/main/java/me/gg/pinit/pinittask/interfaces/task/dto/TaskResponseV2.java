@@ -1,16 +1,17 @@
-package me.gg.pinit.pinittask.interfaces.dto;
+package me.gg.pinit.pinittask.interfaces.task.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import me.gg.pinit.pinittask.application.dependency.service.DependencyService.TaskDependencyInfo;
+import me.gg.pinit.pinittask.application.dependency.service.DependencyService;
 import me.gg.pinit.pinittask.domain.task.model.Task;
 import me.gg.pinit.pinittask.domain.task.vo.ImportanceConstraint;
 import me.gg.pinit.pinittask.domain.task.vo.TemporalConstraint;
+import me.gg.pinit.pinittask.interfaces.dto.DateWithOffset;
 
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
-public record TaskResponse(
+public record TaskResponseV2(
         @Schema(description = "작업 ID", example = "10")
         Long id,
         @Schema(description = "회원 ID", example = "3")
@@ -19,8 +20,8 @@ public record TaskResponse(
         String title,
         @Schema(description = "작업 설명")
         String description,
-        @Schema(description = "마감 기한")
-        DateTimeWithZone dueDate,
+        @Schema(description = "마감 날짜(+오프셋, 00:00 시각)")
+        DateWithOffset dueDate,
         @Schema(description = "중요도")
         int importance,
         @Schema(description = "난이도")
@@ -38,21 +39,21 @@ public record TaskResponse(
         @Schema(description = "수정 시각")
         Instant updatedAt
 ) {
-    public static TaskResponse from(Task task) {
+    public static TaskResponseV2 from(Task task) {
         return from(task, null);
     }
 
-    public static TaskResponse from(Task task, TaskDependencyInfo dependencyInfo) {
+    public static TaskResponseV2 from(Task task, DependencyService.TaskDependencyInfo dependencyInfo) {
         TemporalConstraint temporal = task.getTemporalConstraint();
         ImportanceConstraint importanceConstraint = task.getImportanceConstraint();
         List<Long> previous = dependencyInfo == null ? Collections.emptyList() : dependencyInfo.previousTaskIds();
         List<Long> next = dependencyInfo == null ? Collections.emptyList() : dependencyInfo.nextTaskIds();
-        return new TaskResponse(
+        return new TaskResponseV2(
                 task.getId(),
                 task.getOwnerId(),
                 task.getTitle(),
                 task.getDescription(),
-                DateTimeWithZone.from(temporal.getDeadline()),
+                DateWithOffset.from(temporal.getDeadline()),
                 importanceConstraint.getImportance(),
                 importanceConstraint.getDifficulty(),
                 task.isCompleted(),

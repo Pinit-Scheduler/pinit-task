@@ -84,7 +84,8 @@ class TaskAdjustmentServiceTest {
         assertThat(createdTask.getOwnerId()).isEqualTo(memberId);
         assertThat(createdTask.getTitle()).isEqualTo("new task");
         assertThat(createdTask.getDescription()).isEqualTo("new description");
-        assertThat(createdTask.getDueDate()).isEqualTo(dueDate);
+        assertThat(createdTask.getDueDate().toLocalDate()).isEqualTo(dueDate.toLocalDate());
+        assertThat(createdTask.getDueDate().getOffset()).isEqualTo(dueDate.getOffset());
         assertThat(createdTask.getImportanceConstraint().getImportance()).isEqualTo(5);
         assertThat(createdTask.getImportanceConstraint().getDifficulty()).isEqualTo(5);
 

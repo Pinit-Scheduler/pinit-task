@@ -1,4 +1,4 @@
-package me.gg.pinit.pinittask.interfaces.web;
+package me.gg.pinit.pinittask.interfaces.member;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Deprecated
 @RestController
 @RequestMapping("/v1/members")
 @Tag(name = "MemberV1", description = "회원 관련 정보 API (v1)")

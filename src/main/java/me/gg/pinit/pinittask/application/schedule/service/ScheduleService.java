@@ -46,7 +46,7 @@ public class ScheduleService {
         Instant startOfDay = dateTime.toLocalDate().atStartOfDay(memberZoneById).toInstant();
         Instant endExclusive = dateTime.toLocalDate().plusDays(1).atStartOfDay(memberZoneById).toInstant();
 
-        return scheduleRepository.findAllByOwnerIdAndDesignatedStartTimeInstantBetween(
+        return scheduleRepository.findAllByOwnerIdAndDesignatedStartTimeBetween(
                 memberId,
                 startOfDay,
                 endExclusive
@@ -58,7 +58,7 @@ public class ScheduleService {
         ZoneOffset zoneOffsetOfMember = memberService.findZoneOffsetOfMember(memberId);
         Instant start = dateTimeUtils.lastMondayStart(now, zoneOffsetOfMember).toInstant();
         Instant end = dateTimeUtils.lastMondayStart(now, zoneOffsetOfMember).plusDays(7).toInstant();
-        return scheduleRepository.findAllByOwnerIdAndDesignatedStartTimeInstantBetween(
+        return scheduleRepository.findAllByOwnerIdAndDesignatedStartTimeBetween(
                 memberId,
                 start,
                 end

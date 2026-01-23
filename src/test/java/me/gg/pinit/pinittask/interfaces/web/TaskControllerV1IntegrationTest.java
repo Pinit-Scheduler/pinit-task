@@ -7,8 +7,8 @@ import me.gg.pinit.pinittask.domain.member.repository.MemberRepository;
 import me.gg.pinit.pinittask.domain.schedule.model.ScheduleType;
 import me.gg.pinit.pinittask.infrastructure.events.RabbitEventPublisher;
 import me.gg.pinit.pinittask.interfaces.dto.DateTimeWithZone;
-import me.gg.pinit.pinittask.interfaces.dto.TaskCreateRequest;
-import me.gg.pinit.pinittask.interfaces.dto.TaskScheduleRequest;
+import me.gg.pinit.pinittask.interfaces.task.dto.TaskCreateRequest;
+import me.gg.pinit.pinittask.interfaces.task.dto.TaskScheduleRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,7 +76,7 @@ class TaskControllerV1IntegrationTest {
                 .andExpect(jsonPath("$.id").isNumber())
                 .andExpect(jsonPath("$.ownerId").value(MEMBER_ID))
                 .andExpect(jsonPath("$.title").value("리포트 작성"))
-                .andExpect(jsonPath("$.dueDate.dateTime").value("2024-04-01T18:00:00"))
+                .andExpect(jsonPath("$.dueDate.dateTime").value("2024-04-01T00:00:00"))
                 .andExpect(jsonPath("$.completed").value(false))
                 .andReturn();
 
