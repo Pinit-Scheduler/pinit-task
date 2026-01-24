@@ -118,6 +118,7 @@ public class TaskService {
     @Transactional
     public void markIncomplete(Long ownerId, Long taskId) {
         Task task = getTask(ownerId, taskId);
+        syncScheduleOnTaskCompletion(ownerId, task);
         task.markIncomplete();
         publishEvents();
     }
@@ -157,6 +158,7 @@ public class TaskService {
         if (!schedule.isCompleted()) {
             schedule.finish(ZonedDateTime.now(schedule.getDesignatedStartTime().getZone()));
         }
+        //TODO 만약 task가 미완료 상태가 되면 일정도 미완료 상태로 변경하는 로직 추가
     }
 
     private void publishEvents() {
