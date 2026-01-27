@@ -18,6 +18,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 
@@ -99,5 +100,50 @@ class TaskControllerV2IntegrationTest {
         assertThat(cursorNode.get("data").isArray()).isTrue();
         assertThat(cursorNode.get("data").get(0).get("dueDate").get("date").asText()).isEqualTo("2024-04-01");
         assertThat(cursorNode.get("data").get(0).get("dueDate").get("offset").asText()).isEqualTo("+09:00");
+    }
+
+    @Test
+    void fetchTasksByDeadlineReturnsOnlyMatchingDate() throws Exception {
+        // create two tasks with same deadline and one with different deadline
+        TaskCreateRequestV2 d1Req = new TaskCreateRequestV2(
+                "D1-1",
+                "same date 1",
+                new DateWithOffset(LocalDate.of(2025, 2, 1), OFFSET),
+                3,
+                2,
+                List.of()
+        );
+        TaskCreateRequestV2 d1Req2 = new TaskCreateRequestV2(
+                "D1-2",
+                "same date 2",
+                new DateWithOffset(LocalDate.of(2025, 2, 1), OFFSET),
+                2,
+                1,
+                List.of()
+        );
+        TaskCreateRequestV2 otherReq = new TaskCreateRequestV2(
+                "Other",
+                "other date",
+                new DateWithOffset(LocalDate.of(2025, 2, 2), OFFSET),
+                1,
+                1,
+                List.of()
+        );
+
+        for (TaskCreateRequestV2 req : List.of(d1Req, d1Req2, otherReq)) {
+            mockMvc.perform(post("/v2/tasks")
+                            .header("X-Member-Id", MEMBER_ID)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(req)))
+                    .andExpect(status().isCreated());
+        }
+
+        mockMvc.perform(get("/v2/tasks/by-deadline")
+                        .header("X-Member-Id", MEMBER_ID)
+                        .param("date", "2025-02-01"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].dueDate.date").value("2025-02-01"))
+                .andExpect(jsonPath("$[1].dueDate.date").value("2025-02-01"));
     }
 }
