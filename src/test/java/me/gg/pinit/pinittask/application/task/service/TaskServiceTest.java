@@ -266,6 +266,19 @@ class TaskServiceTest {
         Assertions.assertThat(event.ownerId()).isEqualTo(ownerId);
     }
 
+    @Test
+    void getTasksByDeadline_delegatesToRepository() {
+        Long ownerId = 15L;
+        LocalDate date = LocalDate.of(2025, 2, 1);
+        Task t1 = buildTask(ownerId);
+        when(taskRepository.findAllByOwnerIdAndDeadlineDate(ownerId, date)).thenReturn(List.of(t1));
+
+        List<Task> result = taskService.getTasksByDeadline(ownerId, date);
+
+        Assertions.assertThat(result).containsExactly(t1);
+        verify(taskRepository).findAllByOwnerIdAndDeadlineDate(ownerId, date);
+    }
+
     private Task buildTask(Long ownerId) {
         return new Task(
                 ownerId,
