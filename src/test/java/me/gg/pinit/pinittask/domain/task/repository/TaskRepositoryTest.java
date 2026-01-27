@@ -40,13 +40,46 @@ class TaskRepositoryTest {
 
         taskRepository.saveAll(List.of(t1, t2, t3));
 
-        List<Task> firstPage = taskRepository.findNextByCursor(1L, false, LocalDate.of(2024, 1, 1), 0L, PageRequest.of(0, 10));
+        List<Task> firstPage = taskRepository.findNextByCursor(
+                1L,
+                false,
+                LocalDate.of(2024, 1, 1),
+                0L,
+                LocalDate.of(2024, 1, 1),
+                PageRequest.of(0, 10));
         assertThat(firstPage).extracting(Task::getId)
                 .containsExactly(t1.getId(), t2.getId(), t3.getId());
 
-        List<Task> afterFirst = taskRepository.findNextByCursor(1L, false, t1.getTemporalConstraint().getDeadlineDate(), t1.getId(), PageRequest.of(0, 10));
+        List<Task> afterFirst = taskRepository.findNextByCursor(
+                1L,
+                false,
+                t1.getTemporalConstraint().getDeadlineDate(),
+                t1.getId(),
+                LocalDate.of(2024, 1, 1),
+                PageRequest.of(0, 10));
         assertThat(afterFirst).extracting(Task::getId)
                 .containsExactly(t2.getId(), t3.getId());
+    }
+
+    @Test
+    void findCurrentByOwnerId_filtersOverdueCompletedTasks() {
+        LocalDate today = LocalDate.of(2025, 1, 10);
+        Task completedOverdue = completedTask(1L, ZonedDateTime.of(2025, 1, 9, 0, 0, 0, 0, ZoneOffset.UTC));
+        Task completedToday = completedTask(1L, ZonedDateTime.of(2025, 1, 10, 0, 0, 0, 0, ZoneOffset.UTC));
+        Task completedFuture = completedTask(1L, ZonedDateTime.of(2025, 1, 11, 0, 0, 0, 0, ZoneOffset.UTC));
+        Task incompletePast = new Task(1L, "todo", "desc",
+                new TemporalConstraint(ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC), Duration.ZERO),
+                new ImportanceConstraint(1, 1));
+        Task otherOwner = completedTask(2L, ZonedDateTime.of(2025, 1, 11, 0, 0, 0, 0, ZoneOffset.UTC));
+
+        taskRepository.saveAll(List.of(completedOverdue, completedToday, completedFuture, incompletePast, otherOwner));
+
+        var page = taskRepository.findCurrentByOwnerId(1L, today, PageRequest.of(0, 10));
+
+        assertThat(page.getContent()).extracting(Task::getId)
+                .containsExactly(incompletePast.getId(), completedToday.getId(), completedFuture.getId());
+        assertThat(page.getContent()).extracting(task -> task.getTemporalConstraint().getDeadlineDate())
+                .containsExactly(LocalDate.of(2025, 1, 1), LocalDate.of(2025, 1, 10), LocalDate.of(2025, 1, 11));
     }
 
     @Test
