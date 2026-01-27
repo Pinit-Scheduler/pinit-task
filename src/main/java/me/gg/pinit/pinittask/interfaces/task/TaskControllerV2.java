@@ -13,6 +13,7 @@ import me.gg.pinit.pinittask.application.datetime.DateTimeUtils;
 import me.gg.pinit.pinittask.application.dependency.service.DependencyService;
 import me.gg.pinit.pinittask.application.schedule.service.ScheduleService;
 import me.gg.pinit.pinittask.application.task.service.TaskAdjustmentService;
+import me.gg.pinit.pinittask.application.task.service.TaskArchiveService;
 import me.gg.pinit.pinittask.application.task.service.TaskService;
 import me.gg.pinit.pinittask.domain.schedule.model.Schedule;
 import me.gg.pinit.pinittask.domain.task.model.Task;
@@ -28,6 +29,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.ZoneOffset;
 import java.util.List;
 
 @RestController
@@ -43,6 +45,7 @@ import java.util.List;
 public class TaskControllerV2 {
     private final DateTimeUtils dateTimeUtils;
     private final DependencyService dependencyService;
+    private final TaskArchiveService taskArchiveService;
     private final TaskAdjustmentService taskAdjustmentService;
     private final TaskService taskService;
     private final ScheduleService scheduleService;
@@ -106,6 +109,33 @@ public class TaskControllerV2 {
                 .map(task -> TaskResponseV2.from(task, dependencyInfoMap.get(task.getId())))
                 .toList();
         return TaskCursorPageResponseV2.of(data, page.nextCursor(), page.hasNext());
+    }
+
+    @GetMapping("/completed")
+    @Operation(summary = "완료 + 마감일이 지난 작업 목록(커서)",
+            description = """
+                    오늘 00:00 기준 이전(어제까지) 마감일을 가진 완료 작업을 커서 기반으로 내려줍니다.
+                    정렬: deadline DESC, id DESC.
+                    커서 포맷: `yyyy-MM-dd|taskId` (예: `2025-01-07|42`). `offset`을 넣으면 cutoff 기준 시각이 해당 오프셋으로 계산됩니다.
+                    첫 페이지 호출 시 cursor를 비우면 자동으로 cutoff 다음 날(`cutoff+1|Long.MAX_VALUE`)로 시작합니다.
+                    """)
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "지난 작업 목록 조회 성공", content = @Content(schema = @Schema(implementation = TaskArchiveCursorPageResponseV2.class))),
+            @ApiResponse(responseCode = "400", description = "커서 또는 size가 올바르지 않습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    public TaskArchiveCursorPageResponseV2 getCompletedTasksArchive(@Parameter(hidden = true) @MemberId Long memberId,
+                                                                    @Parameter(description = "조회 크기 (1~100)", example = "20")
+                                                                    @RequestParam(defaultValue = "20") Integer size,
+                                                                    @Parameter(description = "커서 `yyyy-MM-dd|taskId` (예: 2025-01-07|42)", example = "2025-01-07|42")
+                                                                    @RequestParam(required = false) String cursor,
+                                                                    @Parameter(description = "컷오프 계산에 사용할 UTC 오프셋. 없으면 회원 설정값 사용", example = "+09:00")
+                                                                    @RequestParam(required = false) ZoneOffset offset) {
+        TaskArchiveService.CursorPage page = taskArchiveService.getCompletedArchive(memberId, size, cursor, offset);
+        var dependencyInfoMap = dependencyService.getDependencyInfoForTasks(memberId, page.tasks().stream().map(Task::getId).toList());
+        List<TaskResponseV2> data = page.tasks().stream()
+                .map(task -> TaskResponseV2.from(task, dependencyInfoMap.get(task.getId())))
+                .toList();
+        return TaskArchiveCursorPageResponseV2.of(data, page.nextCursor(), page.hasNext());
     }
 
     @GetMapping("/{taskId}")
