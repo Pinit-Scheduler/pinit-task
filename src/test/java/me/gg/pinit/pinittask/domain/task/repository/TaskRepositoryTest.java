@@ -48,4 +48,103 @@ class TaskRepositoryTest {
         assertThat(afterFirst).extracting(Task::getId)
                 .containsExactly(t2.getId(), t3.getId());
     }
+
+    @Test
+    void findCompletedArchiveByCursor_filtersCompletedAndCutoffAndOrdersDesc() {
+        Task tAfterCutoff = completedTask(1L, ZonedDateTime.of(2025, 1, 10, 0, 0, 0, 0, ZoneOffset.UTC));
+        Task t1 = completedTask(1L, ZonedDateTime.of(2025, 1, 7, 0, 0, 0, 0, ZoneOffset.UTC));
+        Task t2 = completedTask(1L, ZonedDateTime.of(2025, 1, 6, 0, 0, 0, 0, ZoneOffset.UTC));
+        Task t3 = new Task(1L, "uncompleted", "no", new TemporalConstraint(ZonedDateTime.of(2025, 1, 4, 0, 0, 0, 0, ZoneOffset.UTC), Duration.ZERO), new ImportanceConstraint(1, 1));
+        Task tOtherOwner = completedTask(2L, ZonedDateTime.of(2025, 1, 6, 0, 0, 0, 0, ZoneOffset.UTC));
+
+        taskRepository.saveAll(List.of(tAfterCutoff, t1, t2, t3, tOtherOwner));
+
+        List<Task> result = taskRepository.findCompletedArchiveByCursor(
+                1L,
+                LocalDate.of(2025, 1, 9),
+                LocalDate.of(2025, 1, 10),
+                Long.MAX_VALUE,
+                PageRequest.of(0, 10)
+        );
+
+        assertThat(result).extracting(Task::getId)
+                .containsExactly(t1.getId(), t2.getId());
+    }
+
+    @Test
+    void findCompletedArchiveByCursor_respectsCursorForSameDeadline() {
+        Task t1 = completedTask(1L, ZonedDateTime.of(2025, 2, 1, 0, 0, 0, 0, ZoneOffset.UTC));
+        Task t2 = completedTask(1L, ZonedDateTime.of(2025, 2, 1, 0, 0, 0, 0, ZoneOffset.UTC));
+        taskRepository.saveAll(List.of(t1, t2));
+
+        List<Task> firstPage = taskRepository.findCompletedArchiveByCursor(
+                1L,
+                LocalDate.of(2025, 2, 2),
+                LocalDate.of(2025, 2, 2),
+                Long.MAX_VALUE,
+                PageRequest.of(0, 1)
+        );
+        assertThat(firstPage).hasSize(1);
+
+        Task last = firstPage.getLast();
+        List<Task> secondPage = taskRepository.findCompletedArchiveByCursor(
+                1L,
+                LocalDate.of(2025, 2, 2),
+                last.getTemporalConstraint().getDeadlineDate(),
+                last.getId(),
+                PageRequest.of(0, 1)
+        );
+
+        assertThat(secondPage).hasSize(1);
+        assertThat(secondPage.getFirst().getId()).isNotEqualTo(last.getId());
+    }
+
+    @Test
+    void findCompletedArchiveByCursor_includesCutoff_excludesAfterCutoff() {
+        LocalDate cutoff = LocalDate.of(2025, 1, 9);
+        Task afterCutoff = completedTask(1L, ZonedDateTime.of(2025, 1, 10, 0, 0, 0, 0, ZoneOffset.UTC)); // should be excluded
+        Task cutoffTask = completedTask(1L, ZonedDateTime.of(2025, 1, 9, 0, 0, 0, 0, ZoneOffset.UTC));     // should be included
+        Task beforeCutoff = completedTask(1L, ZonedDateTime.of(2025, 1, 8, 0, 0, 0, 0, ZoneOffset.UTC));   // should be included
+        taskRepository.saveAll(List.of(afterCutoff, cutoffTask, beforeCutoff));
+
+        List<Task> result = taskRepository.findCompletedArchiveByCursor(
+                1L,
+                cutoff,
+                cutoff.plusDays(1),
+                Long.MAX_VALUE,
+                PageRequest.of(0, 10)
+        );
+
+        assertThat(result).extracting(Task::getId)
+                .containsExactly(cutoffTask.getId(), beforeCutoff.getId());
+    }
+
+    @Test
+    void findCompletedArchiveByCursor_skipsAlreadySeenWhenCursorMatchesDateAndId() {
+        LocalDate cutoff = LocalDate.of(2025, 3, 1);
+        Task first = completedTask(1L, ZonedDateTime.of(2025, 3, 1, 0, 0, 0, 0, ZoneOffset.UTC));
+        Task second = completedTask(1L, ZonedDateTime.of(2025, 3, 1, 0, 0, 0, 0, ZoneOffset.UTC));
+        taskRepository.saveAll(List.of(first, second));
+
+        // Order is deadline DESC, id DESC, so larger id comes first
+        Long maxId = Math.max(first.getId(), second.getId());
+        Long minId = Math.min(first.getId(), second.getId());
+
+        List<Task> pageAfterCursor = taskRepository.findCompletedArchiveByCursor(
+                1L,
+                cutoff,
+                cutoff,
+                maxId,
+                PageRequest.of(0, 10)
+        );
+
+        assertThat(pageAfterCursor).extracting(Task::getId)
+                .containsExactly(minId);
+    }
+
+    private Task completedTask(Long ownerId, ZonedDateTime deadline) {
+        Task task = new Task(ownerId, "done", "desc", new TemporalConstraint(deadline, Duration.ZERO), new ImportanceConstraint(1, 1));
+        task.markCompleted();
+        return task;
+    }
 }
