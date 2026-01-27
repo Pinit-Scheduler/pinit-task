@@ -2,6 +2,7 @@ package me.gg.pinit.pinittask.application.task.service;
 
 import me.gg.pinit.pinittask.application.dependency.service.DependencyService;
 import me.gg.pinit.pinittask.application.events.DomainEventPublisher;
+import me.gg.pinit.pinittask.application.member.service.MemberService;
 import me.gg.pinit.pinittask.application.schedule.service.ScheduleService;
 import me.gg.pinit.pinittask.application.schedule.service.ScheduleStateChangeService;
 import me.gg.pinit.pinittask.domain.events.DomainEvent;
@@ -29,9 +30,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.List;
 import java.util.Optional;
 
@@ -52,6 +51,10 @@ class TaskServiceTest {
     ScheduleStateChangeService scheduleStateChangeService;
     @Mock
     DomainEventPublisher domainEventPublisher;
+    @Mock
+    MemberService memberService;
+    @Mock
+    Clock clock;
     @InjectMocks
     TaskService taskService;
 
@@ -185,44 +188,56 @@ class TaskServiceTest {
 
         Assertions.assertThat(result.getContent()).isEmpty();
         verify(taskRepository).findAllByOwnerIdAndInboundDependencyCountAndCompletedFalse(ownerId, 0, pageable);
-        verify(taskRepository, never()).findAllByOwnerId(ownerId, pageable);
+        verify(taskRepository, never()).findCurrentByOwnerId(anyLong(), any(LocalDate.class), any());
     }
 
     @Test
     void getTasks_returnsAllWhenNotReadyOnly() {
         Long ownerId = 10L;
         PageRequest pageable = PageRequest.of(1, 3);
-        when(taskRepository.findAllByOwnerId(ownerId, pageable)).thenReturn(new PageImpl<>(List.of()));
+        LocalDate today = LocalDate.of(2025, 1, 10);
+        ZoneOffset offset = ZoneOffset.UTC;
+        when(memberService.findZoneOffsetOfMember(ownerId)).thenReturn(offset);
+        when(clock.withZone(offset)).thenReturn(Clock.fixed(today.atStartOfDay(offset).toInstant(), offset));
+        when(taskRepository.findCurrentByOwnerId(ownerId, today, pageable)).thenReturn(new PageImpl<>(List.of()));
 
         taskService.getTasks(ownerId, pageable, false);
 
-        verify(taskRepository).findAllByOwnerId(ownerId, pageable);
+        verify(taskRepository).findCurrentByOwnerId(ownerId, today, pageable);
         verify(taskRepository, never()).findAllByOwnerIdAndInboundDependencyCountAndCompletedFalse(anyLong(), anyInt(), any());
     }
 
     @Test
     void getTasksByCursor_returnsNextCursorWhenPageFull() {
         Long ownerId = 50L;
+        LocalDate today = LocalDate.of(2025, 1, 10);
+        ZoneOffset offset = ZoneOffset.UTC;
         Task t1 = buildTask(ownerId);
         ReflectionTestUtils.setField(t1, "id", 1L);
         Task t2 = buildTask(ownerId);
         ReflectionTestUtils.setField(t2, "id", 2L);
-        when(taskRepository.findNextByCursor(eq(ownerId), eq(true), any(LocalDate.class), anyLong(), any()))
+        when(memberService.findZoneOffsetOfMember(ownerId)).thenReturn(offset);
+        when(clock.withZone(offset)).thenReturn(Clock.fixed(today.atStartOfDay(offset).toInstant(), offset));
+        when(taskRepository.findNextByCursor(eq(ownerId), eq(true), any(LocalDate.class), anyLong(), eq(today), any()))
                 .thenReturn(List.of(t1, t2));
 
         TaskCursorPageResponse resp = taskService.getTasksByCursor(ownerId, 2, null, true);
 
         Assertions.assertThat(resp.hasNext()).isTrue();
         Assertions.assertThat(resp.nextCursor()).contains("|2");
-        verify(taskRepository).findNextByCursor(eq(ownerId), eq(true), any(), any(), any());
+        verify(taskRepository).findNextByCursor(eq(ownerId), eq(true), any(), any(), eq(today), any());
     }
 
     @Test
     void getTasksByCursor_noNextWhenSmallerThanSize() {
         Long ownerId = 51L;
+        LocalDate today = LocalDate.of(2025, 1, 10);
+        ZoneOffset offset = ZoneOffset.UTC;
         Task t1 = buildTask(ownerId);
         ReflectionTestUtils.setField(t1, "id", 5L);
-        when(taskRepository.findNextByCursor(eq(ownerId), eq(false), any(LocalDate.class), anyLong(), any()))
+        when(memberService.findZoneOffsetOfMember(ownerId)).thenReturn(offset);
+        when(clock.withZone(offset)).thenReturn(Clock.fixed(today.atStartOfDay(offset).toInstant(), offset));
+        when(taskRepository.findNextByCursor(eq(ownerId), eq(false), any(LocalDate.class), anyLong(), eq(today), any()))
                 .thenReturn(List.of(t1));
 
         TaskCursorPageResponse resp = taskService.getTasksByCursor(ownerId, 2, null, false);
