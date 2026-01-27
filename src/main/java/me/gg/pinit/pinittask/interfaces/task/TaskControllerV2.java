@@ -79,7 +79,12 @@ public class TaskControllerV2 {
     }
 
     @GetMapping
-    @Operation(summary = "작업 목록 조회", description = "회원의 작업 목록을 조회합니다. page/size로 마감 날짜 오름차순 페이지네이션, readyOnly로 선행 작업 없는 항목만 필터링합니다.")
+    @Operation(summary = "작업 목록 조회", description = """
+            회원의 작업 목록을 조회합니다.
+            포함 대상: 미완료 작업 전체 + 오늘(회원 UTC 오프셋 기준) 이후 또는 오늘 마감인 완료 작업.
+            정렬: 마감일 오름차순, page/size 페이징.
+            readyOnly=true면 선행 작업 없는 미완료 작업만 필터링합니다.
+            """)
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "작업 목록 조회 성공")
     })
@@ -94,7 +99,11 @@ public class TaskControllerV2 {
     }
 
     @GetMapping("/cursor")
-    @Operation(summary = "작업 목록 커서 조회", description = "마감 날짜(00:00:00) asc, id asc 커서 기반 페이지네이션. cursor는 'YYYY-MM-DDTHH:MM:SS|taskId' 형식(시간은 항상 00:00:00)입니다.")
+    @Operation(summary = "작업 목록 커서 조회", description = """
+            마감 날짜(00:00:00) asc, id asc 커서 기반 페이지네이션.
+            포함 대상: 미완료 작업 전체 + 오늘(회원 UTC 오프셋 기준) 이후 또는 오늘 마감인 완료 작업.
+            cursor 형식: 'YYYY-MM-DDTHH:MM:SS|taskId' (시간은 항상 00:00:00).
+            """)
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "커서 기반 작업 목록 조회 성공", content = @Content(schema = @Schema(implementation = TaskCursorPageResponseV2.class))),
             @ApiResponse(responseCode = "400", description = "커서 형식이 올바르지 않습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
