@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
         info = @Info(
                 title = "Pinit Task API",
                 version = "v2",
-                description = "일정 관리와 의존 관계 기능을 제공하는 API",
+                description = "일정/작업 관리와 의존 관계 기능을 제공하는 API",
                 contact = @Contact(name = "Pinit Team", email = "support@pinit.local")
         ),
         servers = {
