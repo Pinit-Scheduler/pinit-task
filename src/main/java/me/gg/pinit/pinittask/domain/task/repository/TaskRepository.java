@@ -30,6 +30,7 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
             SELECT t FROM Task t
             WHERE t.ownerId = :ownerId
               AND (:readyOnly = false OR (t.inboundDependencyCount = 0 AND t.completed = false))
+              AND (t.completed = false OR t.temporalConstraint.deadline.date >= :activeDate)
               AND (
                     t.temporalConstraint.deadline.date > :cursorDate
                     OR (t.temporalConstraint.deadline.date = :cursorDate AND t.id > :cursorId)
@@ -40,7 +41,23 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
                                 @Param("readyOnly") boolean readyOnly,
                                 @Param("cursorDate") LocalDate cursorDate,
                                 @Param("cursorId") Long cursorId,
+                                @Param("activeDate") LocalDate activeDate,
                                 Pageable pageable);
+
+    @Query(value = """
+            SELECT t FROM Task t
+            WHERE t.ownerId = :ownerId
+              AND (t.completed = false OR t.temporalConstraint.deadline.date >= :activeDate)
+            ORDER BY t.temporalConstraint.deadline.date ASC, t.id ASC
+            """,
+            countQuery = """
+                    SELECT count(t) FROM Task t
+                    WHERE t.ownerId = :ownerId
+                      AND (t.completed = false OR t.temporalConstraint.deadline.date >= :activeDate)
+                    """)
+    Page<Task> findCurrentByOwnerId(@Param("ownerId") Long ownerId,
+                                    @Param("activeDate") LocalDate activeDate,
+                                    Pageable pageable);
 
     @Query("""
             SELECT t FROM Task t
