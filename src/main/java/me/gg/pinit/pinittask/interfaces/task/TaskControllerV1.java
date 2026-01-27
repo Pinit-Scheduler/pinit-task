@@ -24,10 +24,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.util.List;
 @RestController
 @RequestMapping("/v1/tasks")
 @RequiredArgsConstructor
@@ -109,6 +112,21 @@ public class TaskControllerV1 {
                                                    @RequestParam(required = false) String cursor,
                                                    @RequestParam(defaultValue = "false") boolean readyOnly) {
         return taskService.getTasksByCursor(memberId, size, cursor, readyOnly);
+    }
+
+    @GetMapping("/by-deadline")
+    @Operation(summary = "마감 날짜 기준 작업 조회", description = """
+            특정 날짜(YYYY-MM-DD)에 마감이 설정된 작업들을 조회합니다.
+            완료/미완료 상태와 무관하게 해당 날짜 마감인 모든 작업을 반환합니다.
+            """)
+    public List<TaskResponse> getTasksByDeadline(@Parameter(hidden = true) @MemberId Long memberId,
+                                                 @Parameter(description = "마감 날짜", example = "2025-02-01")
+                                                 @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        List<Task> tasks = taskService.getTasksByDeadline(memberId, date);
+        var dependencyInfoMap = dependencyService.getDependencyInfoForTasks(memberId, tasks.stream().map(Task::getId).toList());
+        return tasks.stream()
+                .map(task -> TaskResponse.from(task, dependencyInfoMap.get(task.getId())))
+                .toList();
     }
 
     @GetMapping("/{taskId}")
