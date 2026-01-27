@@ -175,6 +175,29 @@ class TaskRepositoryTest {
                 .containsExactly(minId);
     }
 
+    @Test
+    void findAllByOwnerIdAndDeadlineDate_returnsOnlyMatchingDate() {
+        Task target1 = new Task(1L, "A", "A-desc",
+                new TemporalConstraint(ZonedDateTime.of(2025, 2, 1, 0, 0, 0, 0, ZoneOffset.UTC), Duration.ZERO),
+                new ImportanceConstraint(1, 1));
+        Task target2 = new Task(1L, "B", "B-desc",
+                new TemporalConstraint(ZonedDateTime.of(2025, 2, 1, 12, 0, 0, 0, ZoneOffset.UTC), Duration.ZERO),
+                new ImportanceConstraint(2, 2));
+        Task otherDate = new Task(1L, "C", "C-desc",
+                new TemporalConstraint(ZonedDateTime.of(2025, 2, 2, 0, 0, 0, 0, ZoneOffset.UTC), Duration.ZERO),
+                new ImportanceConstraint(3, 3));
+        Task otherOwner = new Task(2L, "D", "D-desc",
+                new TemporalConstraint(ZonedDateTime.of(2025, 2, 1, 0, 0, 0, 0, ZoneOffset.UTC), Duration.ZERO),
+                new ImportanceConstraint(5, 5));
+
+        taskRepository.saveAll(List.of(target1, target2, otherDate, otherOwner));
+
+        List<Task> result = taskRepository.findAllByOwnerIdAndDeadlineDate(1L, LocalDate.of(2025, 2, 1));
+
+        assertThat(result).extracting(Task::getId)
+                .containsExactly(target1.getId(), target2.getId());
+    }
+
     private Task completedTask(Long ownerId, ZonedDateTime deadline) {
         Task task = new Task(ownerId, "done", "desc", new TemporalConstraint(deadline, Duration.ZERO), new ImportanceConstraint(1, 1));
         task.markCompleted();
