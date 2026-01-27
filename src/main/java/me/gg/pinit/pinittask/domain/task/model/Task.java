@@ -15,6 +15,9 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 
 @Entity
+@Table(indexes = {
+        @Index(name = "idx_task_owner_completed_deadline_desc", columnList = "owner_id, completed, deadline_date desc, task_id desc")
+})
 public class Task {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
