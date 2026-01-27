@@ -16,7 +16,7 @@ import java.time.ZonedDateTime;
 
 @Entity
 @Table(indexes = {
-        @Index(name = "idx_task_owner_deadline_completed_desc", columnList = "owner_id, deadline_date, completed, task_id")
+        @Index(name = "idx_task_owner_deadline", columnList = "owner_id, deadline_date, task_id")
 })
 public class Task {
     @Id
