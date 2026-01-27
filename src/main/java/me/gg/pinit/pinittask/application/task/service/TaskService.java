@@ -146,6 +146,11 @@ public class TaskService {
         return LocalDate.now(clock.withZone(offset));
     }
 
+    @Transactional(readOnly = true)
+    public List<Task> getTasksByDeadline(Long ownerId, LocalDate deadlineDate) {
+        return taskRepository.findAllByOwnerIdAndDeadlineDate(ownerId, deadlineDate);
+    }
+
     private void validateOwner(Long ownerId, Task task) {
         if (!task.getOwnerId().equals(ownerId)) {
             throw new IllegalArgumentException("Member does not own the task");
