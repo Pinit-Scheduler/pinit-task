@@ -120,7 +120,6 @@ public class TaskService {
     @Transactional
     public void markIncomplete(Long ownerId, Long taskId) {
         Task task = getTask(ownerId, taskId);
-        syncScheduleOnTaskCompletion(ownerId, task);
         task.markIncomplete();
         publishEvents();
     }
