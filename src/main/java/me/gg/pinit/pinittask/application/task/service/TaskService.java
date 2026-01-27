@@ -3,6 +3,7 @@ package me.gg.pinit.pinittask.application.task.service;
 import lombok.RequiredArgsConstructor;
 import me.gg.pinit.pinittask.application.dependency.service.DependencyService;
 import me.gg.pinit.pinittask.application.events.DomainEventPublisher;
+import me.gg.pinit.pinittask.application.member.service.MemberService;
 import me.gg.pinit.pinittask.application.schedule.service.ScheduleService;
 import me.gg.pinit.pinittask.domain.events.DomainEvent;
 import me.gg.pinit.pinittask.domain.events.DomainEvents;
@@ -19,9 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Deque;
@@ -38,6 +37,8 @@ public class TaskService {
     private final DependencyService dependencyService;
     private final ScheduleService scheduleService;
     private final DomainEventPublisher domainEventPublisher;
+    private final MemberService memberService;
+    private final Clock clock;
 
     @Transactional(readOnly = true)
     public Task getTask(Long ownerId, Long taskId) {
@@ -52,7 +53,8 @@ public class TaskService {
         if (readyOnly) {
             return taskRepository.findAllByOwnerIdAndInboundDependencyCountAndCompletedFalse(ownerId, 0, pageable);
         }
-        return taskRepository.findAllByOwnerId(ownerId, pageable);
+        LocalDate today = resolveToday(ownerId);
+        return taskRepository.findCurrentByOwnerId(ownerId, today, pageable);
     }
 
     @Deprecated
@@ -125,16 +127,23 @@ public class TaskService {
 
     private CursorPage loadTasksByCursor(Long ownerId, int size, String cursor, boolean readyOnly) {
         Cursor decoded = decodeCursor(cursor);
+        LocalDate today = resolveToday(ownerId);
         List<Task> tasks = taskRepository.findNextByCursor(
                 ownerId,
                 readyOnly,
                 decoded.deadline(),
                 decoded.id(),
+                today,
                 PageRequest.of(0, size)
         );
         boolean hasNext = tasks.size() == size;
         String nextCursor = hasNext ? encodeCursor(tasks.getLast()) : null;
         return new CursorPage(tasks, nextCursor, hasNext);
+    }
+
+    private LocalDate resolveToday(Long ownerId) {
+        ZoneOffset offset = memberService.findZoneOffsetOfMember(ownerId);
+        return LocalDate.now(clock.withZone(offset));
     }
 
     private void validateOwner(Long ownerId, Task task) {
