@@ -62,6 +62,15 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     @Query("""
             SELECT t FROM Task t
             WHERE t.ownerId = :ownerId
+              AND t.temporalConstraint.deadline.date = :deadlineDate
+            ORDER BY t.id ASC
+            """)
+    List<Task> findAllByOwnerIdAndDeadlineDate(@Param("ownerId") Long ownerId,
+                                               @Param("deadlineDate") LocalDate deadlineDate);
+
+    @Query("""
+            SELECT t FROM Task t
+            WHERE t.ownerId = :ownerId
               AND t.completed = true
               AND t.temporalConstraint.deadline.date <= :cutoffDate
               AND (
