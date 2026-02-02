@@ -192,7 +192,7 @@ class TaskRepositoryTest {
 
         taskRepository.saveAll(List.of(target1, target2, otherDate, otherOwner));
 
-        List<Task> result = taskRepository.findAllByOwnerIdAndDeadlineDate(1L, LocalDate.of(2025, 2, 1));
+        List<Task> result = taskRepository.findAllByOwnerIdAndDeadlineDate(1L, LocalDate.of(2025, 2, 1), "Z");
 
         assertThat(result).extracting(Task::getId)
                 .containsExactly(target1.getId(), target2.getId());
