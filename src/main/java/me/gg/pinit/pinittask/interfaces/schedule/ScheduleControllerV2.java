@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import me.gg.pinit.pinittask.application.datetime.DateTimeUtils;
+import me.gg.pinit.pinittask.application.member.service.MemberService;
 import me.gg.pinit.pinittask.application.schedule.service.ScheduleService;
 import me.gg.pinit.pinittask.application.schedule.service.ScheduleStateChangeService;
 import me.gg.pinit.pinittask.application.task.service.TaskService;
@@ -48,6 +49,7 @@ public class ScheduleControllerV2 {
     private final ScheduleService scheduleService;
     private final ScheduleStateChangeService scheduleStateChangeService;
     private final TaskService taskService;
+    private final MemberService memberService;
 
     @PostMapping
     @Operation(summary = "일정 생성 (작업 없이)", description = "작업과 연결하지 않는 단순 일정을 등록합니다.")
@@ -58,7 +60,8 @@ public class ScheduleControllerV2 {
     public ResponseEntity<ScheduleSimpleResponse> createSchedule(@Parameter(hidden = true) @MemberId Long memberId,
                                                                  @Valid @RequestBody ScheduleSimpleRequest request) {
         Schedule saved = scheduleService.addSchedule(request.toSchedule(memberId, dateTimeUtils));
-        return ResponseEntity.status(HttpStatus.CREATED).body(ScheduleSimpleResponse.from(saved));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ScheduleSimpleResponse.from(saved, null, request.date().zoneId()));
     }
 
     @GetMapping
@@ -68,7 +71,9 @@ public class ScheduleControllerV2 {
             @ApiResponse(responseCode = "400", description = "날짜 형식이 올바르지 않습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public List<ScheduleSimpleResponse> getSchedules(@Parameter(hidden = true) @MemberId Long memberId,
+                                                     @Parameter(description = "사용자 로컬 시각. 반드시 TZ 없이 직렬화한 LocalDateTime 사용 금지 — 아래 zoneId와 함께 보낸다.", example = "2026-02-01T09:00:00")
                                                      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime time,
+                                                     @Parameter(description = "IANA 시간대 ID", example = "Asia/Seoul")
                                                      @RequestParam ZoneId zoneId) {
         List<Schedule> schedules = scheduleService.getScheduleList(memberId, dateTimeUtils.toZonedDateTime(time, zoneId));
         Map<Long, Task> taskMap = taskService.findTasksByIds(memberId, schedules.stream()
@@ -78,7 +83,7 @@ public class ScheduleControllerV2 {
                 .stream()
                 .collect(Collectors.toMap(Task::getId, Function.identity()));
         return schedules.stream()
-                .map(schedule -> ScheduleSimpleResponse.from(schedule, taskMap.get(schedule.getTaskId())))
+                .map(schedule -> ScheduleSimpleResponse.from(schedule, taskMap.get(schedule.getTaskId()), zoneId))
                 .toList();
     }
 
@@ -89,7 +94,9 @@ public class ScheduleControllerV2 {
             @ApiResponse(responseCode = "400", description = "날짜 형식이 올바르지 않습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public List<ScheduleSimpleResponse> getWeeklySchedules(@Parameter(hidden = true) @MemberId Long memberId,
+                                                           @Parameter(description = "사용자 로컬 시각. 주차 계산의 기준 anchor.", example = "2026-02-03T10:00:00")
                                                            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime time,
+                                                           @Parameter(description = "IANA 시간대 ID", example = "America/Los_Angeles")
                                                            @RequestParam ZoneId zoneId) {
         List<Schedule> schedules = scheduleService.getScheduleListForWeek(memberId, dateTimeUtils.toZonedDateTime(time, zoneId));
         Map<Long, Task> taskMap = taskService.findTasksByIds(memberId, schedules.stream()
@@ -99,7 +106,7 @@ public class ScheduleControllerV2 {
                 .stream()
                 .collect(Collectors.toMap(Task::getId, Function.identity()));
         return schedules.stream()
-                .map(schedule -> ScheduleSimpleResponse.from(schedule, taskMap.get(schedule.getTaskId())))
+                .map(schedule -> ScheduleSimpleResponse.from(schedule, taskMap.get(schedule.getTaskId()), zoneId))
                 .toList();
     }
 
@@ -115,7 +122,8 @@ public class ScheduleControllerV2 {
         if (schedule.getTaskId() != null) {
             task = taskService.getTask(memberId, schedule.getTaskId());
         }
-        return ScheduleSimpleResponse.from(schedule, task);
+        ZoneId viewZone = memberService.findZoneIdOfMember(memberId);
+        return ScheduleSimpleResponse.from(schedule, task, viewZone);
     }
 
     @PatchMapping("/{scheduleId}")
@@ -130,7 +138,8 @@ public class ScheduleControllerV2 {
                                                                  @PathVariable Long scheduleId,
                                                                  @RequestBody @Valid ScheduleSimplePatchRequest request) {
         Schedule updated = scheduleService.updateSchedule(memberId, scheduleId, request.toPatch(dateTimeUtils));
-        return ResponseEntity.ok(ScheduleSimpleResponse.from(updated));
+        ZoneId viewZone = request.date() != null ? request.date().zoneId() : memberService.findZoneIdOfMember(memberId);
+        return ResponseEntity.ok(ScheduleSimpleResponse.from(updated, null, viewZone));
     }
 
     @PostMapping("/{scheduleId}/start")
@@ -141,7 +150,9 @@ public class ScheduleControllerV2 {
             @ApiResponse(responseCode = "409", description = "잘못된 상태 전환입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<Void> startSchedule(@Parameter(hidden = true) @MemberId Long memberId, @PathVariable Long scheduleId,
+                                              @Parameter(description = "사용자 로컬 시각", example = "2026-02-01T09:00:00")
                                               @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime time,
+                                              @Parameter(description = "IANA 시간대 ID", example = "Asia/Seoul")
                                               @RequestParam ZoneId zoneId) {
         scheduleStateChangeService.startSchedule(memberId, scheduleId, dateTimeUtils.toZonedDateTime(time, zoneId));
         return ResponseEntity.noContent().build();
@@ -155,7 +166,9 @@ public class ScheduleControllerV2 {
             @ApiResponse(responseCode = "409", description = "잘못된 상태 전환입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<Void> completeSchedule(@Parameter(hidden = true) @MemberId Long memberId, @PathVariable Long scheduleId,
+                                                 @Parameter(description = "사용자 로컬 시각", example = "2026-02-01T10:30:00")
                                                  @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime time,
+                                                 @Parameter(description = "IANA 시간대 ID", example = "Asia/Seoul")
                                                  @RequestParam ZoneId zoneId) {
         scheduleStateChangeService.completeSchedule(memberId, scheduleId, dateTimeUtils.toZonedDateTime(time, zoneId));
         return ResponseEntity.noContent().build();
@@ -169,7 +182,9 @@ public class ScheduleControllerV2 {
             @ApiResponse(responseCode = "409", description = "잘못된 상태 전환입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<Void> suspendSchedule(@Parameter(hidden = true) @MemberId Long memberId, @PathVariable Long scheduleId,
+                                                @Parameter(description = "사용자 로컬 시각", example = "2026-02-01T11:00:00")
                                                 @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime time,
+                                                @Parameter(description = "IANA 시간대 ID", example = "Asia/Seoul")
                                                 @RequestParam ZoneId zoneId) {
         scheduleStateChangeService.suspendSchedule(memberId, scheduleId, dateTimeUtils.toZonedDateTime(time, zoneId));
         return ResponseEntity.noContent().build();
