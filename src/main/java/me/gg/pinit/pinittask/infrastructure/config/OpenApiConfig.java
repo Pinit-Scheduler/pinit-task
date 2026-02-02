@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 @OpenAPIDefinition(
         info = @Info(
                 title = "Pinit Task API",
-                version = "v2",
+                version = "v2.1-timezone",
                 description = "일정/작업 관리와 의존 관계 기능을 제공하는 API",
                 contact = @Contact(name = "Pinit Team", email = "support@pinit.local")
         ),

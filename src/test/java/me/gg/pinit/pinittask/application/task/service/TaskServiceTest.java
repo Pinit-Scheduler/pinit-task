@@ -196,9 +196,9 @@ class TaskServiceTest {
         Long ownerId = 10L;
         PageRequest pageable = PageRequest.of(1, 3);
         LocalDate today = LocalDate.of(2025, 1, 10);
-        ZoneOffset offset = ZoneOffset.UTC;
-        when(memberService.findZoneOffsetOfMember(ownerId)).thenReturn(offset);
-        when(clock.withZone(offset)).thenReturn(Clock.fixed(today.atStartOfDay(offset).toInstant(), offset));
+        ZoneId zoneId = ZoneId.of("UTC");
+        when(memberService.findZoneIdOfMember(ownerId)).thenReturn(zoneId);
+        when(clock.withZone(zoneId)).thenReturn(Clock.fixed(today.atStartOfDay(zoneId).toInstant(), zoneId));
         when(taskRepository.findCurrentByOwnerId(ownerId, today, pageable)).thenReturn(new PageImpl<>(List.of()));
 
         taskService.getTasks(ownerId, pageable, false);
@@ -211,13 +211,13 @@ class TaskServiceTest {
     void getTasksByCursor_returnsNextCursorWhenPageFull() {
         Long ownerId = 50L;
         LocalDate today = LocalDate.of(2025, 1, 10);
-        ZoneOffset offset = ZoneOffset.UTC;
+        ZoneId zoneId = ZoneId.of("UTC");
         Task t1 = buildTask(ownerId);
         ReflectionTestUtils.setField(t1, "id", 1L);
         Task t2 = buildTask(ownerId);
         ReflectionTestUtils.setField(t2, "id", 2L);
-        when(memberService.findZoneOffsetOfMember(ownerId)).thenReturn(offset);
-        when(clock.withZone(offset)).thenReturn(Clock.fixed(today.atStartOfDay(offset).toInstant(), offset));
+        when(memberService.findZoneIdOfMember(ownerId)).thenReturn(zoneId);
+        when(clock.withZone(zoneId)).thenReturn(Clock.fixed(today.atStartOfDay(zoneId).toInstant(), zoneId));
         when(taskRepository.findNextByCursor(eq(ownerId), eq(true), any(LocalDate.class), anyLong(), eq(today), any()))
                 .thenReturn(List.of(t1, t2));
 
@@ -232,11 +232,11 @@ class TaskServiceTest {
     void getTasksByCursor_noNextWhenSmallerThanSize() {
         Long ownerId = 51L;
         LocalDate today = LocalDate.of(2025, 1, 10);
-        ZoneOffset offset = ZoneOffset.UTC;
+        ZoneId zoneId = ZoneId.of("UTC");
         Task t1 = buildTask(ownerId);
         ReflectionTestUtils.setField(t1, "id", 5L);
-        when(memberService.findZoneOffsetOfMember(ownerId)).thenReturn(offset);
-        when(clock.withZone(offset)).thenReturn(Clock.fixed(today.atStartOfDay(offset).toInstant(), offset));
+        when(memberService.findZoneIdOfMember(ownerId)).thenReturn(zoneId);
+        when(clock.withZone(zoneId)).thenReturn(Clock.fixed(today.atStartOfDay(zoneId).toInstant(), zoneId));
         when(taskRepository.findNextByCursor(eq(ownerId), eq(false), any(LocalDate.class), anyLong(), eq(today), any()))
                 .thenReturn(List.of(t1));
 
@@ -270,13 +270,40 @@ class TaskServiceTest {
     void getTasksByDeadline_delegatesToRepository() {
         Long ownerId = 15L;
         LocalDate date = LocalDate.of(2025, 2, 1);
+        ZoneId zoneId = ZoneId.of("UTC");
         Task t1 = buildTask(ownerId);
-        when(taskRepository.findAllByOwnerIdAndDeadlineDate(ownerId, date)).thenReturn(List.of(t1));
+        ReflectionTestUtils.setField(t1, "temporalConstraint",
+                new TemporalConstraint(date.atStartOfDay(zoneId), Duration.ZERO));
+        when(taskRepository.findAllByOwnerIdAndDeadlineDateBetween(ownerId, date.minusDays(1), date.plusDays(1))).thenReturn(List.of(t1));
 
-        List<Task> result = taskService.getTasksByDeadline(ownerId, date);
+        List<Task> result = taskService.getTasksByDeadline(ownerId, date, zoneId);
 
         Assertions.assertThat(result).containsExactly(t1);
-        verify(taskRepository).findAllByOwnerIdAndDeadlineDate(ownerId, date);
+        verify(taskRepository).findAllByOwnerIdAndDeadlineDateBetween(ownerId, date.minusDays(1), date.plusDays(1));
+    }
+
+    @Test
+    void getTasksByDeadline_filtersByUtcRangeWithDst() {
+        Long ownerId = 21L;
+        ZoneId requestZone = ZoneId.of("Asia/Tokyo"); // UTC+9
+        LocalDate requestDate = LocalDate.of(2025, 3, 9); // DST start day in NY
+
+        Task matching = buildTask(ownerId);
+        ZonedDateTime nyStart = requestDate.atStartOfDay(ZoneId.of("America/New_York"));
+        ReflectionTestUtils.setField(matching, "temporalConstraint",
+                new TemporalConstraint(nyStart, Duration.ZERO));
+
+        Task nonMatching = buildTask(ownerId);
+        ZonedDateTime nextDayNy = requestDate.plusDays(1).atStartOfDay(ZoneId.of("America/New_York"));
+        ReflectionTestUtils.setField(nonMatching, "temporalConstraint",
+                new TemporalConstraint(nextDayNy, Duration.ZERO));
+
+        when(taskRepository.findAllByOwnerIdAndDeadlineDateBetween(ownerId, requestDate.minusDays(1), requestDate.plusDays(1)))
+                .thenReturn(List.of(matching, nonMatching));
+
+        List<Task> result = taskService.getTasksByDeadline(ownerId, requestDate, requestZone);
+
+        Assertions.assertThat(result).containsExactly(matching);
     }
 
     private Task buildTask(Long ownerId) {

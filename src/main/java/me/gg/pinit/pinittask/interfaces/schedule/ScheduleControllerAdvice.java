@@ -22,7 +22,7 @@ import org.springframework.web.context.request.WebRequest;
 
 @Slf4j
 @RestControllerAdvice(assignableTypes = {
-        ScheduleControllerV2.class, ScheduleControllerV1.class
+        ScheduleControllerV2.class
 })
 public class ScheduleControllerAdvice {
     @ExceptionHandler({

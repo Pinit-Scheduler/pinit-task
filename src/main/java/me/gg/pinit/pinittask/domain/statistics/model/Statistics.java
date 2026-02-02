@@ -25,7 +25,8 @@ public class Statistics {
     @Embedded
     @AttributeOverrides({
             @AttributeOverride(name = "date", column = @Column(name = "start_of_week_date")),
-            @AttributeOverride(name = "offsetId", column = @Column(name = "start_of_week_offset_id"))
+            @AttributeOverride(name = "offsetId", column = @Column(name = "start_of_week_offset_id")),
+            @AttributeOverride(name = "zoneId", column = @Column(name = "start_of_week_zone_id"))
     })
     private ZonedDateAttribute startOfWeek;
 

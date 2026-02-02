@@ -2,6 +2,7 @@ package me.gg.pinit.pinittask.domain.task.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import me.gg.pinit.pinittask.domain.converter.service.InstantToDatetime6UtcConverter;
 import me.gg.pinit.pinittask.domain.events.DomainEvents;
 import me.gg.pinit.pinittask.domain.task.event.TaskCanceledEvent;
 import me.gg.pinit.pinittask.domain.task.event.TaskCompletedEvent;
@@ -51,9 +52,11 @@ public class Task {
 
     @CreationTimestamp
     @Column(updatable = false, columnDefinition = "DATETIME(6)")
+    @Convert(converter = InstantToDatetime6UtcConverter.class)
     private Instant createdAt;
     @UpdateTimestamp
     @Column(columnDefinition = "DATETIME(6)")
+    @Convert(converter = InstantToDatetime6UtcConverter.class)
     private Instant updatedAt;
 
     protected Task() {

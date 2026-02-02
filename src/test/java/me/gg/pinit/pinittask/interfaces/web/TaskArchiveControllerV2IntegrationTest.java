@@ -40,7 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class TaskArchiveControllerV2IntegrationTest {
 
     private static final long MEMBER_ID = 44L;
-    private static final ZoneOffset MEMBER_OFFSET = ZoneOffset.of("+09:00");
+    private static final ZoneId MEMBER_ZONE = ZoneId.of("Asia/Seoul");
 
     @Autowired
     MockMvc mockMvc;
@@ -57,7 +57,7 @@ class TaskArchiveControllerV2IntegrationTest {
     @BeforeEach
     void setUpMember() {
         if (!memberRepository.existsById(MEMBER_ID)) {
-            memberRepository.save(new Member(MEMBER_ID, "archive-user", MEMBER_OFFSET));
+            memberRepository.save(new Member(MEMBER_ID, "archive-user", MEMBER_ZONE));
         }
     }
 
@@ -116,7 +116,7 @@ class TaskArchiveControllerV2IntegrationTest {
     }
 
     private Task completedTask(LocalDate deadlineDate) {
-        ZonedDateTime deadline = deadlineDate.atStartOfDay(MEMBER_OFFSET);
+        ZonedDateTime deadline = deadlineDate.atStartOfDay(MEMBER_ZONE);
         Task task = new Task(MEMBER_ID, "archive", "desc", new TemporalConstraint(deadline, Duration.ZERO), new ImportanceConstraint(1, 1));
         task.markCompleted();
         return task;

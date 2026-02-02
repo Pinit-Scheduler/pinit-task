@@ -65,10 +65,12 @@ public class Schedule {
 
     @CreationTimestamp
     @Column(updatable = false, columnDefinition = "DATETIME(6)")
+    @Convert(converter = InstantToDatetime6UtcConverter.class)
     private Instant createdAt;
 
     @UpdateTimestamp
     @Column(columnDefinition = "DATETIME(6)")
+    @Convert(converter = InstantToDatetime6UtcConverter.class)
     private Instant updatedAt;
 
     protected Schedule() {

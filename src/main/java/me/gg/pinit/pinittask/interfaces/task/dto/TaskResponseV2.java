@@ -20,7 +20,7 @@ public record TaskResponseV2(
         String title,
         @Schema(description = "작업 설명")
         String description,
-        @Schema(description = "마감 날짜(+오프셋, 00:00 시각)")
+        @Schema(description = "마감 날짜(+IANA 시간대, 00:00 시각). `offset`은 해당 날짜의 오프셋으로 반환됩니다.")
         DateWithOffset dueDate,
         @Schema(description = "중요도")
         int importance,

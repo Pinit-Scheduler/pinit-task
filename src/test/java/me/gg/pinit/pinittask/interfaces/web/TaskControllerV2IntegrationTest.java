@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
 
@@ -36,6 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class TaskControllerV2IntegrationTest {
 
     private static final long MEMBER_ID = 4L;
+    private static final ZoneId MEMBER_ZONE = ZoneId.of("Asia/Seoul");
     private static final ZoneOffset OFFSET = ZoneOffset.of("+09:00");
 
     @Autowired
@@ -51,7 +53,7 @@ class TaskControllerV2IntegrationTest {
     @BeforeEach
     void setUpMember() {
         if (!memberRepository.existsById(MEMBER_ID)) {
-            memberRepository.save(new Member(MEMBER_ID, "task-v2-user", OFFSET));
+            memberRepository.save(new Member(MEMBER_ID, "task-v2-user", MEMBER_ZONE));
         }
     }
 
@@ -60,7 +62,7 @@ class TaskControllerV2IntegrationTest {
         TaskCreateRequestV2 createRequest = new TaskCreateRequestV2(
                 "리포트 작성",
                 "주간 리포트 초안 작성",
-                new DateWithOffset(java.time.LocalDate.of(2024, 4, 1), OFFSET),
+                new DateWithOffset(java.time.LocalDate.of(2024, 4, 1), OFFSET, ZoneId.of("Asia/Seoul")),
                 5,
                 3,
                 List.of()
@@ -73,6 +75,7 @@ class TaskControllerV2IntegrationTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.dueDate.date").value("2024-04-01"))
                 .andExpect(jsonPath("$.dueDate.offset").value("+09:00"))
+                .andExpect(jsonPath("$.dueDate.zoneId").value("Asia/Seoul"))
                 .andReturn();
 
         JsonNode created = objectMapper.readTree(createResult.getResponse().getContentAsString());
@@ -86,7 +89,8 @@ class TaskControllerV2IntegrationTest {
                 .andExpect(jsonPath("$.content", hasSize(1)))
                 .andExpect(jsonPath("$.content[0].id").value(taskId))
                 .andExpect(jsonPath("$.content[0].dueDate.date").value("2024-04-01"))
-                .andExpect(jsonPath("$.content[0].dueDate.offset").value("+09:00"));
+                .andExpect(jsonPath("$.content[0].dueDate.offset").value("+09:00"))
+                .andExpect(jsonPath("$.content[0].dueDate.zoneId").value("Asia/Seoul"));
 
         var cursorResult = mockMvc.perform(get("/v2/tasks/cursor")
                         .header("X-Member-Id", MEMBER_ID)
@@ -100,6 +104,7 @@ class TaskControllerV2IntegrationTest {
         assertThat(cursorNode.get("data").isArray()).isTrue();
         assertThat(cursorNode.get("data").get(0).get("dueDate").get("date").asText()).isEqualTo("2024-04-01");
         assertThat(cursorNode.get("data").get(0).get("dueDate").get("offset").asText()).isEqualTo("+09:00");
+        assertThat(cursorNode.get("data").get(0).get("dueDate").get("zoneId").asText()).isEqualTo("Asia/Seoul");
     }
 
     @Test
@@ -108,7 +113,7 @@ class TaskControllerV2IntegrationTest {
         TaskCreateRequestV2 d1Req = new TaskCreateRequestV2(
                 "D1-1",
                 "same date 1",
-                new DateWithOffset(LocalDate.of(2025, 2, 1), OFFSET),
+                new DateWithOffset(LocalDate.of(2025, 2, 1), OFFSET, ZoneId.of("Asia/Seoul")),
                 3,
                 2,
                 List.of()
@@ -116,7 +121,7 @@ class TaskControllerV2IntegrationTest {
         TaskCreateRequestV2 d1Req2 = new TaskCreateRequestV2(
                 "D1-2",
                 "same date 2",
-                new DateWithOffset(LocalDate.of(2025, 2, 1), OFFSET),
+                new DateWithOffset(LocalDate.of(2025, 2, 1), OFFSET, ZoneId.of("Asia/Seoul")),
                 2,
                 1,
                 List.of()
@@ -124,7 +129,7 @@ class TaskControllerV2IntegrationTest {
         TaskCreateRequestV2 otherReq = new TaskCreateRequestV2(
                 "Other",
                 "other date",
-                new DateWithOffset(LocalDate.of(2025, 2, 2), OFFSET),
+                new DateWithOffset(LocalDate.of(2025, 2, 2), OFFSET, ZoneId.of("Asia/Seoul")),
                 1,
                 1,
                 List.of()
@@ -140,7 +145,8 @@ class TaskControllerV2IntegrationTest {
 
         mockMvc.perform(get("/v2/tasks/by-deadline")
                         .header("X-Member-Id", MEMBER_ID)
-                        .param("date", "2025-02-01"))
+                        .param("date", "2025-02-01")
+                        .param("zoneId", "Asia/Seoul"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].dueDate.date").value("2025-02-01"))

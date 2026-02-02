@@ -12,6 +12,7 @@ import me.gg.pinit.pinittask.application.task.dto.TaskDependencyAdjustCommand;
 import me.gg.pinit.pinittask.interfaces.dto.DateWithOffset;
 import me.gg.pinit.pinittask.interfaces.utils.FibonacciDifficulty;
 
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -24,7 +25,7 @@ public record TaskCreateRequestV2(
         @Schema(description = "작업 설명", example = "다음 주 발표 자료 정리")
         String description,
         @NotNull
-        @Schema(description = "마감 날짜(+오프셋)", example = "{\"date\":\"2024-03-01\",\"offset\":\"+09:00\"}")
+        @Schema(description = "마감 날짜(IANA `zoneId` 필수, `offset`은 해당 날짜의 오프셋을 함께 명시하고 싶을 때 선택)", example = "{\"date\":\"2024-03-01\",\"offset\":\"+09:00\",\"zoneId\":\"Asia/Seoul\"}")
         @Valid
         DateWithOffset dueDate,
         @NotNull
@@ -39,16 +40,17 @@ public record TaskCreateRequestV2(
         @Schema(description = "추가할 의존 관계 목록 (생성 시 각 항목에 fromId 또는 toId 중 하나는 0)")
         List<@Valid DependencyRequest> addDependencies
 ) {
-    public TaskDependencyAdjustCommand toCommand(Long taskId, Long ownerId, DateTimeUtils dateTimeUtils) {
+    public TaskDependencyAdjustCommand toCommand(Long taskId, Long ownerId, ZoneId memberZoneId, DateTimeUtils dateTimeUtils) {
         validateMustContainSelfPlaceholder(addDependencies);
         List<DependencyDto> remove = List.of(); // 생성 시 remove는 허용하지 않음
         List<DependencyDto> add = toDependencyDtos(addDependencies);
+        ZoneId effectiveZone = dueDate.resolveZoneId(memberZoneId);
         return new TaskDependencyAdjustCommand(
                 taskId,
                 ownerId,
                 title,
                 description,
-                dateTimeUtils.toStartOfDay(dueDate.date(), dueDate.offset()),
+                dateTimeUtils.toStartOfDay(dueDate.date(), effectiveZone),
                 importance,
                 difficulty,
                 remove,

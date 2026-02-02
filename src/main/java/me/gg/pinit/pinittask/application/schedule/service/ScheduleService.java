@@ -3,7 +3,6 @@ package me.gg.pinit.pinittask.application.schedule.service;
 import lombok.RequiredArgsConstructor;
 import me.gg.pinit.pinittask.application.datetime.DateTimeUtils;
 import me.gg.pinit.pinittask.application.events.DomainEventPublisher;
-import me.gg.pinit.pinittask.application.member.service.MemberService;
 import me.gg.pinit.pinittask.domain.dependency.exception.ScheduleNotFoundException;
 import me.gg.pinit.pinittask.domain.events.DomainEvent;
 import me.gg.pinit.pinittask.domain.events.DomainEvents;
@@ -16,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Deque;
 import java.util.List;
@@ -26,7 +24,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ScheduleService {
     private final ScheduleRepository scheduleRepository;
-    private final MemberService memberService;
     private final DomainEventPublisher domainEventPublisher;
     private final DateTimeUtils dateTimeUtils;
 
@@ -42,9 +39,9 @@ public class ScheduleService {
 
     @Transactional(readOnly = true)
     public List<Schedule> getScheduleList(Long memberId, ZonedDateTime dateTime) {
-        ZoneId memberZoneById = memberService.findZoneIdOfMember(memberId);
-        Instant startOfDay = dateTime.toLocalDate().atStartOfDay(memberZoneById).toInstant();
-        Instant endExclusive = dateTime.toLocalDate().plusDays(1).atStartOfDay(memberZoneById).toInstant();
+        ZoneId zoneId = dateTime.getZone();
+        Instant startOfDay = dateTime.toLocalDate().atStartOfDay(zoneId).toInstant();
+        Instant endExclusive = dateTime.toLocalDate().plusDays(1).atStartOfDay(zoneId).toInstant();
 
         return scheduleRepository.findAllByOwnerIdAndDesignatedStartTimeBetween(
                 memberId,
@@ -55,9 +52,10 @@ public class ScheduleService {
 
     @Transactional(readOnly = true)
     public List<Schedule> getScheduleListForWeek(Long memberId, ZonedDateTime now) {
-        ZoneOffset zoneOffsetOfMember = memberService.findZoneOffsetOfMember(memberId);
-        Instant start = dateTimeUtils.lastMondayStart(now, zoneOffsetOfMember).toInstant();
-        Instant end = dateTimeUtils.lastMondayStart(now, zoneOffsetOfMember).plusDays(7).toInstant();
+        ZoneId zoneId = now.getZone();
+        ZonedDateTime startOfWeek = dateTimeUtils.lastMondayStart(now, zoneId);
+        Instant start = startOfWeek.toInstant();
+        Instant end = startOfWeek.plusDays(7).toInstant();
         return scheduleRepository.findAllByOwnerIdAndDesignatedStartTimeBetween(
                 memberId,
                 start,

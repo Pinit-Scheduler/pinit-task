@@ -6,16 +6,21 @@ import me.gg.pinit.pinittask.domain.member.repository.MemberRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
 public class MemberService {
     private final MemberRepository memberRepository;
+    private final Clock clock;
 
-    public MemberService(MemberRepository memberRepository) {
+    public MemberService(MemberRepository memberRepository, Clock clock) {
         this.memberRepository = memberRepository;
+        this.clock = clock;
     }
 
     @Transactional(readOnly = true)
@@ -25,12 +30,17 @@ public class MemberService {
     }
 
     @Transactional(readOnly = true)
-    public ZoneOffset findZoneOffsetOfMember(Long memberId) {
+    public ZoneOffset findZoneOffsetAt(Long memberId, Instant instant) {
         return memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberNotFoundException("Member not found"))
                 .getZoneId()
                 .getRules()
-                .getOffset(java.time.Instant.now());
+                .getOffset(instant);
+    }
+
+    @Transactional(readOnly = true)
+    public ZoneOffset findZoneOffsetOfMember(Long memberId) {
+        return findZoneOffsetAt(memberId, Instant.now(clock));
     }
 
     public Long getNowInProgressScheduleId(Long memberId) {
@@ -54,11 +64,13 @@ public class MemberService {
     }
 
     @Transactional
-    public void enrollMember(Long memberId, String nickname) {
+    public void enrollMember(Long memberId, String nickname, ZoneId zoneId) {
+        Objects.requireNonNull(zoneId, "zoneId must not be null");
         Optional<Member> byId = memberRepository.findById(memberId);
         if (byId.isPresent()) {
             return;
         }
-        memberRepository.save(new Member(memberId, nickname, ZoneId.of("Asia/Seoul")));
+        memberRepository.save(new Member(memberId, nickname, zoneId));
     }
+
 }
