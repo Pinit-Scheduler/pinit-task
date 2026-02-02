@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 @Slf4j
@@ -28,17 +28,16 @@ public class StatisticsService {
 
     @Transactional(readOnly = true)
     public Statistics getStatistics(Long memberId, ZonedDateTime now) {
-        ZoneOffset zoneOffsetOfMember = memberService.findZoneOffsetOfMember(memberId);
-        ZonedDateTime startTime = dateTimeUtils.lastMondayStart(now, zoneOffsetOfMember);
-        log.warn("startTime = {}", startTime);
+        ZoneId zoneIdOfMember = memberService.findZoneIdOfMember(memberId);
+        ZonedDateTime startTime = dateTimeUtils.lastMondayStart(now, zoneIdOfMember);
         return statisticsRepository.findByMemberIdAndStartOfWeekDate(memberId, startTime.toLocalDate(), startTime.getZone().getId())
                 .orElseGet(() -> new Statistics(memberId, startTime));
     }
 
     @Transactional
     public void removeElapsedTime(Long ownerId, ScheduleType scheduleType, Duration duration, ZonedDateTime startTime) {
-        ZoneOffset zoneOffsetOfMember = memberService.findZoneOffsetOfMember(ownerId);
-        ZonedDateTime dateTime = dateTimeUtils.lastMondayStart(startTime, zoneOffsetOfMember);
+        ZoneId zoneIdOfMember = memberService.findZoneIdOfMember(ownerId);
+        ZonedDateTime dateTime = dateTimeUtils.lastMondayStart(startTime, zoneIdOfMember);
         Statistics statistics = statisticsRepository.findByMemberIdAndStartOfWeekDate(ownerId, dateTime.toLocalDate(), dateTime.getZone().getId())
                 .orElseGet(() -> new Statistics(ownerId, dateTime));
         scheduleType.rollback(statistics, duration);
@@ -47,8 +46,8 @@ public class StatisticsService {
 
     @Transactional
     public void addElapsedTime(Long ownerId, ScheduleType scheduleType, Duration duration, ZonedDateTime startTime) {
-        ZoneOffset zoneOffsetOfMember = memberService.findZoneOffsetOfMember(ownerId);
-        ZonedDateTime dateTime = dateTimeUtils.lastMondayStart(startTime, zoneOffsetOfMember);
+        ZoneId zoneIdOfMember = memberService.findZoneIdOfMember(ownerId);
+        ZonedDateTime dateTime = dateTimeUtils.lastMondayStart(startTime, zoneIdOfMember);
         Statistics statistics = statisticsRepository.findByMemberIdAndStartOfWeekDate(ownerId, dateTime.toLocalDate(), dateTime.getZone().getId())
                 .orElseGet(() -> new Statistics(ownerId, dateTime));
         scheduleType.record(statistics, duration);
