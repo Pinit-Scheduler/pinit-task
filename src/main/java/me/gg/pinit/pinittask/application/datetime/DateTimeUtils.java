@@ -10,11 +10,11 @@ import java.util.Objects;
 @Service
 @Slf4j
 public class DateTimeUtils {
-    public ZonedDateTime lastMondayStart(ZonedDateTime point, ZoneOffset offset) {
-        ZonedDateTime converted = point.withZoneSameInstant(offset);
+    public ZonedDateTime lastMondayStart(ZonedDateTime point, ZoneId zoneId) {
+        ZonedDateTime converted = point.withZoneSameInstant(zoneId);
         LocalDate monday = converted.toLocalDate()
                 .with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-        return monday.atStartOfDay(offset);
+        return monday.atStartOfDay(zoneId);
     }
 
     public ZonedDateTime toZonedDateTime(LocalDateTime localDateTime, ZoneId zoneId) {
@@ -23,9 +23,9 @@ public class DateTimeUtils {
         return ZonedDateTime.of(localDateTime, zoneId);
     }
 
-    public ZonedDateTime toStartOfDay(LocalDate date, ZoneOffset offset) {
+    public ZonedDateTime toStartOfDay(LocalDate date, ZoneId zoneId) {
         Objects.requireNonNull(date, "date must not be null");
-        Objects.requireNonNull(offset, "offset must not be null");
-        return date.atStartOfDay(offset);
+        Objects.requireNonNull(zoneId, "zoneId must not be null");
+        return date.atStartOfDay(zoneId);
     }
 }
