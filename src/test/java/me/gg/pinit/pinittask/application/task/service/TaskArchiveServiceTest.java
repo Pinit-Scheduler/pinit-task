@@ -42,11 +42,12 @@ class TaskArchiveServiceTest {
     @Test
     void getCompletedArchive_buildsCutoffAndNextCursor() {
         ZoneOffset offset = ZoneOffset.of("+09:00");
-        when(memberService.findZoneOffsetOfMember(1L)).thenReturn(offset);
+        ZoneId zoneId = ZoneId.of("Asia/Seoul");
+        when(memberService.findZoneIdOfMember(1L)).thenReturn(zoneId);
 
-        Task t1 = new Task(1L, "a", "a", new TemporalConstraint(ZonedDateTime.of(2025, 1, 9, 0, 0, 0, 0, offset), Duration.ZERO), new ImportanceConstraint(1, 1));
-        Task t2 = new Task(1L, "b", "b", new TemporalConstraint(ZonedDateTime.of(2025, 1, 8, 0, 0, 0, 0, offset), Duration.ZERO), new ImportanceConstraint(1, 1));
-        Task t3 = new Task(1L, "c", "c", new TemporalConstraint(ZonedDateTime.of(2025, 1, 7, 0, 0, 0, 0, offset), Duration.ZERO), new ImportanceConstraint(1, 1));
+        Task t1 = new Task(1L, "a", "a", new TemporalConstraint(ZonedDateTime.of(2025, 1, 9, 0, 0, 0, 0, zoneId), Duration.ZERO), new ImportanceConstraint(1, 1));
+        Task t2 = new Task(1L, "b", "b", new TemporalConstraint(ZonedDateTime.of(2025, 1, 8, 0, 0, 0, 0, zoneId), Duration.ZERO), new ImportanceConstraint(1, 1));
+        Task t3 = new Task(1L, "c", "c", new TemporalConstraint(ZonedDateTime.of(2025, 1, 7, 0, 0, 0, 0, zoneId), Duration.ZERO), new ImportanceConstraint(1, 1));
         ReflectionTestUtils.setField(t1, "id", 10L);
         ReflectionTestUtils.setField(t2, "id", 9L);
         ReflectionTestUtils.setField(t3, "id", 8L);
@@ -54,11 +55,13 @@ class TaskArchiveServiceTest {
         when(taskRepository.findCompletedArchiveByCursor(anyLong(), any(), any(), anyLong(), any(Pageable.class)))
                 .thenReturn(List.of(t1, t2, t3));
 
-        TaskArchiveService.CursorPage page = service.getCompletedArchive(1L, 2, null, null);
+        TaskArchiveService.CursorPage page = service.getCompletedArchive(1L, 2, null, null, null);
 
         assertThat(page.hasNext()).isTrue();
         assertThat(page.nextCursor()).isEqualTo("2025-01-08|9");
         assertThat(page.cutoffDate()).isEqualTo(LocalDate.of(2025, 1, 9));
+        assertThat(page.zoneId()).isEqualTo(zoneId);
+        assertThat(page.offset()).isEqualTo(offset);
 
         ArgumentCaptor<LocalDate> cutoffCaptor = ArgumentCaptor.forClass(LocalDate.class);
         ArgumentCaptor<LocalDate> cursorDateCaptor = ArgumentCaptor.forClass(LocalDate.class);
@@ -74,7 +77,7 @@ class TaskArchiveServiceTest {
         ZoneOffset requestOffset = ZoneOffset.of("+02:00");
         when(taskRepository.findCompletedArchiveByCursor(anyLong(), any(), any(), anyLong(), any(Pageable.class)))
                 .thenReturn(List.of());
-        TaskArchiveService.CursorPage page = service.getCompletedArchive(2L, 1, null, requestOffset);
+        TaskArchiveService.CursorPage page = service.getCompletedArchive(2L, 1, null, requestOffset, null);
 
         assertThat(page.cutoffDate()).isEqualTo(LocalDate.of(2025, 1, 9));
         verifyNoInteractions(memberService);
@@ -82,15 +85,15 @@ class TaskArchiveServiceTest {
 
     @Test
     void getCompletedArchive_rejectsInvalidSize() {
-        assertThatThrownBy(() -> service.getCompletedArchive(1L, 0, null, null))
+        assertThatThrownBy(() -> service.getCompletedArchive(1L, 0, null, null, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("size는 1 이상 100 이하이어야 합니다.");
     }
 
     @Test
     void getCompletedArchive_rejectsBadCursor() {
-        when(memberService.findZoneOffsetOfMember(1L)).thenReturn(ZoneOffset.UTC);
-        assertThatThrownBy(() -> service.getCompletedArchive(1L, 20, "bad-cursor", null))
+        when(memberService.findZoneIdOfMember(1L)).thenReturn(ZoneId.of("UTC"));
+        assertThatThrownBy(() -> service.getCompletedArchive(1L, 20, "bad-cursor", null, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("커서는 'yyyy-MM-dd|id' 형식이어야 합니다.");
     }
