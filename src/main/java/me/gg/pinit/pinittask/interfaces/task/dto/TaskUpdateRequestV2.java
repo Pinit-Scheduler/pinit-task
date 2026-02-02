@@ -12,6 +12,8 @@ import me.gg.pinit.pinittask.application.task.dto.TaskDependencyAdjustCommand;
 import me.gg.pinit.pinittask.interfaces.dto.DateWithOffset;
 import me.gg.pinit.pinittask.interfaces.utils.FibonacciDifficulty;
 
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -24,7 +26,7 @@ public record TaskUpdateRequestV2(
         @Schema(description = "작업 설명", example = "다음 주 발표 자료 정리")
         String description,
         @NotNull
-        @Schema(description = "마감 날짜(+오프셋)", example = "{\"date\":\"2024-03-01\",\"offset\":\"+09:00\"}")
+        @Schema(description = "마감 날짜(+zoneId, 오프셋은 선택)", example = "{\"date\":\"2024-03-01\",\"offset\":\"+09:00\",\"zoneId\":\"Asia/Seoul\"}")
         @Valid
         DateWithOffset dueDate,
         @NotNull
@@ -41,17 +43,19 @@ public record TaskUpdateRequestV2(
         @Schema(description = "추가할 의존 관계 목록 (수정 시 0 사용 금지)")
         List<@Valid DependencyRequest> addDependencies
 ) {
-    public TaskDependencyAdjustCommand toCommand(Long taskId, Long ownerId, DateTimeUtils dateTimeUtils) {
+    public TaskDependencyAdjustCommand toCommand(Long taskId, Long ownerId, ZoneId memberZoneId, DateTimeUtils dateTimeUtils) {
         validateNoPlaceholder(removeDependencies);
         validateNoPlaceholder(addDependencies);
         List<DependencyDto> remove = toDependencyDtos(removeDependencies);
         List<DependencyDto> add = toDependencyDtos(addDependencies);
+        ZoneId effectiveZone = dueDate.resolveZoneId(memberZoneId);
+        validateOffsetMatchesZone(dueDate, effectiveZone);
         return new TaskDependencyAdjustCommand(
                 taskId,
                 ownerId,
                 title,
                 description,
-                dateTimeUtils.toStartOfDay(dueDate.date(), dueDate.offset()),
+                dateTimeUtils.toStartOfDay(dueDate.date(), effectiveZone),
                 importance,
                 difficulty,
                 remove,
@@ -75,5 +79,12 @@ public record TaskUpdateRequestV2(
                 .stream()
                 .map(request -> new DependencyDto(null, request.fromId(), request.toId()))
                 .toList();
+    }
+
+    private void validateOffsetMatchesZone(DateWithOffset dateWithOffset, ZoneId effectiveZone) {
+        ZoneOffset expectedOffset = dateWithOffset.date().atStartOfDay(effectiveZone).getOffset();
+        if (!expectedOffset.equals(dateWithOffset.offset())) {
+            throw new IllegalArgumentException("전달된 offset이 해당 zoneId의 규칙과 일치하지 않습니다.");
+        }
     }
 }

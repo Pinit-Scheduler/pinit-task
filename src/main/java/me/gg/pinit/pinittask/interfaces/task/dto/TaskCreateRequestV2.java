@@ -12,6 +12,8 @@ import me.gg.pinit.pinittask.application.task.dto.TaskDependencyAdjustCommand;
 import me.gg.pinit.pinittask.interfaces.dto.DateWithOffset;
 import me.gg.pinit.pinittask.interfaces.utils.FibonacciDifficulty;
 
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -24,7 +26,7 @@ public record TaskCreateRequestV2(
         @Schema(description = "작업 설명", example = "다음 주 발표 자료 정리")
         String description,
         @NotNull
-        @Schema(description = "마감 날짜(+오프셋)", example = "{\"date\":\"2024-03-01\",\"offset\":\"+09:00\"}")
+        @Schema(description = "마감 날짜(+오프셋, zoneId는 선택)", example = "{\"date\":\"2024-03-01\",\"offset\":\"+09:00\",\"zoneId\":\"Asia/Seoul\"}")
         @Valid
         DateWithOffset dueDate,
         @NotNull
@@ -39,16 +41,18 @@ public record TaskCreateRequestV2(
         @Schema(description = "추가할 의존 관계 목록 (생성 시 각 항목에 fromId 또는 toId 중 하나는 0)")
         List<@Valid DependencyRequest> addDependencies
 ) {
-    public TaskDependencyAdjustCommand toCommand(Long taskId, Long ownerId, DateTimeUtils dateTimeUtils) {
+    public TaskDependencyAdjustCommand toCommand(Long taskId, Long ownerId, ZoneId memberZoneId, DateTimeUtils dateTimeUtils) {
         validateMustContainSelfPlaceholder(addDependencies);
         List<DependencyDto> remove = List.of(); // 생성 시 remove는 허용하지 않음
         List<DependencyDto> add = toDependencyDtos(addDependencies);
+        ZoneId effectiveZone = dueDate.resolveZoneId(memberZoneId);
+        validateOffsetMatchesZone(dueDate, effectiveZone);
         return new TaskDependencyAdjustCommand(
                 taskId,
                 ownerId,
                 title,
                 description,
-                dateTimeUtils.toStartOfDay(dueDate.date(), dueDate.offset()),
+                dateTimeUtils.toStartOfDay(dueDate.date(), effectiveZone),
                 importance,
                 difficulty,
                 remove,
@@ -72,5 +76,12 @@ public record TaskCreateRequestV2(
                         throw new IllegalArgumentException("작업 생성 시 의존 관계에는 fromId 또는 toId 중 하나가 0이어야 합니다.");
                     }
                 });
+    }
+
+    private void validateOffsetMatchesZone(DateWithOffset dateWithOffset, ZoneId effectiveZone) {
+        ZoneOffset expectedOffset = dateWithOffset.date().atStartOfDay(effectiveZone).getOffset();
+        if (!expectedOffset.equals(dateWithOffset.offset())) {
+            throw new IllegalArgumentException("전달된 offset이 해당 zoneId의 규칙과 일치하지 않습니다.");
+        }
     }
 }
