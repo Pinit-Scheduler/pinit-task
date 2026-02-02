@@ -141,13 +141,29 @@ public class TaskService {
     }
 
     private LocalDate resolveToday(Long ownerId) {
-        ZoneOffset offset = memberService.findZoneOffsetOfMember(ownerId);
-        return LocalDate.now(clock.withZone(offset));
+        ZoneId zoneId = memberService.findZoneIdOfMember(ownerId);
+        return LocalDate.now(clock.withZone(zoneId));
     }
 
     @Transactional(readOnly = true)
-    public List<Task> getTasksByDeadline(Long ownerId, LocalDate deadlineDate) {
-        return taskRepository.findAllByOwnerIdAndDeadlineDate(ownerId, deadlineDate);
+    public List<Task> getTasksByDeadline(Long ownerId, LocalDate deadlineDate, ZoneId zoneId) {
+        ZonedDateTime dayStart = deadlineDate.atStartOfDay(zoneId);
+        Instant startUtc = dayStart.toInstant();
+        Instant endUtc = dayStart.plusDays(1).toInstant();
+
+        // 넉넉한 날짜 범위로 조회 후, 실제 UTC 구간으로 필터 (DST 대응)
+        List<Task> candidates = taskRepository.findAllByOwnerIdAndDeadlineDateBetween(
+                ownerId,
+                deadlineDate.minusDays(1),
+                deadlineDate.plusDays(1)
+        );
+
+        return candidates.stream()
+                .filter(task -> {
+                    Instant deadlineUtc = task.getTemporalConstraint().getDeadline().toInstant();
+                    return !deadlineUtc.isBefore(startUtc) && deadlineUtc.isBefore(endUtc);
+                })
+                .toList();
     }
 
     private void validateOwner(Long ownerId, Task task) {
