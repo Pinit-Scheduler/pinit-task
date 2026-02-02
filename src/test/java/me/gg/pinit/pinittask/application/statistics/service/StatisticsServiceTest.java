@@ -13,7 +13,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Duration;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
@@ -40,8 +39,8 @@ class StatisticsServiceTest {
         ZonedDateTime now = ZonedDateTime.now(zone);
         ZonedDateTime mondayStart = now.minusDays(2).withHour(0).withMinute(0).withSecond(0).withNano(0);
         Statistics existing = new Statistics(memberId, mondayStart);
-        when(memberService.findZoneOffsetOfMember(memberId)).thenReturn(ZoneOffset.UTC);
-        when(dateTimeUtils.lastMondayStart(now, ZoneOffset.UTC)).thenReturn(mondayStart);
+        when(memberService.findZoneIdOfMember(memberId)).thenReturn(zone);
+        when(dateTimeUtils.lastMondayStart(now, zone)).thenReturn(mondayStart);
         when(statisticsRepository.findByMemberIdAndStartOfWeekDate(memberId, mondayStart.toLocalDate(), mondayStart.getZone().getId())).thenReturn(Optional.of(existing));
 
         //when
@@ -60,8 +59,8 @@ class StatisticsServiceTest {
         Statistics stats = new Statistics(memberId, mondayStart);
         stats.addDeepWorkDuration(Duration.ofMinutes(40));
         Duration rollback = Duration.ofMinutes(15);
-        when(memberService.findZoneOffsetOfMember(memberId)).thenReturn(ZoneOffset.UTC);
-        when(dateTimeUtils.lastMondayStart(startTime, ZoneOffset.UTC)).thenReturn(mondayStart);
+        when(memberService.findZoneIdOfMember(memberId)).thenReturn(zone);
+        when(dateTimeUtils.lastMondayStart(startTime, zone)).thenReturn(mondayStart);
         when(statisticsRepository.findByMemberIdAndStartOfWeekDate(memberId, mondayStart.toLocalDate(), mondayStart.getZone().getId())).thenReturn(Optional.of(stats));
 
         //when
@@ -79,8 +78,8 @@ class StatisticsServiceTest {
         ZonedDateTime startTime = ZonedDateTime.now(zone);
         ZonedDateTime mondayStart = startTime.minusDays(4).withHour(0).withMinute(0).withSecond(0).withNano(0);
         Duration duration = Duration.ofMinutes(45);
-        when(memberService.findZoneOffsetOfMember(memberId)).thenReturn(ZoneOffset.UTC);
-        when(dateTimeUtils.lastMondayStart(startTime, ZoneOffset.UTC)).thenReturn(mondayStart);
+        when(memberService.findZoneIdOfMember(memberId)).thenReturn(zone);
+        when(dateTimeUtils.lastMondayStart(startTime, zone)).thenReturn(mondayStart);
         when(statisticsRepository.findByMemberIdAndStartOfWeekDate(memberId, mondayStart.toLocalDate(), mondayStart.getZone().getId())).thenReturn(Optional.empty());
 
         //when
