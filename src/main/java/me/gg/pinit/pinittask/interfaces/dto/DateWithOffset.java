@@ -26,10 +26,6 @@ public record DateWithOffset(
         Objects.requireNonNull(zoneId, "zoneId must not be null");
     }
 
-    public DateWithOffset(LocalDate date, ZoneOffset offset) {
-        this(date, offset, null);
-    }
-
     public static DateWithOffset from(ZonedDateTime zonedDateTime) {
         Objects.requireNonNull(zonedDateTime, "zonedDateTime must not be null");
         return new DateWithOffset(zonedDateTime.toLocalDate(), zonedDateTime.getOffset(), zonedDateTime.getZone());
