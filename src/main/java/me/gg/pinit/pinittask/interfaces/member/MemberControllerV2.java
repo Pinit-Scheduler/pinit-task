@@ -39,8 +39,19 @@ public class MemberControllerV2 {
         return ResponseEntity.ok(scheduleId);
     }
 
+    @GetMapping("/zone-id")
+    @Operation(summary = "사용자 IANA 시간대 조회", description = "사용자에 저장된 IANA 시간대(`zoneId`)를 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "사용자 시간대 조회 성공", content = @Content(schema = @Schema(implementation = String.class, example = "Asia/Seoul"))),
+    })
+    public ResponseEntity<String> getMemberZoneId(@Parameter(hidden = true) @MemberId Long memberId) {
+        String zoneId = memberService.findZoneIdOfMember(memberId).getId();
+        return ResponseEntity.ok(zoneId);
+    }
+
+    @Deprecated
     @GetMapping("/zone-offset")
-    @Operation(summary = "사용자 시간대 조회", description = "사용자의 시간대를 조회합니다.")
+    @Operation(summary = "사용자 시간대 조회(레거시)", description = "사용자의 UTC 오프셋을 조회합니다. IANA `zoneId` 사용을 권장합니다.", deprecated = true)
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "사용자 시간대 조회 성공", content = @Content(schema = @Schema(implementation = String.class, example = "+09:00"))),
     })
