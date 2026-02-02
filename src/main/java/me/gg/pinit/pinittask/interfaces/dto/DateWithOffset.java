@@ -13,10 +13,10 @@ public record DateWithOffset(
         @NotNull
         @Schema(description = "날짜", example = "2024-03-01")
         LocalDate date,
-        @Schema(description = "UTC 기준 오프셋(+HH:mm)", example = "+09:00")
+        @Schema(description = "UTC 기준 오프셋(+HH:mm). IANA `zoneId`로 계산된 값을 명시하고 싶을 때 선택적으로 포함", example = "+09:00")
         ZoneOffset offset,
         @NotNull
-        @Schema(description = "IANA 시간대 ID", example = "Asia/Seoul")
+        @Schema(description = "IANA 시간대 ID (필수)", example = "Asia/Seoul")
         ZoneId zoneId
 ) {
     public DateWithOffset {
