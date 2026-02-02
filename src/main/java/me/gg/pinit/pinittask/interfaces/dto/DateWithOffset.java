@@ -15,7 +15,6 @@ public record DateWithOffset(
         LocalDate date,
         @Schema(description = "UTC 기준 오프셋(+HH:mm). IANA `zoneId`로 계산된 값을 명시하고 싶을 때 선택적으로 포함", example = "+09:00")
         ZoneOffset offset,
-        @NotNull
         @Schema(description = "IANA 시간대 ID (필수)", example = "Asia/Seoul")
         ZoneId zoneId
 ) {
@@ -36,10 +35,5 @@ public record DateWithOffset(
     public ZoneId resolveZoneId(ZoneId fallbackZoneId) {
         Objects.requireNonNull(fallbackZoneId, "fallbackZoneId must not be null");
         return zoneId == null ? fallbackZoneId : zoneId;
-    }
-
-    public ZoneOffset resolveOffset(ZoneId fallbackZoneId) {
-        ZoneId effectiveZone = resolveZoneId(fallbackZoneId);
-        return date.atStartOfDay(effectiveZone).getOffset();
     }
 }
