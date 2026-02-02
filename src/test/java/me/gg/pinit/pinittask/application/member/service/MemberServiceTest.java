@@ -12,7 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Duration;
+import java.time.Clock;
 import java.time.ZoneId;
 import java.util.Optional;
 
@@ -24,6 +24,8 @@ import static org.mockito.Mockito.when;
 class MemberServiceTest {
     @Mock
     MemberRepository memberRepository;
+    @Mock
+    Clock clock;
 
     @InjectMocks
     MemberService memberService;
@@ -130,4 +132,5 @@ class MemberServiceTest {
         assertThrows(MemberNotFoundException.class, () -> memberService.clearNowRunningSchedule(memberId));
         verify(memberRepository).findById(memberId);
     }
+
 }
