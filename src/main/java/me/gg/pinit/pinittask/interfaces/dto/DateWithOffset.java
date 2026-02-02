@@ -13,7 +13,6 @@ public record DateWithOffset(
         @NotNull
         @Schema(description = "날짜", example = "2024-03-01")
         LocalDate date,
-        @NotNull
         @Schema(description = "UTC 기준 오프셋(+HH:mm)", example = "+09:00")
         ZoneOffset offset,
         @NotNull
@@ -22,8 +21,11 @@ public record DateWithOffset(
 ) {
     public DateWithOffset {
         Objects.requireNonNull(date, "date must not be null");
-        Objects.requireNonNull(offset, "offset must not be null");
         Objects.requireNonNull(zoneId, "zoneId must not be null");
+    }
+
+    public DateWithOffset(LocalDate date, ZoneId zoneId) {
+        this(date, null, zoneId);
     }
 
     public static DateWithOffset from(ZonedDateTime zonedDateTime) {
