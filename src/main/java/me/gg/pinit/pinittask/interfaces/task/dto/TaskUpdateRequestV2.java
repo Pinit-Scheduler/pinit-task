@@ -13,7 +13,6 @@ import me.gg.pinit.pinittask.interfaces.dto.DateWithOffset;
 import me.gg.pinit.pinittask.interfaces.utils.FibonacciDifficulty;
 
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -49,7 +48,6 @@ public record TaskUpdateRequestV2(
         List<DependencyDto> remove = toDependencyDtos(removeDependencies);
         List<DependencyDto> add = toDependencyDtos(addDependencies);
         ZoneId effectiveZone = dueDate.resolveZoneId(memberZoneId);
-        validateOffsetMatchesZone(dueDate, effectiveZone);
         return new TaskDependencyAdjustCommand(
                 taskId,
                 ownerId,
@@ -79,12 +77,5 @@ public record TaskUpdateRequestV2(
                 .stream()
                 .map(request -> new DependencyDto(null, request.fromId(), request.toId()))
                 .toList();
-    }
-
-    private void validateOffsetMatchesZone(DateWithOffset dateWithOffset, ZoneId effectiveZone) {
-        ZoneOffset expectedOffset = dateWithOffset.date().atStartOfDay(effectiveZone).getOffset();
-        if (!expectedOffset.equals(dateWithOffset.offset())) {
-            throw new IllegalArgumentException("전달된 offset이 해당 zoneId의 규칙과 일치하지 않습니다.");
-        }
     }
 }
