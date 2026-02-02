@@ -9,6 +9,8 @@ import me.gg.pinit.pinittask.domain.task.vo.TemporalConstraint;
 import me.gg.pinit.pinittask.interfaces.dto.DateTimeWithZone;
 
 import java.time.Duration;
+import java.time.ZoneId;
+import java.util.Objects;
 
 public record ScheduleResponse(
         @Schema(description = "일정 ID", example = "10")
@@ -37,6 +39,11 @@ public record ScheduleResponse(
         String state
 ) {
     public static ScheduleResponse from(Schedule schedule, Task task) {
+        return from(schedule, task, schedule.getDesignatedStartTime().getZone());
+    }
+
+    public static ScheduleResponse from(Schedule schedule, Task task, ZoneId viewZoneId) {
+        Objects.requireNonNull(viewZoneId, "viewZoneId must not be null");
         TemporalConstraint temporal = task == null ? null : task.getTemporalConstraint();
         ImportanceConstraint importanceConstraint = task == null ? null : task.getImportanceConstraint();
         ScheduleHistory history = schedule.getHistory();
@@ -46,7 +53,7 @@ public record ScheduleResponse(
                 task == null ? null : task.getId(),
                 schedule.getTitle(),
                 schedule.getDescription(),
-                DateTimeWithZone.from(schedule.getDesignatedStartTime()),
+                DateTimeWithZone.from(schedule.getDesignatedStartTime().withZoneSameInstant(viewZoneId)),
                 schedule.getScheduleType().name(),
                 temporal == null ? null : DateTimeWithZone.from(temporal.getDeadline()),
                 importanceConstraint == null ? null : importanceConstraint.getImportance(),

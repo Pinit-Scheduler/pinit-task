@@ -8,6 +8,8 @@ import me.gg.pinit.pinittask.interfaces.dto.DateTimeWithZone;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.util.Objects;
 
 public record ScheduleSimpleResponse(
         @Schema(description = "일정 ID", example = "10")
@@ -36,10 +38,15 @@ public record ScheduleSimpleResponse(
         Instant updatedAt
 ) {
     public static ScheduleSimpleResponse from(Schedule schedule) {
-        return from(schedule, null);
+        return from(schedule, null, schedule.getDesignatedStartTime().getZone());
     }
 
     public static ScheduleSimpleResponse from(Schedule schedule, Task task) {
+        return from(schedule, task, schedule.getDesignatedStartTime().getZone());
+    }
+
+    public static ScheduleSimpleResponse from(Schedule schedule, Task task, ZoneId viewZoneId) {
+        Objects.requireNonNull(viewZoneId, "viewZoneId must not be null");
         ScheduleHistory history = schedule.getHistory();
         return new ScheduleSimpleResponse(
                 schedule.getId(),
@@ -48,7 +55,7 @@ public record ScheduleSimpleResponse(
                 task == null ? null : task.isCompleted(),
                 schedule.getTitle(),
                 schedule.getDescription(),
-                DateTimeWithZone.from(schedule.getDesignatedStartTime()),
+                DateTimeWithZone.from(schedule.getDesignatedStartTime().withZoneSameInstant(viewZoneId)),
                 schedule.getScheduleType().name(),
                 history.getElapsedTime(),
                 schedule.getState(),
@@ -57,4 +64,3 @@ public record ScheduleSimpleResponse(
         );
     }
 }
-
