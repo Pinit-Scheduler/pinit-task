@@ -21,6 +21,8 @@ public class MemberCreatedEventListener {
     }
 
     private ZoneId resolveZoneId() {
+        // TODO 이벤트 페이로드에 timezone 정보를 추가해야 하나? 아니면 gRPC로 MemberService에 조회를 하나?
+        // 어쩌면 이벤트가 아닌 프론트에서 직접 등록 API를 호출하게 하는 것이 맞을수도 (일단 킵
         return ZoneId.of("Asia/Seoul");
     }
 
