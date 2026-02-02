@@ -15,8 +15,7 @@ import org.springframework.web.context.request.WebRequest;
 
 @Slf4j
 @RestControllerAdvice(assignableTypes = {
-        TaskControllerV2.class,
-        TaskControllerV1.class
+        TaskControllerV2.class
 })
 public class TaskControllerAdvice {
 
