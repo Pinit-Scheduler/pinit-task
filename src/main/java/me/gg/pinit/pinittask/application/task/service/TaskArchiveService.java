@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -30,10 +31,11 @@ public class TaskArchiveService {
     private final Clock clock;
 
     @Transactional(readOnly = true)
-    public CursorPage getCompletedArchive(Long ownerId, Integer sizeParam, String cursor, ZoneOffset requestOffset) {
+    public CursorPage getCompletedArchive(Long ownerId, Integer sizeParam, String cursor, ZoneOffset requestOffset, ZoneId requestZoneId) {
         int size = resolveSize(sizeParam);
-        ZoneOffset effectiveOffset = resolveOffset(ownerId, requestOffset);
-        LocalDate cutoffDate = LocalDate.now(clock.withZone(effectiveOffset)).minusDays(1);
+        ZoneId effectiveZoneId = resolveZoneId(ownerId, requestZoneId, requestOffset);
+        LocalDate cutoffDate = LocalDate.now(clock.withZone(effectiveZoneId)).minusDays(1);
+        ZoneOffset effectiveOffset = cutoffDate.atStartOfDay(effectiveZoneId).getOffset();
 
         Cursor decoded = decodeCursor(cursor, cutoffDate);
         Pageable pageable = PageRequest.of(0, size + 1);
@@ -48,7 +50,7 @@ public class TaskArchiveService {
         boolean hasNext = tasks.size() > size;
         List<Task> content = hasNext ? tasks.subList(0, size) : tasks;
         String nextCursor = hasNext ? encodeCursor(content.getLast()) : null;
-        return new CursorPage(content, nextCursor, hasNext, cutoffDate, effectiveOffset);
+        return new CursorPage(content, nextCursor, hasNext, cutoffDate, effectiveZoneId, effectiveOffset);
     }
 
     private int resolveSize(Integer sizeParam) {
@@ -59,11 +61,15 @@ public class TaskArchiveService {
         return size;
     }
 
-    private ZoneOffset resolveOffset(Long ownerId, ZoneOffset requestOffset) {
-        if (requestOffset != null) {
-            return requestOffset;
+    private ZoneId resolveZoneId(Long ownerId, ZoneId requestZoneId, ZoneOffset requestOffset) {
+        if (requestZoneId != null) {
+            return requestZoneId;
         }
-        return memberService.findZoneOffsetOfMember(ownerId);
+        if (requestOffset != null) {
+            // 과거 호환용: 오프셋만 받은 경우에는 Offset 시간대를 생성해 사용한다.
+            return ZoneId.ofOffset("UTC", requestOffset);
+        }
+        return memberService.findZoneIdOfMember(ownerId);
     }
 
     private String encodeCursor(Task task) {
@@ -100,7 +106,7 @@ public class TaskArchiveService {
     }
 
     public record CursorPage(List<Task> tasks, String nextCursor, boolean hasNext, LocalDate cutoffDate,
-                             ZoneOffset offset) {
+                             ZoneId zoneId, ZoneOffset offset) {
     }
 
     private record Cursor(LocalDate deadline, long id) {
