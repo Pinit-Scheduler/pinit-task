@@ -26,7 +26,7 @@ public record TaskUpdateRequestV2(
         @Schema(description = "작업 설명", example = "다음 주 발표 자료 정리")
         String description,
         @NotNull
-        @Schema(description = "마감 날짜(+zoneId, 오프셋은 선택)", example = "{\"date\":\"2024-03-01\",\"offset\":\"+09:00\",\"zoneId\":\"Asia/Seoul\"}")
+        @Schema(description = "마감 날짜(IANA `zoneId` 필수, `offset`은 해당 날짜의 오프셋을 함께 명시하고 싶을 때 선택)", example = "{\"date\":\"2024-03-01\",\"offset\":\"+09:00\",\"zoneId\":\"Asia/Seoul\"}")
         @Valid
         DateWithOffset dueDate,
         @NotNull
