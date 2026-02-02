@@ -63,10 +63,21 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
             SELECT t FROM Task t
             WHERE t.ownerId = :ownerId
               AND t.temporalConstraint.deadline.date = :deadlineDate
+              AND t.temporalConstraint.deadline.zoneId = :deadlineZoneId
             ORDER BY t.id ASC
             """)
     List<Task> findAllByOwnerIdAndDeadlineDate(@Param("ownerId") Long ownerId,
-                                               @Param("deadlineDate") LocalDate deadlineDate);
+                                               @Param("deadlineDate") LocalDate deadlineDate,
+                                               @Param("deadlineZoneId") String deadlineZoneId);
+
+    @Query("""
+            SELECT t FROM Task t
+            WHERE t.ownerId = :ownerId
+              AND t.temporalConstraint.deadline.date BETWEEN :fromDate AND :toDate
+            """)
+    List<Task> findAllByOwnerIdAndDeadlineDateBetween(@Param("ownerId") Long ownerId,
+                                                      @Param("fromDate") LocalDate fromDate,
+                                                      @Param("toDate") LocalDate toDate);
 
     @Query("""
             SELECT t FROM Task t
