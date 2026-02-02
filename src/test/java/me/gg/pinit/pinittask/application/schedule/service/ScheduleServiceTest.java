@@ -59,7 +59,6 @@ class ScheduleServiceTest {
     @Test
     void getScheduleList() {
         //given
-        when(memberService.findZoneIdOfMember(memberId)).thenReturn(ZoneId.of("Asia/Seoul"));
         when(scheduleRepository.findAllByOwnerIdAndDesignatedStartTimeBetween(eq(memberId), any(), any())).thenReturn(List.of(scheduleSample));
 
         //when
@@ -68,7 +67,6 @@ class ScheduleServiceTest {
         //then
         assertNotNull(scheduleList);
         assertEquals(1, scheduleList.size());
-        verify(memberService).findZoneIdOfMember(memberId);
         verify(scheduleRepository).findAllByOwnerIdAndDesignatedStartTimeBetween(eq(memberId), any(), any());
     }
 
