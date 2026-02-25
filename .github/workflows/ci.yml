@@ -21,5 +21,19 @@ jobs:
           java-version: "21"
           cache: gradle
 
+      - name: Check Docker availability
+        run: docker info
+
       - name: Build & Test
         run: ./gradlew clean generateProto test build
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-test-artifacts
+          if-no-files-found: warn
+          path: |
+            build/test-results/test/**
+            build/reports/tests/test/**
+            build/testcontainers-logs/**
